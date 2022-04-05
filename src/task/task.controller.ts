@@ -14,7 +14,7 @@ import { TaskService } from './task.service';
 import { CreateTaskDTO } from './dto/create-task.dto';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
 
-@Controller('task')
+@Controller('/api/task')
 export class TaskController {
   constructor(private taskService: TaskService) {}
 

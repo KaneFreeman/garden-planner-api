@@ -14,7 +14,7 @@ import { ContainerService } from './container.service';
 import { ContainerDTO } from './dto/container.dto';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
 
-@Controller('container')
+@Controller('/api/container')
 export class ContainerController {
   constructor(private containerService: ContainerService) {}
 

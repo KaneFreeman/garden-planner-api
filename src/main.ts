@@ -1,15 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as express from 'express';
+import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
 
 const env = process.env.NODE_ENV || 'production';
 
 async function bootstrap() {
-  const server = express();
   const app = await NestFactory.create(AppModule);
-  app.use(express.json({ limit: '25mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '25mb' }));
+  app.use(json({ limit: '25mb' }));
+  app.use(urlencoded({ extended: true, limit: '25mb' }));
   app.enableCors();
 
   if (env === 'development') {
@@ -21,10 +20,6 @@ async function bootstrap() {
       .build();
     const document = SwaggerModule.createDocument(app, options);
     SwaggerModule.setup('/swagger', app, document);
-
-    server.get('/api.json', (req, res) => {
-      res.send(document);
-    });
   }
 
   console.log(

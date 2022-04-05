@@ -13,7 +13,7 @@ import { PictureService } from './picture.service';
 import { PictureDTO } from './dto/picture.dto';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
 
-@Controller('picture')
+@Controller('api/picture')
 export class PictureController {
   constructor(private pictureService: PictureService) {}
 

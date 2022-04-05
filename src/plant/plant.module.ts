@@ -17,11 +17,11 @@ export class PlantModule {
     consumer
       .apply(AuthenticationMiddleware)
       .forRoutes(
-        { method: RequestMethod.GET, path: '/plant' },
-        { method: RequestMethod.GET, path: '/plant/:plantId' },
-        { method: RequestMethod.POST, path: '/plant' },
-        { method: RequestMethod.PUT, path: '/plant' },
-        { method: RequestMethod.DELETE, path: '/plant' },
+        { method: RequestMethod.GET, path: '/api/plant' },
+        { method: RequestMethod.GET, path: '/api/plant/:plantId' },
+        { method: RequestMethod.POST, path: '/api/plant' },
+        { method: RequestMethod.PUT, path: '/api/plant' },
+        { method: RequestMethod.DELETE, path: '/api/plant' },
       );
   }
 }

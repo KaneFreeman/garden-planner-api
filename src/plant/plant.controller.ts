@@ -14,7 +14,7 @@ import { PlantService } from './plant.service';
 import { PlantDTO } from './dto/plant.dto';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
 
-@Controller('plant')
+@Controller('api/plant')
 export class PlantController {
   constructor(private plantService: PlantService) {}
 
