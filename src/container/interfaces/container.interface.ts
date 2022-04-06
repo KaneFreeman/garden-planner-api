@@ -5,5 +5,5 @@ export interface Container extends Document {
   name: string;
   rows: number;
   columns: number;
-  slots?: Record<number, Slot>;
+  slots?: Map<string, Slot>;
 }

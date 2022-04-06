@@ -3,11 +3,17 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { ContainerDTO } from './dto/container.dto';
 import { Container } from './interfaces/container.interface';
+import { TaskService } from '../task/task.service';
+import { PlantService } from '../plant/plant.service';
+import plantData from '../data/plantData';
+import getSlotTitle from '../util/slot.util';
 
 @Injectable()
 export class ContainerService {
   constructor(
     @InjectModel('Container') private readonly containerModel: Model<Container>,
+    private plantService: PlantService,
+    private taskService: TaskService,
   ) {}
 
   async addContainer(createContainerDTO: ContainerDTO): Promise<Container> {
@@ -34,6 +40,7 @@ export class ContainerService {
       createContainerDTO,
       { new: true },
     );
+    await this.createUpdatePlantTasks(editedContainer);
     return editedContainer;
   }
 
@@ -42,5 +49,49 @@ export class ContainerService {
       containerId,
     );
     return deletedContainer;
+  }
+
+  async createUpdatePlantTasks(container: Container | undefined) {
+    if (!container?.slots) {
+      return;
+    }
+
+    const { slots } = container;
+
+    slots.forEach(async (slot, slotIndex) => {
+      if (!slot?.plant) {
+        return;
+      }
+
+      const plant = await this.plantService.getPlant(slot.plant);
+      if (!plant?.type) {
+        return;
+      }
+
+      const data = plantData[plant.type];
+      if (!data) {
+        return;
+      }
+
+      const path = `/container/${container._id}/slot/${slotIndex}`;
+      const slotTitle = getSlotTitle(+slotIndex, container.rows);
+
+      await this.taskService.createUpdatePlantedTask(
+        container,
+        slot,
+        plant,
+        data,
+        path,
+        slotTitle,
+      );
+      await this.taskService.createUpdateTransplantedTask(
+        container,
+        slot,
+        plant,
+        data,
+        path,
+        slotTitle,
+      );
+    });
   }
 }

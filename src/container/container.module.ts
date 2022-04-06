@@ -4,10 +4,14 @@ import { AuthenticationMiddleware } from '../common/authentication.middleware';
 import { ContainerService } from './container.service';
 import { ContainerController } from './container.controller';
 import { ContainerSchema } from './schemas/container.schema';
+import { TaskModule } from '../task/task.module';
+import { PlantModule } from '../plant/plant.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Container', schema: ContainerSchema }]),
+    TaskModule,
+    PlantModule,
   ],
   providers: [ContainerService],
   controllers: [ContainerController],

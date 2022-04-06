@@ -11,6 +11,7 @@ import { PlantSchema } from './schemas/plant.schema';
   ],
   providers: [PlantService],
   controllers: [PlantController],
+  exports: [PlantService],
 })
 export class PlantModule {
   configure(consumer: MiddlewareConsumer): MiddlewareConsumer | void {

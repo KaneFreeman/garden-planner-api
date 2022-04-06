@@ -28,7 +28,7 @@ export class TaskController {
   // Fetch a particular task using ID
   @Get('/:taskId')
   async getTask(@Res() res, @Param('taskId', new ValidateObjectId()) taskId) {
-    const task = await this.taskService.getTask(taskId);
+    const task = await this.taskService.getTaskById(taskId);
     if (!task) {
       throw new NotFoundException('Task does not exist!');
     }

@@ -9,6 +9,7 @@ import { AuthenticationMiddleware } from '../common/authentication.middleware';
   imports: [MongooseModule.forFeature([{ name: 'Task', schema: TaskSchema }])],
   providers: [TaskService],
   controllers: [TaskController],
+  exports: [TaskService],
 })
 export class TaskModule {
   configure(consumer: MiddlewareConsumer): MiddlewareConsumer | void {
