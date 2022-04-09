@@ -120,10 +120,11 @@ export class TaskService {
       });
     } else {
       this.editTask(task._id, {
-        ...task,
         text: `Plant ${plant.name} in ${container.name} at ${slotTitle}`,
+        type: task.type,
         start,
         due,
+        path: task.path,
         completedOn,
       });
     }
@@ -159,10 +160,11 @@ export class TaskService {
       });
     } else {
       this.editTask(task._id, {
-        ...task,
         text: `Transplant ${plant.name} from ${container.name} at ${slotTitle}`,
+        type: task.type,
         start,
         due,
+        path: task.path,
         completedOn,
       });
     }
