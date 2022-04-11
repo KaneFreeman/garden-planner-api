@@ -1,7 +1,7 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import { CommentSchema } from '../../common/schemas/comment.schema';
 import { PictureDataSchema } from '../../common/schemas/picture-data.schema';
-import { TransplantedToSchema } from './transplanted-to.schema';
+import { TransplantedSchema } from './transplanted.schema';
 
 export const ContainerSlotSchema = new mongoose.Schema({
   plant: String,
@@ -9,7 +9,8 @@ export const ContainerSlotSchema = new mongoose.Schema({
   plantedCount: Number,
   plantedDate: { type: Date },
   transplantedDate: { type: Date },
-  transplantedTo: TransplantedToSchema,
+  transplantedTo: TransplantedSchema,
+  transplantedFrom: TransplantedSchema,
   pictures: [PictureDataSchema],
   comments: [CommentSchema],
 });

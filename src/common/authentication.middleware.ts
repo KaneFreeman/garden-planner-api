@@ -1,8 +1,8 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import * as jwt from 'express-jwt';
+import jwt from 'express-jwt';
 import { expressJwtSecret } from 'jwks-rsa';
 import { Request, Response } from 'express';
-import * as dotenv from 'dotenv';
+import dotenv from 'dotenv';
 dotenv.config();
 
 @Injectable()

@@ -1,9 +1,9 @@
-const growingZoneData = {
+import { GrowingZoneData } from '../interface';
+
+const growingZoneData: GrowingZoneData = {
   zone: '6',
-  last_frost: 'May 01',
-  first_frost: 'October 10',
-  full_first_frost: '10/10/2022',
-  full_last_frost: '01/05/2022',
+  lastFrost: new Date(2022, 4, 1, 0, 0, 0, 0),
+  firstFrost: new Date(2022, 9, 10, 0, 0, 0, 0),
 };
 
 export default growingZoneData;

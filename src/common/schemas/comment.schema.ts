@@ -1,4 +1,4 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
 export const CommentSchema = new mongoose.Schema({
   date: { type: Date },

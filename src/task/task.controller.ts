@@ -9,6 +9,7 @@ import {
   Body,
   Put,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { CreateTaskDTO } from './dto/create-task.dto';
@@ -37,8 +38,10 @@ export class TaskController {
 
   // Fetch all tasks
   @Get('')
-  async getTasks(@Res() res) {
-    const tasks = await this.taskService.getTasks();
+  async getTasks(@Res() res, @Query('path') path) {
+    const tasks = path
+      ? await this.taskService.getTasksByPath(path)
+      : await this.taskService.getTasks();
     return res.status(HttpStatus.OK).json(tasks);
   }
 
