@@ -147,7 +147,7 @@ export class TaskService {
         : null;
 
     if (!task) {
-      this.addTask({
+      await this.addTask({
         text: `Plant ${plant.name} in ${container.name} at ${slotTitle}`,
         type: 'Plant',
         start,
@@ -156,7 +156,7 @@ export class TaskService {
         completedOn,
       });
     } else {
-      this.editTask(task._id, {
+      await this.editTask(task._id, {
         text: `Plant ${plant.name} in ${container.name} at ${slotTitle}`,
         type: task.type,
         start,
@@ -187,7 +187,7 @@ export class TaskService {
       slot.status === 'Transplanted' ? slot.plantedDate ?? null : null;
 
     if (!task) {
-      this.addTask({
+      await this.addTask({
         text: `Transplant ${plant.name} from ${container.name} at ${slotTitle}`,
         type: 'Transplant',
         start,
@@ -196,7 +196,7 @@ export class TaskService {
         completedOn,
       });
     } else {
-      this.editTask(task._id, {
+      await this.editTask(task._id, {
         text: `Transplant ${plant.name} from ${container.name} at ${slotTitle}`,
         type: task.type,
         start,

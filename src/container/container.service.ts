@@ -109,7 +109,7 @@ export class ContainerService {
 
     const { slots } = container;
 
-    slots.forEach(async (slot, slotIndex) => {
+    for (const [slotIndex, slot] of slots) {
       if (!slot?.plant) {
         return;
       }
@@ -144,6 +144,6 @@ export class ContainerService {
         path,
         slotTitle,
       );
-    });
+    }
   }
 }
