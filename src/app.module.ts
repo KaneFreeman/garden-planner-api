@@ -7,6 +7,7 @@ import { PlantModule } from './plant/plant.module';
 import { TaskModule } from './task/task.module';
 import { ContainerModule } from './container/container.module';
 import { PictureModule } from './picture/picture.module';
+import { StaticModule } from './static/static.module';
 
 const env = process.env.NODE_ENV || 'production';
 
@@ -24,6 +25,7 @@ const env = process.env.NODE_ENV || 'production';
     TaskModule,
     ContainerModule,
     PictureModule,
+    StaticModule,
   ],
   controllers: [AppController],
   providers: [AppService],

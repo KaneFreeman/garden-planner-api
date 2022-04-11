@@ -1,9 +1,9 @@
 import { Document } from 'mongoose';
-import { Slot } from '../../interface';
+import { SlotDocument } from './slot.interface';
 
-export interface Container extends Document {
-  name: string;
-  rows: number;
-  columns: number;
-  slots?: Map<string, Slot>;
+export interface ContainerDocument extends Document {
+  readonly name: string;
+  readonly rows: number;
+  readonly columns: number;
+  readonly slots?: Map<string, SlotDocument>;
 }

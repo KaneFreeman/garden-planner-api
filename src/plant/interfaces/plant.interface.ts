@@ -1,11 +1,12 @@
 import { Document } from 'mongoose';
-import { Comment, PictureData } from '../../interface';
+import { CommentDocument } from '../../common/interfaces/comment.interface';
+import { PictureDataDocument } from '../../common/interfaces/picutre-data.interface';
 
-export interface Plant extends Document {
+export interface PlantDocument extends Document {
   readonly name: string;
   readonly type: string;
   readonly url: string;
   readonly daysToMaturity: [number, number];
-  readonly pictures: PictureData[];
-  readonly comments: Comment[];
+  readonly pictures?: PictureDataDocument[];
+  readonly comments?: CommentDocument[];
 }

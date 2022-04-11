@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import subDays from 'date-fns/subDays';
 import { CreateTaskDTO } from './dto/create-task.dto';
 import { Task } from './interfaces/task.interface';
-import { Container } from '../container/interfaces/container.interface';
-import { PlantData, Slot, TaskType } from '../interface';
-import { Plant } from '../plant/interfaces/plant.interface';
-import { parseDate } from '../util/date.util';
+import { ContainerDocument } from '../container/interfaces/container.interface';
+import { SlotDocument } from '../container/interfaces/slot.interface';
+import { PlantData, TaskType } from '../interface';
+import { PlantDocument } from '../plant/interfaces/plant.interface';
+import growingZoneData from '../data/growingZoneData';
+import addDays from 'date-fns/addDays';
 
 @Injectable()
 export class TaskService {
@@ -32,6 +35,11 @@ export class TaskService {
     return tasks;
   }
 
+  async getTasksByPath(path: string): Promise<Task[]> {
+    const tasks = await this.taskModel.find({ path }).exec();
+    return tasks;
+  }
+
   async editTask(taskId: string, createTaskDTO: CreateTaskDTO): Promise<Task> {
     const editedTask = await this.taskModel.findByIdAndUpdate(
       taskId,
@@ -46,26 +54,32 @@ export class TaskService {
     return deletedTask;
   }
 
-  getPlantedStartAndDueDate(
+  getSpringPlantedStartAndDueDate(
     data: PlantData,
   ): { start: Date; due: Date } | undefined {
-    if (
-      data.howToGrow.indoor?.indoor_min &&
-      data.howToGrow.indoor?.indoor_max
-    ) {
+    if (data.howToGrow.spring?.indoor) {
       return {
-        start: parseDate(data.howToGrow.indoor.indoor_min),
-        due: parseDate(data.howToGrow.indoor.indoor_max),
+        start: subDays(
+          growingZoneData.lastFrost,
+          data.howToGrow.spring.indoor.min,
+        ),
+        due: subDays(
+          growingZoneData.lastFrost,
+          data.howToGrow.spring.indoor.max,
+        ),
       };
     }
 
-    if (
-      data.howToGrow.outdoor?.direct_min &&
-      data.howToGrow.outdoor.direct_max
-    ) {
+    if (data.howToGrow.spring?.outdoor) {
       return {
-        start: parseDate(data.howToGrow.outdoor.direct_min),
-        due: parseDate(data.howToGrow.outdoor.direct_max),
+        start: subDays(
+          growingZoneData.lastFrost,
+          data.howToGrow.spring.outdoor.min,
+        ),
+        due: subDays(
+          growingZoneData.lastFrost,
+          data.howToGrow.spring.outdoor.max,
+        ),
       };
     }
 
@@ -74,14 +88,33 @@ export class TaskService {
 
   getTransplantedStartAndDueDate(
     data: PlantData,
+    plantedDate?: Date,
   ): { start: Date; due: Date } | undefined {
-    if (
-      data.howToGrow.indoor?.transplant_min &&
-      data.howToGrow.indoor?.transplant_max
-    ) {
+    if (data.howToGrow.spring?.indoor) {
+      if (plantedDate) {
+        return {
+          start: addDays(
+            plantedDate,
+            data.howToGrow.spring.indoor.transplant_min,
+          ),
+          due: addDays(
+            plantedDate,
+            data.howToGrow.spring.indoor.transplant_max,
+          ),
+        };
+      }
+
       return {
-        start: parseDate(data.howToGrow.indoor.transplant_min),
-        due: parseDate(data.howToGrow.indoor.transplant_max),
+        start: subDays(
+          growingZoneData.lastFrost,
+          data.howToGrow.spring.indoor.min -
+            data.howToGrow.spring.indoor.transplant_min,
+        ),
+        due: subDays(
+          growingZoneData.lastFrost,
+          data.howToGrow.spring.indoor.max -
+            data.howToGrow.spring.indoor.transplant_max,
+        ),
       };
     }
 
@@ -89,14 +122,18 @@ export class TaskService {
   }
 
   async createUpdatePlantedTask(
-    container: Container,
-    slot: Slot,
-    plant: Plant,
+    season: 'spring' | 'fall',
+    container: ContainerDocument,
+    slot: SlotDocument,
+    plant: PlantDocument,
     data: PlantData,
     path: string,
     slotTitle: string,
   ) {
-    const dates = this.getPlantedStartAndDueDate(data);
+    const dates =
+      season === 'spring'
+        ? this.getSpringPlantedStartAndDueDate(data)
+        : this.getSpringPlantedStartAndDueDate(data);
     if (!dates) {
       return;
     }
@@ -131,14 +168,14 @@ export class TaskService {
   }
 
   async createUpdateTransplantedTask(
-    container: Container,
-    slot: Slot,
-    plant: Plant,
+    container: ContainerDocument,
+    slot: SlotDocument,
+    plant: PlantDocument,
     data: PlantData,
     path: string,
     slotTitle: string,
   ) {
-    const dates = this.getTransplantedStartAndDueDate(data);
+    const dates = this.getTransplantedStartAndDueDate(data, slot.plantedDate);
     if (!dates) {
       return;
     }

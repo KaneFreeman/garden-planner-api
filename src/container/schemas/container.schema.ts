@@ -1,4 +1,4 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import { ContainerSlotSchema } from './container-slot.schema';
 
 export const ContainerSchema = new mongoose.Schema({
