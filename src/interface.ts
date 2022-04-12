@@ -269,8 +269,18 @@ export interface Plant {
 export const NOT_PLANTED = 'Not Planted';
 export const PLANTED = 'Planted';
 export const TRANSPLANTED = 'Transplanted';
-export type Status = typeof NOT_PLANTED | typeof PLANTED | typeof TRANSPLANTED;
-export const STATUSES: Status[] = [NOT_PLANTED, PLANTED, TRANSPLANTED];
+export const HARVESTED = 'Harvested';
+export type Status =
+  | typeof NOT_PLANTED
+  | typeof PLANTED
+  | typeof TRANSPLANTED
+  | typeof HARVESTED;
+export const STATUSES: Status[] = [
+  NOT_PLANTED,
+  PLANTED,
+  TRANSPLANTED,
+  HARVESTED,
+];
 
 export interface ContainerSlotIdentifier {
   containerId: string;
@@ -289,9 +299,20 @@ export interface Slot {
   pictures?: PictureData[];
 }
 
+export const CONTAINER_TYPE_INSIDE = 'Inside';
+export const CONTAINER_TYPE_OUTSIDE = 'Outside';
+export type ContainerType =
+  | typeof CONTAINER_TYPE_INSIDE
+  | typeof CONTAINER_TYPE_OUTSIDE;
+export const CONTAINER_TYPES: ContainerType[] = [
+  CONTAINER_TYPE_INSIDE,
+  CONTAINER_TYPE_OUTSIDE,
+];
+
 export interface Container {
   _id: string;
   name: string;
+  type: ContainerType;
   rows: number;
   columns: number;
   slots?: Record<number, Slot>;
@@ -304,9 +325,14 @@ export interface Picture {
 
 export const PLANT = 'Plant';
 export const TRANSPLANT = 'Transplant';
+export const HARVEST = 'Harvest';
 export const CUSTOM = 'Custom';
-export type TaskType = typeof PLANT | typeof TRANSPLANT | typeof CUSTOM;
-export const TASK_TYPES: TaskType[] = [PLANT, TRANSPLANT, CUSTOM];
+export type TaskType =
+  | typeof PLANT
+  | typeof TRANSPLANT
+  | typeof HARVEST
+  | typeof CUSTOM;
+export const TASK_TYPES: TaskType[] = [PLANT, TRANSPLANT, HARVEST, CUSTOM];
 
 export interface Task {
   _id: string;

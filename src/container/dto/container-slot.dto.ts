@@ -10,6 +10,7 @@ export class ContainerSlotDTO {
   transplantedDate?: string;
   transplantedTo?: ContainerSlotIdentifier;
   transplantedFrom?: ContainerSlotIdentifier;
+  firstHarvestDate?: string;
   comments?: CommentDto[];
   pictures?: PictureDataDto[];
 }

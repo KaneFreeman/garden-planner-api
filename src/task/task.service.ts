@@ -6,10 +6,11 @@ import { CreateTaskDTO } from './dto/create-task.dto';
 import { Task } from './interfaces/task.interface';
 import { ContainerDocument } from '../container/interfaces/container.interface';
 import { SlotDocument } from '../container/interfaces/slot.interface';
-import { PlantData, TaskType } from '../interface';
+import { ContainerType, PlantData, TaskType } from '../interface';
 import { PlantDocument } from '../plant/interfaces/plant.interface';
 import growingZoneData from '../data/growingZoneData';
 import addDays from 'date-fns/addDays';
+import { TWO_WEEKS } from '../constants';
 
 @Injectable()
 export class TaskService {
@@ -55,9 +56,10 @@ export class TaskService {
   }
 
   getSpringPlantedStartAndDueDate(
+    type: ContainerType,
     data: PlantData,
   ): { start: Date; due: Date } | undefined {
-    if (data.howToGrow.spring?.indoor) {
+    if (type === 'Inside' && data.howToGrow.spring?.indoor) {
       return {
         start: subDays(
           growingZoneData.lastFrost,
@@ -70,7 +72,7 @@ export class TaskService {
       };
     }
 
-    if (data.howToGrow.spring?.outdoor) {
+    if (type === 'Outside' && data.howToGrow.spring?.outdoor) {
       return {
         start: subDays(
           growingZoneData.lastFrost,
@@ -132,8 +134,8 @@ export class TaskService {
   ) {
     const dates =
       season === 'spring'
-        ? this.getSpringPlantedStartAndDueDate(data)
-        : this.getSpringPlantedStartAndDueDate(data);
+        ? this.getSpringPlantedStartAndDueDate(container.type, data)
+        : this.getSpringPlantedStartAndDueDate(container.type, data);
     if (!dates) {
       return;
     }
@@ -198,6 +200,74 @@ export class TaskService {
     } else {
       await this.editTask(task._id, {
         text: `Transplant ${plant.name} from ${container.name} at ${slotTitle}`,
+        type: task.type,
+        start,
+        due,
+        path: task.path,
+        completedOn,
+      });
+    }
+  }
+
+  getHarvestStartAndDueDate(
+    plant: PlantDocument,
+    plantedDate?: Date,
+  ): { start: Date; due: Date } | undefined {
+    if (
+      plant.daysToMaturity !== undefined &&
+      plant.daysToMaturity.length > 0 &&
+      plant.daysToMaturity[0] !== undefined
+    ) {
+      if (
+        plant.daysToMaturity.length > 1 &&
+        plant.daysToMaturity[1] !== undefined &&
+        plant.daysToMaturity[0] !== plant.daysToMaturity[1]
+      ) {
+        return {
+          start: addDays(plantedDate, plant.daysToMaturity[0]),
+          due: addDays(plantedDate, plant.daysToMaturity[1]),
+        };
+      }
+
+      return {
+        start: addDays(plantedDate, plant.daysToMaturity[0]),
+        due: addDays(addDays(plantedDate, plant.daysToMaturity[0]), TWO_WEEKS),
+      };
+    }
+
+    return undefined;
+  }
+
+  async createUpdateHarvestTask(
+    container: ContainerDocument,
+    slot: SlotDocument,
+    plant: PlantDocument,
+    path: string,
+    slotTitle: string,
+  ) {
+    const dates = this.getHarvestStartAndDueDate(plant, slot.plantedDate);
+    if (!dates) {
+      return;
+    }
+
+    const { start, due } = dates;
+
+    const task = await this.getTaskByTypeAndPath('Harvest', path);
+    const completedOn =
+      slot.status === 'Harvested' ? slot.plantedDate ?? null : null;
+
+    if (!task) {
+      await this.addTask({
+        text: `Harvest ${plant.name} from ${container.name} at ${slotTitle}`,
+        type: 'Harvest',
+        start,
+        due,
+        path,
+        completedOn,
+      });
+    } else {
+      await this.editTask(task._id, {
+        text: `Harvest ${plant.name} from ${container.name} at ${slotTitle}`,
         type: task.type,
         start,
         due,

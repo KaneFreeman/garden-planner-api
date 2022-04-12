@@ -12,6 +12,7 @@ export interface SlotDocument extends Document {
   readonly transplantedDate?: Date;
   readonly transplantedTo?: ContainerSlotIdentifier;
   readonly transplantedFrom?: ContainerSlotIdentifier;
+  readonly firstHarvestDate?: Date;
   readonly comments?: CommentDocument[];
   readonly pictures?: PictureDataDocument[];
 }

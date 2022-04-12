@@ -63,28 +63,47 @@ export class ContainerService {
 
     const { slots } = container;
 
-    slots.forEach(async (slot, slotIndex) => {
+    for (const [slotIndex, slot] of slots) {
       if (!slot?.transplantedTo) {
-        return;
+        continue;
       }
 
       const otherContainer = await this.getContainer(
         slot.transplantedTo.containerId,
       );
-      if (
-        !otherContainer ||
-        (otherContainer.slots &&
-          otherContainer.slots[slot.transplantedTo.slotId] !== undefined)
-      ) {
-        return;
+
+      if (!otherContainer) {
+        continue;
       }
 
-      const newSlot = { ...slot.toObject<Slot>() };
-      delete newSlot.transplantedTo;
-      newSlot.transplantedFrom = {
-        containerId: container._id,
-        slotId: +slotIndex,
-      };
+      const transplantedTo = `${slot.transplantedTo.slotId}`;
+
+      let newSlot: Slot;
+      if (otherContainer.slots && otherContainer.slots.has(transplantedTo)) {
+        const otherSlot = otherContainer.slots.get(transplantedTo);
+        if (
+          otherSlot.status !== 'Not Planted' ||
+          otherSlot.plant !== slot.plant
+        ) {
+          continue;
+        }
+
+        newSlot = { ...otherSlot.toObject<Slot>() };
+        newSlot.transplantedFrom = {
+          containerId: container._id,
+          slotId: +slotIndex,
+        };
+        newSlot.plantedDate = slot.plantedDate;
+        newSlot.status = 'Planted';
+      } else {
+        newSlot = { ...slot.toObject<Slot>() };
+        delete newSlot.transplantedTo;
+        newSlot.transplantedFrom = {
+          containerId: container._id,
+          slotId: +slotIndex,
+        };
+        newSlot.status = 'Planted';
+      }
 
       const newSlots: Record<string, Slot> = {};
       otherContainer.slots?.forEach((slot, key) => {
@@ -99,7 +118,7 @@ export class ContainerService {
       );
 
       await this.createUpdatePlantTasks(editedContainer);
-    });
+    }
   }
 
   async createUpdatePlantTasks(container: ContainerDocument | undefined) {
@@ -136,14 +155,25 @@ export class ContainerService {
         path,
         slotTitle,
       );
-      await this.taskService.createUpdateTransplantedTask(
-        container,
-        slot,
-        plant,
-        data,
-        path,
-        slotTitle,
-      );
+
+      if (container.type === 'Inside') {
+        await this.taskService.createUpdateTransplantedTask(
+          container,
+          slot,
+          plant,
+          data,
+          path,
+          slotTitle,
+        );
+      } else {
+        await this.taskService.createUpdateHarvestTask(
+          container,
+          slot,
+          plant,
+          path,
+          slotTitle,
+        );
+      }
     }
   }
 }
