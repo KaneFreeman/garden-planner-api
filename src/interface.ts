@@ -287,16 +287,20 @@ export interface ContainerSlotIdentifier {
   slotId: number;
 }
 
-export interface Slot {
+interface BaseSlot {
   plant?: string;
   status?: Status;
   plantedCount?: number;
   plantedDate?: Date;
   transplantedDate?: Date;
-  transplantedTo?: ContainerSlotIdentifier;
-  transplantedFrom?: ContainerSlotIdentifier;
+  transplantedTo: ContainerSlotIdentifier | null;
+  transplantedFrom: ContainerSlotIdentifier | null;
   comments?: Comment[];
   pictures?: PictureData[];
+}
+
+export interface Slot extends BaseSlot {
+  subSlot?: BaseSlot;
 }
 
 export const CONTAINER_TYPE_INSIDE = 'Inside';

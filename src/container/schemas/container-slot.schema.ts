@@ -3,7 +3,7 @@ import { CommentSchema } from '../../common/schemas/comment.schema';
 import { PictureDataSchema } from '../../common/schemas/picture-data.schema';
 import { TransplantedSchema } from './transplanted.schema';
 
-export const ContainerSlotSchema = new mongoose.Schema({
+export const BaseContainerSlotSchema = {
   plant: String,
   status: String,
   plantedCount: Number,
@@ -14,4 +14,9 @@ export const ContainerSlotSchema = new mongoose.Schema({
   firstHarvestDate: { type: Date },
   pictures: [PictureDataSchema],
   comments: [CommentSchema],
+};
+
+export const ContainerSlotSchema = new mongoose.Schema({
+  ...BaseContainerSlotSchema,
+  subSlot: BaseContainerSlotSchema,
 });

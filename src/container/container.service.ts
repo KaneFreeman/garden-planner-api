@@ -8,6 +8,7 @@ import { PlantService } from '../plant/plant.service';
 import plantData from '../data/plantData';
 import getSlotTitle from '../util/slot.util';
 import { Slot } from '../interface';
+import { BaseSlotDocument } from './interfaces/slot.interface';
 
 @Injectable()
 export class ContainerService {
@@ -121,6 +122,56 @@ export class ContainerService {
     }
   }
 
+  async createUpdatePlantTasksForSlot(
+    container: ContainerDocument,
+    slot: BaseSlotDocument,
+    path: string,
+    slotTitle: string,
+  ) {
+    if (!slot?.plant) {
+      return;
+    }
+
+    const plant = await this.plantService.getPlant(slot.plant);
+    if (!plant?.type) {
+      return;
+    }
+
+    const data = plantData[plant.type];
+    if (!data) {
+      return;
+    }
+
+    await this.taskService.createUpdatePlantedTask(
+      'spring',
+      container,
+      slot,
+      plant,
+      data,
+      path,
+      slotTitle,
+    );
+
+    if (container.type === 'Inside') {
+      await this.taskService.createUpdateTransplantedTask(
+        container,
+        slot,
+        plant,
+        data,
+        path,
+        slotTitle,
+      );
+    } else {
+      await this.taskService.createUpdateHarvestTask(
+        container,
+        slot,
+        plant,
+        path,
+        slotTitle,
+      );
+    }
+  }
+
   async createUpdatePlantTasks(container: ContainerDocument | undefined) {
     if (!container?.slots) {
       return;
@@ -129,48 +180,21 @@ export class ContainerService {
     const { slots } = container;
 
     for (const [slotIndex, slot] of slots) {
-      if (!slot?.plant) {
-        return;
-      }
-
-      const plant = await this.plantService.getPlant(slot.plant);
-      if (!plant?.type) {
-        return;
-      }
-
-      const data = plantData[plant.type];
-      if (!data) {
-        return;
-      }
-
       const path = `/container/${container._id}/slot/${slotIndex}`;
       const slotTitle = getSlotTitle(+slotIndex, container.rows);
 
-      await this.taskService.createUpdatePlantedTask(
-        'spring',
+      await this.createUpdatePlantTasksForSlot(
         container,
         slot,
-        plant,
-        data,
         path,
         slotTitle,
       );
 
-      if (container.type === 'Inside') {
-        await this.taskService.createUpdateTransplantedTask(
+      if (slot.subSlot) {
+        await this.createUpdatePlantTasksForSlot(
           container,
-          slot,
-          plant,
-          data,
-          path,
-          slotTitle,
-        );
-      } else {
-        await this.taskService.createUpdateHarvestTask(
-          container,
-          slot,
-          plant,
-          path,
+          slot.subSlot,
+          `${path}/sub-slot`,
           slotTitle,
         );
       }

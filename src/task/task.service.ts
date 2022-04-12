@@ -5,12 +5,13 @@ import subDays from 'date-fns/subDays';
 import { CreateTaskDTO } from './dto/create-task.dto';
 import { Task } from './interfaces/task.interface';
 import { ContainerDocument } from '../container/interfaces/container.interface';
-import { SlotDocument } from '../container/interfaces/slot.interface';
+import { BaseSlotDocument } from '../container/interfaces/slot.interface';
 import { ContainerType, PlantData, TaskType } from '../interface';
 import { PlantDocument } from '../plant/interfaces/plant.interface';
 import growingZoneData from '../data/growingZoneData';
 import addDays from 'date-fns/addDays';
 import { TWO_WEEKS } from '../constants';
+import { isValidDate } from '../util/date.util';
 
 @Injectable()
 export class TaskService {
@@ -126,7 +127,7 @@ export class TaskService {
   async createUpdatePlantedTask(
     season: 'spring' | 'fall',
     container: ContainerDocument,
-    slot: SlotDocument,
+    slot: BaseSlotDocument,
     plant: PlantDocument,
     data: PlantData,
     path: string,
@@ -136,7 +137,7 @@ export class TaskService {
       season === 'spring'
         ? this.getSpringPlantedStartAndDueDate(container.type, data)
         : this.getSpringPlantedStartAndDueDate(container.type, data);
-    if (!dates) {
+    if (!dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
       return;
     }
 
@@ -171,14 +172,14 @@ export class TaskService {
 
   async createUpdateTransplantedTask(
     container: ContainerDocument,
-    slot: SlotDocument,
+    slot: BaseSlotDocument,
     plant: PlantDocument,
     data: PlantData,
     path: string,
     slotTitle: string,
   ) {
     const dates = this.getTransplantedStartAndDueDate(data, slot.plantedDate);
-    if (!dates) {
+    if (!dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
       return;
     }
 
@@ -221,6 +222,7 @@ export class TaskService {
       if (
         plant.daysToMaturity.length > 1 &&
         plant.daysToMaturity[1] !== undefined &&
+        plant.daysToMaturity[1] !== null &&
         plant.daysToMaturity[0] !== plant.daysToMaturity[1]
       ) {
         return {
@@ -240,13 +242,13 @@ export class TaskService {
 
   async createUpdateHarvestTask(
     container: ContainerDocument,
-    slot: SlotDocument,
+    slot: BaseSlotDocument,
     plant: PlantDocument,
     path: string,
     slotTitle: string,
   ) {
     const dates = this.getHarvestStartAndDueDate(plant, slot.plantedDate);
-    if (!dates) {
+    if (!dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
       return;
     }
 

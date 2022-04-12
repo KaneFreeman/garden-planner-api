@@ -4,15 +4,19 @@ import { PictureDataDocument } from '../../common/interfaces/picutre-data.interf
 import { Status } from '../../interface';
 import { ContainerSlotIdentifier } from './container-slot-identifier.interface';
 
-export interface SlotDocument extends Document {
+export interface BaseSlotDocument extends Document {
   readonly plant?: string;
   readonly status?: Status;
   readonly plantedCount?: number;
   readonly plantedDate?: Date;
   readonly transplantedDate?: Date;
-  readonly transplantedTo?: ContainerSlotIdentifier;
-  readonly transplantedFrom?: ContainerSlotIdentifier;
+  readonly transplantedTo: ContainerSlotIdentifier | null;
+  readonly transplantedFrom: ContainerSlotIdentifier | null;
   readonly firstHarvestDate?: Date;
   readonly comments?: CommentDocument[];
   readonly pictures?: PictureDataDocument[];
+}
+
+export interface SlotDocument extends BaseSlotDocument {
+  readonly subSlot?: BaseSlotDocument;
 }
