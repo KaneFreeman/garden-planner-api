@@ -1,4 +1,4 @@
-export class PictureDataDto {
+export interface PictureDataDto {
   readonly date: string;
   readonly id: number;
   readonly pictureId: string;

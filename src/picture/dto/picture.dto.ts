@@ -1,3 +1,3 @@
-export class PictureDTO {
+export interface PictureDTO {
   readonly dataUrl: string;
 }

@@ -46,9 +46,20 @@ export class PlantDataDTO {
       };
     };
   };
+
   faq: {
     how_to_grow?: [string, string][];
   };
+
+  constructor(data?: {
+    howToGrow?: PlantDataDTO['howToGrow'];
+    faq?: PlantDataDTO['faq'];
+  }) {
+    const { howToGrow = {}, faq = {} } = data || {};
+
+    this.howToGrow = howToGrow;
+    this.faq = faq;
+  }
 
   static toDTO(data: PlantData): PlantDataDTO {
     const howToGrow: PlantDataDTO['howToGrow'] = {};
@@ -163,9 +174,9 @@ export class PlantDataDTO {
       }
     }
 
-    return {
+    return new PlantDataDTO({
       howToGrow,
       faq: data.faq,
-    };
+    });
   }
 }

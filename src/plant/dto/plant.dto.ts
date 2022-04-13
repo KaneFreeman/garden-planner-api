@@ -1,7 +1,7 @@
 import { CommentDto } from '../../common/dto/comment.dto';
 import { PictureDataDto } from '../../common/dto/picture-data.dto';
 
-export class PlantDTO {
+export interface PlantDTO {
   readonly name: string;
   readonly type?: string | null;
   readonly url?: string;

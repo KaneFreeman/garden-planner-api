@@ -1,7 +1,7 @@
 import { ContainerType } from '../../interface';
 import { ContainerSlotDTO } from './container-slot.dto';
 
-export class ContainerDTO {
+export interface ContainerDTO {
   readonly name: string;
   readonly type: ContainerType;
   readonly rows: number;

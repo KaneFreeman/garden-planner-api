@@ -1,6 +1,6 @@
 import { TaskType } from '../../interface';
 
-export class CreateTaskDTO {
+export interface CreateTaskDTO {
   readonly text: string;
   readonly type: TaskType;
   readonly start: Date;
