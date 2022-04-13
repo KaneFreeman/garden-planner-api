@@ -15,27 +15,24 @@ export class PlantService {
     return newPlant.save();
   }
 
-  async getPlant(plantId): Promise<PlantDocument> {
-    const plant = await this.plantModel.findById(plantId).exec();
-    return plant;
+  async getPlant(plantId: string): Promise<PlantDocument | null> {
+    return this.plantModel.findById(plantId).exec();
   }
 
   async getPlants(): Promise<PlantDocument[]> {
-    const plants = await this.plantModel.find().exec();
-    return plants;
+    return this.plantModel.find().exec();
   }
 
-  async editPlant(plantId, createPlantDTO: PlantDTO): Promise<PlantDocument> {
-    const editedPlant = await this.plantModel.findByIdAndUpdate(
-      plantId,
-      createPlantDTO,
-      { new: true },
-    );
-    return editedPlant;
+  async editPlant(
+    plantId: string,
+    createPlantDTO: PlantDTO,
+  ): Promise<PlantDocument | null> {
+    return this.plantModel.findByIdAndUpdate(plantId, createPlantDTO, {
+      new: true,
+    });
   }
 
-  async deletePlant(plantId): Promise<PlantDocument> {
-    const deletedPlant = await this.plantModel.findByIdAndRemove(plantId);
-    return deletedPlant;
+  async deletePlant(plantId: string): Promise<PlantDocument | null> {
+    return this.plantModel.findByIdAndRemove(plantId);
   }
 }

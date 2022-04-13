@@ -1,7 +1,7 @@
 export class PictureDataDto {
-  date: string;
-  id: number;
-  pictureId: string;
-  thumbnail: string;
-  deleted: boolean;
+  readonly date: string;
+  readonly id: number;
+  readonly pictureId: string;
+  readonly thumbnail: string;
+  readonly deleted: boolean;
 }

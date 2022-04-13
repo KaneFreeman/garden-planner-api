@@ -3,7 +3,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import subDays from 'date-fns/subDays';
 import { CreateTaskDTO } from './dto/create-task.dto';
-import { Task } from './interfaces/task.interface';
+import { TaskDocument } from './interfaces/task.interface';
 import { ContainerDocument } from '../container/interfaces/container.interface';
 import { BaseSlotDocument } from '../container/interfaces/slot.interface';
 import { ContainerType, PlantData, TaskType } from '../interface';
@@ -15,45 +15,49 @@ import { isValidDate } from '../util/date.util';
 
 @Injectable()
 export class TaskService {
-  constructor(@InjectModel('Task') private readonly taskModel: Model<Task>) {}
+  constructor(
+    @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
+  ) {}
 
-  async addTask(createTaskDTO: CreateTaskDTO): Promise<Task> {
+  async addTask(createTaskDTO: CreateTaskDTO): Promise<TaskDocument> {
     const newTask = await this.taskModel.create(createTaskDTO);
     return newTask.save();
   }
 
-  async getTaskById(taskId: string): Promise<Task> {
-    const task = await this.taskModel.findById(taskId).exec();
-    return task;
+  async getTaskById(taskId: string): Promise<TaskDocument | null> {
+    return await this.taskModel.findById(taskId).exec();
   }
 
-  async getTaskByTypeAndPath(type: TaskType, path: string): Promise<Task> {
-    const task = await this.taskModel.findOne({ type, path }).exec();
-    return task;
+  async getTaskByTypeAndPath(
+    type: TaskType,
+    path: string,
+  ): Promise<TaskDocument | null> {
+    return this.taskModel.findOne({ type, path }).exec();
   }
 
-  async getTasks(): Promise<Task[]> {
-    const tasks = await this.taskModel.find().exec();
-    return tasks;
+  async getTasks(): Promise<TaskDocument[]> {
+    return this.taskModel.find().exec();
   }
 
-  async getTasksByPath(path: string): Promise<Task[]> {
-    const tasks = await this.taskModel.find({ path }).exec();
-    return tasks;
+  async getTasksByPath(path: string): Promise<TaskDocument[]> {
+    return this.taskModel.find({ path }).exec();
   }
 
-  async editTask(taskId: string, createTaskDTO: CreateTaskDTO): Promise<Task> {
-    const editedTask = await this.taskModel.findByIdAndUpdate(
-      taskId,
-      createTaskDTO,
-      { new: true },
-    );
-    return editedTask;
+  async editTask(
+    taskId: string,
+    createTaskDTO: CreateTaskDTO,
+  ): Promise<TaskDocument | null> {
+    return this.taskModel.findByIdAndUpdate(taskId, createTaskDTO, {
+      new: true,
+    });
   }
 
-  async deleteTask(taskId: string): Promise<Task> {
-    const deletedTask = await this.taskModel.findByIdAndRemove(taskId);
-    return deletedTask;
+  async deleteTask(taskId: string): Promise<TaskDocument | null> {
+    return await this.taskModel.findByIdAndRemove(taskId);
+  }
+
+  async deleteTasksByContainer(containerId: string): Promise<void> {
+    await this.taskModel.deleteMany({ containerId }).exec();
   }
 
   getSpringPlantedStartAndDueDate(
@@ -133,17 +137,20 @@ export class TaskService {
     path: string,
     slotTitle: string,
   ) {
+    const task = await this.getTaskByTypeAndPath('Plant', path);
     const dates =
       season === 'spring'
         ? this.getSpringPlantedStartAndDueDate(container.type, data)
         : this.getSpringPlantedStartAndDueDate(container.type, data);
     if (!dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
+      if (task) {
+        await this.deleteTask(task._id);
+      }
       return;
     }
 
     const { start, due } = dates;
 
-    const task = await this.getTaskByTypeAndPath('Plant', path);
     const completedOn =
       slot.status && slot.status !== 'Not Planted'
         ? slot.plantedDate ?? null
@@ -155,6 +162,7 @@ export class TaskService {
         type: 'Plant',
         start,
         due,
+        contaienrId: container._id,
         path,
         completedOn,
       });
@@ -164,6 +172,7 @@ export class TaskService {
         type: task.type,
         start,
         due,
+        contaienrId: container._id,
         path: task.path,
         completedOn,
       });
@@ -178,14 +187,22 @@ export class TaskService {
     path: string,
     slotTitle: string,
   ) {
+    const task = await this.getTaskByTypeAndPath('Transplant', path);
     const dates = this.getTransplantedStartAndDueDate(data, slot.plantedDate);
-    if (!dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
+    if (
+      slot.status === 'Not Planted' ||
+      !dates ||
+      !isValidDate(dates.start) ||
+      !isValidDate(dates.due)
+    ) {
+      if (task) {
+        await this.deleteTask(task._id);
+      }
       return;
     }
 
     const { start, due } = dates;
 
-    const task = await this.getTaskByTypeAndPath('Transplant', path);
     const completedOn =
       slot.status === 'Transplanted' ? slot.plantedDate ?? null : null;
 
@@ -195,6 +212,7 @@ export class TaskService {
         type: 'Transplant',
         start,
         due,
+        contaienrId: container._id,
         path,
         completedOn,
       });
@@ -204,6 +222,7 @@ export class TaskService {
         type: task.type,
         start,
         due,
+        contaienrId: container._id,
         path: task.path,
         completedOn,
       });
@@ -215,6 +234,7 @@ export class TaskService {
     plantedDate?: Date,
   ): { start: Date; due: Date } | undefined {
     if (
+      plantedDate &&
       plant.daysToMaturity !== undefined &&
       plant.daysToMaturity.length > 0 &&
       plant.daysToMaturity[0] !== undefined
@@ -247,14 +267,23 @@ export class TaskService {
     path: string,
     slotTitle: string,
   ) {
+    const task = await this.getTaskByTypeAndPath('Harvest', path);
+
     const dates = this.getHarvestStartAndDueDate(plant, slot.plantedDate);
-    if (!dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
+    if (
+      slot.status === 'Not Planted' ||
+      !dates ||
+      !isValidDate(dates.start) ||
+      !isValidDate(dates.due)
+    ) {
+      if (task) {
+        await this.deleteTask(task._id);
+      }
       return;
     }
 
     const { start, due } = dates;
 
-    const task = await this.getTaskByTypeAndPath('Harvest', path);
     const completedOn =
       slot.status === 'Harvested' ? slot.plantedDate ?? null : null;
 
@@ -264,6 +293,7 @@ export class TaskService {
         type: 'Harvest',
         start,
         due,
+        contaienrId: container._id,
         path,
         completedOn,
       });
@@ -273,6 +303,7 @@ export class TaskService {
         type: task.type,
         start,
         due,
+        contaienrId: container._id,
         path: task.path,
         completedOn,
       });

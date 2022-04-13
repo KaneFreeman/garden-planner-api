@@ -26,34 +26,39 @@ export class ContainerService {
     return newContainer.save();
   }
 
-  async getContainer(containerId): Promise<ContainerDocument> {
-    const container = await this.containerModel.findById(containerId).exec();
-    return container;
+  async getContainer(containerId: string): Promise<ContainerDocument | null> {
+    return this.containerModel.findById(containerId).exec();
   }
 
   async getContainers(): Promise<ContainerDocument[]> {
-    const containers = await this.containerModel.find().exec();
-    return containers;
+    return this.containerModel.find().exec();
   }
 
   async editContainer(
-    containerId,
+    containerId: string,
     createContainerDTO: ContainerDTO,
-  ): Promise<ContainerDocument> {
+  ): Promise<ContainerDocument | null> {
     const editedContainer = await this.containerModel.findByIdAndUpdate(
       containerId,
       createContainerDTO,
       { new: true },
     );
-    await this.createUpdatePlantTasks(editedContainer);
-    await this.updateTransplants(editedContainer);
+
+    if (editedContainer) {
+      await this.createUpdatePlantTasks(editedContainer);
+      await this.updateTransplants(editedContainer);
+    }
+
     return editedContainer;
   }
 
-  async deleteContainer(containerId): Promise<ContainerDocument> {
+  async deleteContainer(
+    containerId: string,
+  ): Promise<ContainerDocument | null> {
     const deletedContainer = await this.containerModel.findByIdAndRemove(
       containerId,
     );
+    await this.taskService.deleteTasksByContainer(containerId);
     return deletedContainer;
   }
 
@@ -83,8 +88,8 @@ export class ContainerService {
       if (otherContainer.slots && otherContainer.slots.has(transplantedTo)) {
         const otherSlot = otherContainer.slots.get(transplantedTo);
         if (
-          otherSlot.status !== 'Not Planted' ||
-          otherSlot.plant !== slot.plant
+          otherSlot?.status !== 'Not Planted' ||
+          otherSlot?.plant !== slot.plant
         ) {
           continue;
         }
@@ -98,7 +103,7 @@ export class ContainerService {
         newSlot.status = 'Planted';
       } else {
         newSlot = { ...slot.toObject<Slot>() };
-        delete newSlot.transplantedTo;
+        newSlot.transplantedTo = null;
         newSlot.transplantedFrom = {
           containerId: container._id,
           slotId: +slotIndex,
@@ -118,7 +123,9 @@ export class ContainerService {
         { new: true },
       );
 
-      await this.createUpdatePlantTasks(editedContainer);
+      if (editedContainer) {
+        await this.createUpdatePlantTasks(editedContainer);
+      }
     }
   }
 

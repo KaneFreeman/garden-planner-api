@@ -13,6 +13,7 @@ import {
 import { ContainerService } from './container.service';
 import { ContainerDTO } from './dto/container.dto';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
+import { Response } from 'express';
 
 @Controller('/api/container')
 export class ContainerController {
@@ -20,7 +21,10 @@ export class ContainerController {
 
   // Submit a container
   @Post('')
-  async addContainer(@Res() res, @Body() createContainerDTO: ContainerDTO) {
+  async addContainer(
+    @Res() res: Response,
+    @Body() createContainerDTO: ContainerDTO,
+  ) {
     const newContainer = await this.containerService.addContainer(
       createContainerDTO,
     );
@@ -30,8 +34,8 @@ export class ContainerController {
   // Fetch a particular container using ID
   @Get('/:containerId')
   async getContainer(
-    @Res() res,
-    @Param('containerId', new ValidateObjectId()) containerId,
+    @Res() res: Response,
+    @Param('containerId', new ValidateObjectId()) containerId: string,
   ) {
     const container = await this.containerService.getContainer(containerId);
     if (!container) {
@@ -42,7 +46,7 @@ export class ContainerController {
 
   // Fetch all containers
   @Get('')
-  async getContainers(@Res() res) {
+  async getContainers(@Res() res: Response) {
     const containers = await this.containerService.getContainers();
     return res.status(HttpStatus.OK).json(containers);
   }
@@ -50,8 +54,8 @@ export class ContainerController {
   // Edit a particular container using ID
   @Put('/:containerId')
   async editContainer(
-    @Res() res,
-    @Param('containerId', new ValidateObjectId()) containerId,
+    @Res() res: Response,
+    @Param('containerId', new ValidateObjectId()) containerId: string,
     @Body() createContainerDTO: ContainerDTO,
   ) {
     const editedContainer = await this.containerService.editContainer(
@@ -67,8 +71,8 @@ export class ContainerController {
   // Delete a container using ID
   @Delete('/:containerId')
   async deleteContainer(
-    @Res() res,
-    @Param('containerId', new ValidateObjectId()) containerId,
+    @Res() res: Response,
+    @Param('containerId', new ValidateObjectId()) containerId: string,
   ) {
     const deletedContainer = await this.containerService.deleteContainer(
       containerId,

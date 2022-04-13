@@ -1,4 +1,4 @@
 export class CommentDto {
-  date: string;
-  text: string;
+  readonly date: string;
+  readonly text: string;
 }

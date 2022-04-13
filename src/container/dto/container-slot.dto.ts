@@ -3,7 +3,7 @@ import { PictureDataDto } from '../../common/dto/picture-data.dto';
 import { ContainerSlotIdentifier } from '../../interface';
 
 export class BaseContainerSlotDTO {
-  readonly plant?: string;
+  readonly plant?: string | null;
   readonly status?: string;
   readonly plantedCount?: number;
   readonly plantedDate?: string;

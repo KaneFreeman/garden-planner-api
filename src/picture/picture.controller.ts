@@ -9,6 +9,7 @@ import {
   Body,
   Delete,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { PictureService } from './picture.service';
 import { PictureDTO } from './dto/picture.dto';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
@@ -19,7 +20,7 @@ export class PictureController {
 
   // Submit a picture
   @Post('')
-  async addPicture(@Res() res, @Body() createPictureDTO: PictureDTO) {
+  async addPicture(@Res() res: Response, @Body() createPictureDTO: PictureDTO) {
     const newPicture = await this.pictureService.addPicture(createPictureDTO);
     return res.status(HttpStatus.OK).json(newPicture);
   }
@@ -27,8 +28,8 @@ export class PictureController {
   // Fetch a particular picture using ID
   @Get('/:pictureId')
   async getPicture(
-    @Res() res,
-    @Param('pictureId', new ValidateObjectId()) pictureId,
+    @Res() res: Response,
+    @Param('pictureId', new ValidateObjectId()) pictureId: string,
   ) {
     const picture = await this.pictureService.getPicture(pictureId);
     if (!picture) {
@@ -40,8 +41,8 @@ export class PictureController {
   // Delete a picture using ID
   @Delete('/:pictureId')
   async deletePicture(
-    @Res() res,
-    @Param('pictureId', new ValidateObjectId()) pictureId,
+    @Res() res: Response,
+    @Param('pictureId', new ValidateObjectId()) pictureId: string,
   ) {
     const deletedPicture = await this.pictureService.deletePicture(pictureId);
     if (!deletedPicture) {

@@ -15,13 +15,11 @@ export class PictureService {
     return newPicture.save();
   }
 
-  async getPicture(pictureId): Promise<Picture> {
-    const picture = await this.pictureModel.findById(pictureId).exec();
-    return picture;
+  async getPicture(pictureId: string): Promise<Picture | null> {
+    return this.pictureModel.findById(pictureId).exec();
   }
 
-  async deletePicture(pictureId): Promise<Picture> {
-    const deletedPicture = await this.pictureModel.findByIdAndRemove(pictureId);
-    return deletedPicture;
+  async deletePicture(pictureId: string): Promise<Picture | null> {
+    return this.pictureModel.findByIdAndRemove(pictureId);
   }
 }

@@ -5,6 +5,7 @@ export class CreateTaskDTO {
   readonly type: TaskType;
   readonly start: Date;
   readonly due: Date;
+  readonly contaienrId: string;
   readonly path: string | null;
   readonly completedOn: Date | null;
 }

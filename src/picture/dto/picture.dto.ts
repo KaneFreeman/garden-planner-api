@@ -1,3 +1,3 @@
 export class PictureDTO {
-  dataUrl: string;
+  readonly dataUrl: string;
 }

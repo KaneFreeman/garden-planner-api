@@ -259,7 +259,7 @@ export const PLANT_TYPES: PlantType[] = [
 export interface Plant {
   _id: string;
   name: string;
-  type?: PlantType;
+  type?: PlantType | null;
   url?: string;
   daysToMaturity?: [number | undefined, number | undefined];
   pictures?: PictureData[];
@@ -288,7 +288,7 @@ export interface ContainerSlotIdentifier {
 }
 
 interface BaseSlot {
-  plant?: string;
+  plant?: string | null;
   status?: Status;
   plantedCount?: number;
   plantedDate?: Date;

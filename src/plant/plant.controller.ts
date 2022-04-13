@@ -10,6 +10,7 @@ import {
   Put,
   Delete,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { PlantService } from './plant.service';
 import { PlantDTO } from './dto/plant.dto';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
@@ -20,7 +21,7 @@ export class PlantController {
 
   // Submit a plant
   @Post('')
-  async addPlant(@Res() res, @Body() createPlantDTO: PlantDTO) {
+  async addPlant(@Res() res: Response, @Body() createPlantDTO: PlantDTO) {
     const newPlant = await this.plantService.addPlant(createPlantDTO);
     return res.status(HttpStatus.OK).json(newPlant);
   }
@@ -28,8 +29,8 @@ export class PlantController {
   // Fetch a particular plant using ID
   @Get('/:plantId')
   async getPlant(
-    @Res() res,
-    @Param('plantId', new ValidateObjectId()) plantId,
+    @Res() res: Response,
+    @Param('plantId', new ValidateObjectId()) plantId: string,
   ) {
     const plant = await this.plantService.getPlant(plantId);
     if (!plant) {
@@ -40,7 +41,7 @@ export class PlantController {
 
   // Fetch all plants
   @Get('')
-  async getPlants(@Res() res) {
+  async getPlants(@Res() res: Response) {
     const plants = await this.plantService.getPlants();
     return res.status(HttpStatus.OK).json(plants);
   }
@@ -48,8 +49,8 @@ export class PlantController {
   // Edit a particular plant using ID
   @Put('/:plantId')
   async editPlant(
-    @Res() res,
-    @Param('plantId', new ValidateObjectId()) plantId,
+    @Res() res: Response,
+    @Param('plantId', new ValidateObjectId()) plantId: string,
     @Body() createPlantDTO: PlantDTO,
   ) {
     const editedPlant = await this.plantService.editPlant(
@@ -65,8 +66,8 @@ export class PlantController {
   // Delete a plant using ID
   @Delete('/:plantId')
   async deletePlant(
-    @Res() res,
-    @Param('plantId', new ValidateObjectId()) plantId,
+    @Res() res: Response,
+    @Param('plantId', new ValidateObjectId()) plantId: string,
   ) {
     const deletedPlant = await this.plantService.deletePlant(plantId);
     if (!deletedPlant) {

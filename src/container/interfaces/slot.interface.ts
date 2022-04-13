@@ -5,7 +5,7 @@ import { Status } from '../../interface';
 import { ContainerSlotIdentifier } from './container-slot-identifier.interface';
 
 export interface BaseSlotDocument extends Document {
-  readonly plant?: string;
+  readonly plant?: string | null;
   readonly status?: Status;
   readonly plantedCount?: number;
   readonly plantedDate?: Date;

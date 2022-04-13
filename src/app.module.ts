@@ -18,9 +18,13 @@ const env = process.env.NODE_ENV || 'production';
         env === 'production' ? '.env.production' : '.env.development',
       ],
     }),
-    MongooseModule.forRoot(process.env.MONGO_URL, {
-      useNewUrlParser: true,
-    }),
+    MongooseModule.forRoot(
+      process.env.MONGO_URL ??
+        'mongodb://localhost:27017/garden-planner-development',
+      {
+        useNewUrlParser: true,
+      },
+    ),
     PlantModule,
     TaskModule,
     ContainerModule,
