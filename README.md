@@ -3,10 +3,10 @@
 </p>
 
 <p align=center>
-  <a href="https://github.com/KaneFreeman/garden-planner-api/actions/workflows/build.yml"><img src="https://github.com/KaneFreeman/garden-planner-api/actions/workflows/build.yml/badge.svg?branch=main" /></a>
+  <a href="https://github.com/KaneFreeman/garden-planner-api/actions/workflows/build.yml"><img src="https://github.com/kanefreeman/garden-planner-api/workflows/Build/badge.svg?branch=main" /></a>
 </p>
 
-## Description
+# Garden Planner API
 
 Server API for [Garden Planner](https://github.com/KaneFreeman/garden-planner).
 
