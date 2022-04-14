@@ -1,16 +1,3 @@
-export interface PictureData {
-  date: Date;
-  id: number;
-  pictureId: string;
-  thumbnail: string;
-  deleted?: boolean;
-}
-
-export interface Comment {
-  date: Date;
-  text: string;
-}
-
 export const ARTICHOKE = 'Artichoke';
 export const ARUGULA = 'Arugula';
 export const ASPARAGUS = 'Asparagus';
@@ -256,16 +243,6 @@ export const PLANT_TYPES: PlantType[] = [
   SUNFLOWER,
 ];
 
-export interface Plant {
-  _id: string;
-  name: string;
-  type?: PlantType | null;
-  url?: string;
-  daysToMaturity?: [number | undefined, number | undefined];
-  pictures?: PictureData[];
-  comments?: Comment[];
-}
-
 export const NOT_PLANTED = 'Not Planted';
 export const PLANTED = 'Planted';
 export const TRANSPLANTED = 'Transplanted';
@@ -282,27 +259,6 @@ export const STATUSES: Status[] = [
   HARVESTED,
 ];
 
-export interface ContainerSlotIdentifier {
-  containerId: string;
-  slotId: number;
-}
-
-interface BaseSlot {
-  plant?: string | null;
-  status?: Status;
-  plantedCount?: number;
-  plantedDate?: Date;
-  transplantedDate?: Date;
-  transplantedTo: ContainerSlotIdentifier | null;
-  transplantedFrom: ContainerSlotIdentifier | null;
-  comments?: Comment[];
-  pictures?: PictureData[];
-}
-
-export interface Slot extends BaseSlot {
-  subSlot?: BaseSlot;
-}
-
 export const CONTAINER_TYPE_INSIDE = 'Inside';
 export const CONTAINER_TYPE_OUTSIDE = 'Outside';
 export type ContainerType =
@@ -312,20 +268,6 @@ export const CONTAINER_TYPES: ContainerType[] = [
   CONTAINER_TYPE_INSIDE,
   CONTAINER_TYPE_OUTSIDE,
 ];
-
-export interface Container {
-  _id: string;
-  name: string;
-  type: ContainerType;
-  rows: number;
-  columns: number;
-  slots?: Record<number, Slot>;
-}
-
-export interface Picture {
-  _id: number;
-  dataUrl: string;
-}
 
 export const PLANT = 'Plant';
 export const TRANSPLANT = 'Transplant';
@@ -337,16 +279,6 @@ export type TaskType =
   | typeof HARVEST
   | typeof CUSTOM;
 export const TASK_TYPES: TaskType[] = [PLANT, TRANSPLANT, HARVEST, CUSTOM];
-
-export interface Task {
-  _id: string;
-  text: string;
-  type: TaskType;
-  start: Date;
-  due: Date;
-  path: string | null;
-  completedOn: Date | null;
-}
 
 export interface GrowDates {
   indoor?: {
@@ -379,4 +311,41 @@ export interface GrowingZoneData {
   zone: string;
   lastFrost: Date;
   firstFrost: Date;
+}
+
+export interface PictureData {
+  date: Date;
+  id: number;
+  pictureId: string;
+  thumbnail: string;
+  deleted?: boolean;
+}
+
+export interface PictureDataDTO {
+  date: string;
+  id: number;
+  pictureId: string;
+  thumbnail: string;
+  deleted?: boolean;
+}
+
+export interface ContainerSlotIdentifier {
+  containerId: string;
+  slotId: number;
+}
+
+export interface BaseSlot {
+  plant?: string | null;
+  status?: Status;
+  plantedCount?: number;
+  plantedDate?: Date;
+  transplantedDate?: Date;
+  transplantedTo: ContainerSlotIdentifier | null;
+  transplantedFrom: ContainerSlotIdentifier | null;
+  comments?: Comment[];
+  pictures?: PictureData[];
+}
+
+export interface Slot extends BaseSlot {
+  subSlot?: BaseSlot;
 }

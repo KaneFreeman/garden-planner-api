@@ -162,7 +162,7 @@ export class TaskService {
         type: 'Plant',
         start,
         due,
-        contaienrId: container._id,
+        containerId: container._id,
         path,
         completedOn,
       });
@@ -172,7 +172,7 @@ export class TaskService {
         type: task.type,
         start,
         due,
-        contaienrId: container._id,
+        containerId: container._id,
         path: task.path,
         completedOn,
       });
@@ -212,7 +212,7 @@ export class TaskService {
         type: 'Transplant',
         start,
         due,
-        contaienrId: container._id,
+        containerId: container._id,
         path,
         completedOn,
       });
@@ -222,7 +222,7 @@ export class TaskService {
         type: task.type,
         start,
         due,
-        contaienrId: container._id,
+        containerId: container._id,
         path: task.path,
         completedOn,
       });
@@ -293,7 +293,7 @@ export class TaskService {
         type: 'Harvest',
         start,
         due,
-        contaienrId: container._id,
+        containerId: container._id,
         path,
         completedOn,
       });
@@ -303,7 +303,7 @@ export class TaskService {
         type: task.type,
         start,
         due,
-        contaienrId: container._id,
+        containerId: container._id,
         path: task.path,
         completedOn,
       });
