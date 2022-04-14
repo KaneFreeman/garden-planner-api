@@ -31,7 +31,7 @@
     "dotenv": "16.0.0",
     "express-jwt": "6.1.1",
     "jwks-rsa": "2.0.5",
-    "mongoose": "6.2.10",
+    "mongoose": "6.2.11",
     "reflect-metadata": "0.1.13",
     "rimraf": "3.0.2",
     "rxjs": "7.5.5",
