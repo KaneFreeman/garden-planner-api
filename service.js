@@ -6,10 +6,10 @@ var svc = new Service({
   description: 'NestJS API for Garden Planner application',
   script: require('path').join(__dirname, 'dist-prod', 'src', 'main.js'),
   env: {
-    name: "NODE_ENV",
-    value: "production"
+    name: 'NODE_ENV',
+    value: 'production'
   },
-  nodeOptions: ['--harmony', '--max_old_space_size=4096'],
+  nodeOptions: ['--harmony', '--max_old_space_size=4096']
   //, workingDirectory: '...'
   //, allowServiceLogon: true
 });

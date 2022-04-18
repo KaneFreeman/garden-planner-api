@@ -10,14 +10,13 @@ import { ContainerType, PlantData, TaskType } from '../interface';
 import { PlantDocument } from '../plant/interfaces/plant.interface';
 import growingZoneData from '../data/growingZoneData';
 import addDays from 'date-fns/addDays';
-import { TWO_WEEKS } from '../constants';
+import { ONE_WEEK, TWO_WEEKS } from '../constants';
 import { isValidDate } from '../util/date.util';
+import ordinalSuffixOf from '../util/number.util';
 
 @Injectable()
 export class TaskService {
-  constructor(
-    @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
-  ) {}
+  constructor(@InjectModel('Task') private readonly taskModel: Model<TaskDocument>) {}
 
   async addTask(createTaskDTO: CreateTaskDTO): Promise<TaskDocument> {
     const newTask = await this.taskModel.create(createTaskDTO);
@@ -28,11 +27,12 @@ export class TaskService {
     return await this.taskModel.findById(taskId).exec();
   }
 
-  async getTaskByTypeAndPath(
-    type: TaskType,
-    path: string,
-  ): Promise<TaskDocument | null> {
+  async getTaskByTypeAndPath(type: TaskType, path: string): Promise<TaskDocument | null> {
     return this.taskModel.findOne({ type, path }).exec();
+  }
+
+  async getTasksByTypeAndPath(type: TaskType, path: string): Promise<TaskDocument[]> {
+    return this.taskModel.find({ type, path }).exec();
   }
 
   async getTasks(): Promise<TaskDocument[]> {
@@ -43,12 +43,9 @@ export class TaskService {
     return this.taskModel.find({ path }).exec();
   }
 
-  async editTask(
-    taskId: string,
-    createTaskDTO: CreateTaskDTO,
-  ): Promise<TaskDocument | null> {
+  async editTask(taskId: string, createTaskDTO: CreateTaskDTO): Promise<TaskDocument | null> {
     return this.taskModel.findByIdAndUpdate(taskId, createTaskDTO, {
-      new: true,
+      new: true
     });
   }
 
@@ -60,33 +57,23 @@ export class TaskService {
     await this.taskModel.deleteMany({ containerId }).exec();
   }
 
-  getSpringPlantedStartAndDueDate(
+  getPlantedStartAndDueDate(
+    season: 'spring' | 'fall',
     type: ContainerType,
-    data: PlantData,
+    data: PlantData
   ): { start: Date; due: Date } | undefined {
-    if (type === 'Inside' && data.howToGrow.spring?.indoor) {
+    const howToGrowData = data.howToGrow[season];
+    if (type === 'Inside' && howToGrowData?.indoor) {
       return {
-        start: subDays(
-          growingZoneData.lastFrost,
-          data.howToGrow.spring.indoor.min,
-        ),
-        due: subDays(
-          growingZoneData.lastFrost,
-          data.howToGrow.spring.indoor.max,
-        ),
+        start: subDays(growingZoneData.lastFrost, howToGrowData.indoor.min),
+        due: subDays(growingZoneData.lastFrost, howToGrowData.indoor.max)
       };
     }
 
-    if (type === 'Outside' && data.howToGrow.spring?.outdoor) {
+    if (type === 'Outside' && howToGrowData?.outdoor) {
       return {
-        start: subDays(
-          growingZoneData.lastFrost,
-          data.howToGrow.spring.outdoor.min,
-        ),
-        due: subDays(
-          growingZoneData.lastFrost,
-          data.howToGrow.spring.outdoor.max,
-        ),
+        start: subDays(growingZoneData.lastFrost, howToGrowData.outdoor.min),
+        due: subDays(growingZoneData.lastFrost, howToGrowData.outdoor.max)
       };
     }
 
@@ -94,34 +81,22 @@ export class TaskService {
   }
 
   getTransplantedStartAndDueDate(
+    season: 'spring' | 'fall',
     data: PlantData,
-    plantedDate?: Date,
+    plantedDate: Date | undefined
   ): { start: Date; due: Date } | undefined {
-    if (data.howToGrow.spring?.indoor) {
+    const howToGrowData = data.howToGrow[season];
+    if (howToGrowData?.indoor) {
       if (plantedDate) {
         return {
-          start: addDays(
-            plantedDate,
-            data.howToGrow.spring.indoor.transplant_min,
-          ),
-          due: addDays(
-            plantedDate,
-            data.howToGrow.spring.indoor.transplant_max,
-          ),
+          start: addDays(plantedDate, howToGrowData.indoor.transplant_min),
+          due: addDays(plantedDate, howToGrowData.indoor.transplant_max)
         };
       }
 
       return {
-        start: subDays(
-          growingZoneData.lastFrost,
-          data.howToGrow.spring.indoor.min -
-            data.howToGrow.spring.indoor.transplant_min,
-        ),
-        due: subDays(
-          growingZoneData.lastFrost,
-          data.howToGrow.spring.indoor.max -
-            data.howToGrow.spring.indoor.transplant_max,
-        ),
+        start: subDays(growingZoneData.lastFrost, howToGrowData.indoor.min - howToGrowData.indoor.transplant_min),
+        due: subDays(growingZoneData.lastFrost, howToGrowData.indoor.max - howToGrowData.indoor.transplant_max)
       };
     }
 
@@ -135,65 +110,15 @@ export class TaskService {
     plant: PlantDocument,
     data: PlantData,
     path: string,
-    slotTitle: string,
+    slotTitle: string
   ) {
     const task = await this.getTaskByTypeAndPath('Plant', path);
-    const dates =
-      season === 'spring'
-        ? this.getSpringPlantedStartAndDueDate(container.type, data)
-        : this.getSpringPlantedStartAndDueDate(container.type, data);
-    if (!dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
-      if (task) {
-        await this.deleteTask(task._id);
-      }
-      return;
-    }
-
-    const { start, due } = dates;
-
-    const completedOn =
-      slot.status && slot.status !== 'Not Planted'
-        ? slot.plantedDate ?? null
-        : null;
-
-    if (!task) {
-      await this.addTask({
-        text: `Plant ${plant.name} in ${container.name} at ${slotTitle}`,
-        type: 'Plant',
-        start,
-        due,
-        containerId: container._id,
-        path,
-        completedOn,
-      });
-    } else {
-      await this.editTask(task._id, {
-        text: `Plant ${plant.name} in ${container.name} at ${slotTitle}`,
-        type: task.type,
-        start,
-        due,
-        containerId: container._id,
-        path: task.path,
-        completedOn,
-      });
-    }
-  }
-
-  async createUpdateTransplantedTask(
-    container: ContainerDocument,
-    slot: BaseSlotDocument,
-    plant: PlantDocument,
-    data: PlantData,
-    path: string,
-    slotTitle: string,
-  ) {
-    const task = await this.getTaskByTypeAndPath('Transplant', path);
-    const dates = this.getTransplantedStartAndDueDate(data, slot.plantedDate);
+    const dates = this.getPlantedStartAndDueDate(season, container.type, data);
     if (
-      slot.status === 'Not Planted' ||
       !dates ||
       !isValidDate(dates.start) ||
-      !isValidDate(dates.due)
+      !isValidDate(dates.due) ||
+      (container.type === 'Outside' && slot.startedFrom === 'Transplant')
     ) {
       if (task) {
         await this.deleteTask(task._id);
@@ -203,8 +128,52 @@ export class TaskService {
 
     const { start, due } = dates;
 
-    const completedOn =
-      slot.status === 'Transplanted' ? slot.plantedDate ?? null : null;
+    const completedOn = slot.status && slot.status !== 'Not Planted' ? slot.plantedDate ?? null : null;
+
+    if (!task) {
+      await this.addTask({
+        text: `Plant ${plant.name} in ${container.name} at ${slotTitle}`,
+        type: 'Plant',
+        start,
+        due,
+        containerId: container._id,
+        path,
+        completedOn
+      });
+    } else {
+      await this.editTask(task._id, {
+        text: `Plant ${plant.name} in ${container.name} at ${slotTitle}`,
+        type: task.type,
+        start,
+        due,
+        containerId: container._id,
+        path: task.path,
+        completedOn
+      });
+    }
+  }
+
+  async createUpdateTransplantedTask(
+    season: 'spring' | 'fall',
+    container: ContainerDocument,
+    slot: BaseSlotDocument,
+    plant: PlantDocument,
+    data: PlantData,
+    path: string,
+    slotTitle: string
+  ) {
+    const task = await this.getTaskByTypeAndPath('Transplant', path);
+    const dates = this.getTransplantedStartAndDueDate(season, data, slot.plantedDate);
+    if (slot.status === 'Not Planted' || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
+      if (task) {
+        await this.deleteTask(task._id);
+      }
+      return;
+    }
+
+    const { start, due } = dates;
+
+    const completedOn = slot.status === 'Transplanted' ? slot.plantedDate ?? null : null;
 
     if (!task) {
       await this.addTask({
@@ -214,7 +183,7 @@ export class TaskService {
         due,
         containerId: container._id,
         path,
-        completedOn,
+        completedOn
       });
     } else {
       await this.editTask(task._id, {
@@ -224,14 +193,14 @@ export class TaskService {
         due,
         containerId: container._id,
         path: task.path,
-        completedOn,
+        completedOn
       });
     }
   }
 
   getHarvestStartAndDueDate(
     plant: PlantDocument,
-    plantedDate?: Date,
+    plantedDate: Date | undefined
   ): { start: Date; due: Date } | undefined {
     if (
       plantedDate &&
@@ -247,13 +216,13 @@ export class TaskService {
       ) {
         return {
           start: addDays(plantedDate, plant.daysToMaturity[0]),
-          due: addDays(plantedDate, plant.daysToMaturity[1]),
+          due: addDays(plantedDate, plant.daysToMaturity[1])
         };
       }
 
       return {
         start: addDays(plantedDate, plant.daysToMaturity[0]),
-        due: addDays(addDays(plantedDate, plant.daysToMaturity[0]), TWO_WEEKS),
+        due: addDays(addDays(plantedDate, plant.daysToMaturity[0]), TWO_WEEKS)
       };
     }
 
@@ -265,17 +234,12 @@ export class TaskService {
     slot: BaseSlotDocument,
     plant: PlantDocument,
     path: string,
-    slotTitle: string,
+    slotTitle: string
   ) {
     const task = await this.getTaskByTypeAndPath('Harvest', path);
 
     const dates = this.getHarvestStartAndDueDate(plant, slot.plantedDate);
-    if (
-      slot.status === 'Not Planted' ||
-      !dates ||
-      !isValidDate(dates.start) ||
-      !isValidDate(dates.due)
-    ) {
+    if (slot.status === 'Not Planted' || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
       if (task) {
         await this.deleteTask(task._id);
       }
@@ -284,8 +248,7 @@ export class TaskService {
 
     const { start, due } = dates;
 
-    const completedOn =
-      slot.status === 'Harvested' ? slot.plantedDate ?? null : null;
+    const completedOn = slot.status === 'Harvested' ? slot.plantedDate ?? null : null;
 
     if (!task) {
       await this.addTask({
@@ -295,7 +258,7 @@ export class TaskService {
         due,
         containerId: container._id,
         path,
-        completedOn,
+        completedOn
       });
     } else {
       await this.editTask(task._id, {
@@ -305,8 +268,114 @@ export class TaskService {
         due,
         containerId: container._id,
         path: task.path,
-        completedOn,
+        completedOn
       });
+    }
+  }
+
+  getFertilizeStartAndDueDate(
+    plantedDate: Date | undefined,
+    fertilizeDelay: number
+  ): { start: Date; due: Date } | undefined {
+    if (plantedDate) {
+      return {
+        start: addDays(plantedDate, fertilizeDelay),
+        due: addDays(addDays(plantedDate, fertilizeDelay), ONE_WEEK)
+      };
+    }
+
+    return undefined;
+  }
+
+  async createUpdateIndoorFertilzeTasksTask(
+    season: 'spring' | 'fall',
+    container: ContainerDocument,
+    slot: BaseSlotDocument,
+    plant: PlantDocument,
+    data: PlantData,
+    path: string,
+    slotTitle: string
+  ) {
+    const tasks = await this.getTasksByTypeAndPath('Fertilize', path);
+    const taskTexts: string[] = [];
+    const tasksByText = tasks.reduce((byText, task) => {
+      byText[task.text] = task;
+      return byText;
+    }, {} as Record<string, TaskDocument>);
+
+    const howToGrowData = data.howToGrow[season];
+    const fertilizeData = container.type === 'Inside' ? howToGrowData?.indoor?.fertilize : howToGrowData?.fertilize;
+
+    if (fertilizeData === undefined) {
+      if (tasks.length > 0) {
+        for (const task of tasks) {
+          await this.deleteTask(task._id);
+        }
+      }
+      if (path === '/container/624c6a31f07a1abe49d5ee21/slot/43') {
+        console.log('No fertilizing');
+      }
+      return;
+    }
+
+    let i = 0;
+    for (const fertilizeDelay of fertilizeData) {
+      i += 1;
+      if (path === '/container/624c6a31f07a1abe49d5ee21/slot/43') {
+        console.log('fertilizeDelay', i, fertilizeDelay);
+      }
+      const dates = this.getFertilizeStartAndDueDate(slot.plantedDate, fertilizeDelay);
+      if (slot.status === 'Not Planted' || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
+        continue;
+      }
+      if (path === '/container/624c6a31f07a1abe49d5ee21/slot/43') {
+        console.log('dates', dates);
+      }
+
+      const { start, due } = dates;
+
+      let text: string;
+      if (fertilizeData.length > 1) {
+        text = `Fertilize (${ordinalSuffixOf(i)} time) ${plant.name} in ${container.name} at ${slotTitle}`;
+      } else {
+        text = `Fertilize ${plant.name} in ${container.name} at ${slotTitle}`;
+      }
+      if (path === '/container/624c6a31f07a1abe49d5ee21/slot/43') {
+        console.log('text', text);
+      }
+
+      const task = tasksByText[text];
+      taskTexts.push(text);
+      if (!task) {
+        await this.addTask({
+          text,
+          type: 'Fertilize',
+          start,
+          due,
+          containerId: container._id,
+          path,
+          completedOn: null
+        });
+        if (path === '/container/624c6a31f07a1abe49d5ee21/slot/43') {
+          console.log('creating task', {
+            text,
+            type: 'Fertilize',
+            start,
+            due,
+            containerId: container._id,
+            path,
+            completedOn: null
+          });
+        }
+      }
+    }
+
+    for (const task of tasks) {
+      if (taskTexts.includes(task.text)) {
+        continue;
+      }
+
+      await this.deleteTask(task._id);
     }
   }
 }

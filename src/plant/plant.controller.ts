@@ -1,15 +1,4 @@
-import {
-  Controller,
-  Get,
-  Res,
-  HttpStatus,
-  Param,
-  NotFoundException,
-  Post,
-  Body,
-  Put,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Res, HttpStatus, Param, NotFoundException, Post, Body, Put, Delete } from '@nestjs/common';
 import { Response } from 'express';
 import { PlantService } from './plant.service';
 import { PlantDTO } from './dto/plant.dto';
@@ -28,10 +17,7 @@ export class PlantController {
 
   // Fetch a particular plant using ID
   @Get('/:plantId')
-  async getPlant(
-    @Res() res: Response,
-    @Param('plantId', new ValidateObjectId()) plantId: string,
-  ) {
+  async getPlant(@Res() res: Response, @Param('plantId', new ValidateObjectId()) plantId: string) {
     const plant = await this.plantService.getPlant(plantId);
     if (!plant) {
       throw new NotFoundException('Plant does not exist!');
@@ -51,12 +37,9 @@ export class PlantController {
   async editPlant(
     @Res() res: Response,
     @Param('plantId', new ValidateObjectId()) plantId: string,
-    @Body() createPlantDTO: PlantDTO,
+    @Body() createPlantDTO: PlantDTO
   ) {
-    const editedPlant = await this.plantService.editPlant(
-      plantId,
-      createPlantDTO,
-    );
+    const editedPlant = await this.plantService.editPlant(plantId, createPlantDTO);
     if (!editedPlant) {
       throw new NotFoundException('Plant does not exist!');
     }
@@ -65,10 +48,7 @@ export class PlantController {
 
   // Delete a plant using ID
   @Delete('/:plantId')
-  async deletePlant(
-    @Res() res: Response,
-    @Param('plantId', new ValidateObjectId()) plantId: string,
-  ) {
+  async deletePlant(@Res() res: Response, @Param('plantId', new ValidateObjectId()) plantId: string) {
     const deletedPlant = await this.plantService.deletePlant(plantId);
     if (!deletedPlant) {
       throw new NotFoundException('Plant does not exist!');

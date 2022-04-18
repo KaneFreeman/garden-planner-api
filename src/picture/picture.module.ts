@@ -6,11 +6,9 @@ import { PictureSchema } from './schemas/picture.schema';
 import { AuthenticationMiddleware } from '../common/authentication.middleware';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: 'Picture', schema: PictureSchema }]),
-  ],
+  imports: [MongooseModule.forFeature([{ name: 'Picture', schema: PictureSchema }])],
   providers: [PictureService],
-  controllers: [PictureController],
+  controllers: [PictureController]
 })
 export class PictureModule {
   configure(consumer: MiddlewareConsumer): MiddlewareConsumer | void {
@@ -19,7 +17,7 @@ export class PictureModule {
       .forRoutes(
         { method: RequestMethod.GET, path: '/api/picture/:pictureId' },
         { method: RequestMethod.POST, path: '/api/picture' },
-        { method: RequestMethod.DELETE, path: '/api/picture' },
+        { method: RequestMethod.DELETE, path: '/api/picture' }
       );
   }
 }

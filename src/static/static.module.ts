@@ -5,12 +5,10 @@ import { AuthenticationMiddleware } from '../common/authentication.middleware';
 
 @Module({
   providers: [StaticService],
-  controllers: [StaticController],
+  controllers: [StaticController]
 })
 export class StaticModule {
   configure(consumer: MiddlewareConsumer): MiddlewareConsumer | void {
-    consumer
-      .apply(AuthenticationMiddleware)
-      .forRoutes({ method: RequestMethod.GET, path: '/api/static/plantData' });
+    consumer.apply(AuthenticationMiddleware).forRoutes({ method: RequestMethod.GET, path: '/api/static/plantData' });
   }
 }

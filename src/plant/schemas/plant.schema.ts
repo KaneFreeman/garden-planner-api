@@ -8,5 +8,5 @@ export const PlantSchema = new mongoose.Schema({
   url: String,
   daysToMaturity: [Number],
   pictures: [PictureDataSchema],
-  comments: [CommentSchema],
+  comments: [CommentSchema]
 });

@@ -8,6 +8,6 @@ export const ContainerSchema = new mongoose.Schema({
   columns: Number,
   slots: {
     type: Map,
-    of: ContainerSlotSchema,
-  },
+    of: ContainerSlotSchema
+  }
 });

@@ -16,12 +16,10 @@ export class ContainerService {
     @InjectModel('Container')
     private readonly containerModel: Model<ContainerDocument>,
     private plantService: PlantService,
-    private taskService: TaskService,
+    private taskService: TaskService
   ) {}
 
-  async addContainer(
-    createContainerDTO: ContainerDTO,
-  ): Promise<ContainerDocument> {
+  async addContainer(createContainerDTO: ContainerDTO): Promise<ContainerDocument> {
     const newContainer = await this.containerModel.create(createContainerDTO);
     return newContainer.save();
   }
@@ -34,15 +32,8 @@ export class ContainerService {
     return this.containerModel.find().exec();
   }
 
-  async editContainer(
-    containerId: string,
-    createContainerDTO: ContainerDTO,
-  ): Promise<ContainerDocument | null> {
-    const editedContainer = await this.containerModel.findByIdAndUpdate(
-      containerId,
-      createContainerDTO,
-      { new: true },
-    );
+  async editContainer(containerId: string, createContainerDTO: ContainerDTO): Promise<ContainerDocument | null> {
+    const editedContainer = await this.containerModel.findByIdAndUpdate(containerId, createContainerDTO, { new: true });
 
     if (editedContainer) {
       await this.createUpdatePlantTasks(editedContainer);
@@ -52,12 +43,8 @@ export class ContainerService {
     return editedContainer;
   }
 
-  async deleteContainer(
-    containerId: string,
-  ): Promise<ContainerDocument | null> {
-    const deletedContainer = await this.containerModel.findByIdAndRemove(
-      containerId,
-    );
+  async deleteContainer(containerId: string): Promise<ContainerDocument | null> {
+    const deletedContainer = await this.containerModel.findByIdAndRemove(containerId);
     await this.taskService.deleteTasksByContainer(containerId);
     return deletedContainer;
   }
@@ -74,9 +61,7 @@ export class ContainerService {
         continue;
       }
 
-      const otherContainer = await this.getContainer(
-        slot.transplantedTo.containerId,
-      );
+      const otherContainer = await this.getContainer(slot.transplantedTo.containerId);
 
       if (!otherContainer) {
         continue;
@@ -87,17 +72,14 @@ export class ContainerService {
       let newSlot: Slot;
       if (otherContainer.slots && otherContainer.slots.has(transplantedTo)) {
         const otherSlot = otherContainer.slots.get(transplantedTo);
-        if (
-          otherSlot?.status !== 'Not Planted' ||
-          otherSlot?.plant !== slot.plant
-        ) {
+        if (otherSlot?.status !== 'Not Planted' || otherSlot?.plant !== slot.plant) {
           continue;
         }
 
         newSlot = { ...otherSlot.toObject<Slot>() };
         newSlot.transplantedFrom = {
           containerId: container._id,
-          slotId: +slotIndex,
+          slotId: +slotIndex
         };
         newSlot.plantedDate = slot.plantedDate;
         newSlot.status = 'Planted';
@@ -106,7 +88,7 @@ export class ContainerService {
         newSlot.transplantedTo = null;
         newSlot.transplantedFrom = {
           containerId: container._id,
-          slotId: +slotIndex,
+          slotId: +slotIndex
         };
         newSlot.status = 'Planted';
       }
@@ -120,7 +102,7 @@ export class ContainerService {
       const editedContainer = await this.containerModel.findByIdAndUpdate(
         otherContainer._id,
         { slots: newSlots },
-        { new: true },
+        { new: true }
       );
 
       if (editedContainer) {
@@ -133,7 +115,7 @@ export class ContainerService {
     container: ContainerDocument,
     slot: BaseSlotDocument,
     path: string,
-    slotTitle: string,
+    slotTitle: string
   ) {
     if (!slot?.plant) {
       return;
@@ -149,34 +131,15 @@ export class ContainerService {
       return;
     }
 
-    await this.taskService.createUpdatePlantedTask(
-      'spring',
-      container,
-      slot,
-      plant,
-      data,
-      path,
-      slotTitle,
-    );
+    await this.taskService.createUpdatePlantedTask('spring', container, slot, plant, data, path, slotTitle);
 
     if (container.type === 'Inside') {
-      await this.taskService.createUpdateTransplantedTask(
-        container,
-        slot,
-        plant,
-        data,
-        path,
-        slotTitle,
-      );
+      await this.taskService.createUpdateTransplantedTask('spring', container, slot, plant, data, path, slotTitle);
     } else {
-      await this.taskService.createUpdateHarvestTask(
-        container,
-        slot,
-        plant,
-        path,
-        slotTitle,
-      );
+      await this.taskService.createUpdateHarvestTask(container, slot, plant, path, slotTitle);
     }
+
+    await this.taskService.createUpdateIndoorFertilzeTasksTask('spring', container, slot, plant, data, path, slotTitle);
   }
 
   async createUpdatePlantTasks(container: ContainerDocument | undefined) {
@@ -190,20 +153,10 @@ export class ContainerService {
       const path = `/container/${container._id}/slot/${slotIndex}`;
       const slotTitle = getSlotTitle(+slotIndex, container.rows);
 
-      await this.createUpdatePlantTasksForSlot(
-        container,
-        slot,
-        path,
-        slotTitle,
-      );
+      await this.createUpdatePlantTasksForSlot(container, slot, path, slotTitle);
 
       if (slot.subSlot) {
-        await this.createUpdatePlantTasksForSlot(
-          container,
-          slot.subSlot,
-          `${path}/sub-slot`,
-          slotTitle,
-        );
+        await this.createUpdatePlantTasksForSlot(container, slot.subSlot, `${path}/sub-slot`, slotTitle);
       }
     }
   }

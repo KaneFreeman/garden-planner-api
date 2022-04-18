@@ -12,11 +12,12 @@ export const BaseContainerSlotSchema = {
   transplantedTo: TransplantedSchema,
   transplantedFrom: TransplantedSchema,
   firstHarvestDate: { type: Date },
+  startedFrom: String,
   pictures: [PictureDataSchema],
-  comments: [CommentSchema],
+  comments: [CommentSchema]
 };
 
 export const ContainerSlotSchema = new mongoose.Schema({
   ...BaseContainerSlotSchema,
-  subSlot: BaseContainerSlotSchema,
+  subSlot: BaseContainerSlotSchema
 });

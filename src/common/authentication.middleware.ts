@@ -13,17 +13,16 @@ export class AuthenticationMiddleware implements NestMiddleware {
         cache: true,
         rateLimit: true,
         jwksRequestsPerMinute: 5,
-        jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`,
+        jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`
       }),
       issuer: `https://${process.env.AUTH0_DOMAIN}/`,
-      algorithms: ['RS256'],
+      algorithms: ['RS256']
     })(req, res, (err) => {
       if (err) {
         const status = err.status || 500;
-        const message =
-          err.message || 'Sorry we were unable to process your request.';
+        const message = err.message || 'Sorry we were unable to process your request.';
         return res.status(status).send({
-          message,
+          message
         });
       }
       next();

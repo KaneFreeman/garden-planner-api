@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Res,
-  HttpStatus,
-  Param,
-  NotFoundException,
-  Post,
-  Body,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Res, HttpStatus, Param, NotFoundException, Post, Body, Delete } from '@nestjs/common';
 import { Response } from 'express';
 import { PictureService } from './picture.service';
 import { PictureDTO } from './dto/picture.dto';
@@ -27,10 +17,7 @@ export class PictureController {
 
   // Fetch a particular picture using ID
   @Get('/:pictureId')
-  async getPicture(
-    @Res() res: Response,
-    @Param('pictureId', new ValidateObjectId()) pictureId: string,
-  ) {
+  async getPicture(@Res() res: Response, @Param('pictureId', new ValidateObjectId()) pictureId: string) {
     const picture = await this.pictureService.getPicture(pictureId);
     if (!picture) {
       throw new NotFoundException('Picture does not exist!');
@@ -40,10 +27,7 @@ export class PictureController {
 
   // Delete a picture using ID
   @Delete('/:pictureId')
-  async deletePicture(
-    @Res() res: Response,
-    @Param('pictureId', new ValidateObjectId()) pictureId: string,
-  ) {
+  async deletePicture(@Res() res: Response, @Param('pictureId', new ValidateObjectId()) pictureId: string) {
     const deletedPicture = await this.pictureService.deletePicture(pictureId);
     if (!deletedPicture) {
       throw new NotFoundException('Picture does not exist!');

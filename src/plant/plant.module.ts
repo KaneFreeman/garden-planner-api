@@ -6,12 +6,10 @@ import { PlantController } from './plant.controller';
 import { PlantSchema } from './schemas/plant.schema';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: 'Plant', schema: PlantSchema }]),
-  ],
+  imports: [MongooseModule.forFeature([{ name: 'Plant', schema: PlantSchema }])],
   providers: [PlantService],
   controllers: [PlantController],
-  exports: [PlantService],
+  exports: [PlantService]
 })
 export class PlantModule {
   configure(consumer: MiddlewareConsumer): MiddlewareConsumer | void {
@@ -22,7 +20,7 @@ export class PlantModule {
         { method: RequestMethod.GET, path: '/api/plant/:plantId' },
         { method: RequestMethod.POST, path: '/api/plant' },
         { method: RequestMethod.PUT, path: '/api/plant' },
-        { method: RequestMethod.DELETE, path: '/api/plant' },
+        { method: RequestMethod.DELETE, path: '/api/plant' }
       );
   }
 }

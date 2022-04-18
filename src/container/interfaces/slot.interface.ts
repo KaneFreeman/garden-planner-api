@@ -1,7 +1,7 @@
 import { Document } from 'mongoose';
 import { CommentDocument } from '../../common/interfaces/comment.interface';
 import { PictureDataDocument } from '../../common/interfaces/picutre-data.interface';
-import { Status } from '../../interface';
+import { StartedFromType, Status } from '../../interface';
 import { ContainerSlotIdentifier } from './container-slot-identifier.interface';
 
 export interface BaseSlotDocument extends Document {
@@ -13,6 +13,7 @@ export interface BaseSlotDocument extends Document {
   readonly transplantedTo: ContainerSlotIdentifier | null;
   readonly transplantedFrom: ContainerSlotIdentifier | null;
   readonly firstHarvestDate?: Date;
+  readonly startedFrom: StartedFromType;
   readonly comments?: CommentDocument[];
   readonly pictures?: PictureDataDocument[];
 }

@@ -3,12 +3,7 @@
   "labels": ["dependencies"],
   "packageRules": [
     {
-      "matchPackagePrefixes": [
-        "lint-staged",
-        "@types/eslint",
-        "@typescript-eslint/",
-        "eslint"
-      ],
+      "matchPackagePrefixes": ["lint-staged", "@types/eslint", "@typescript-eslint/", "eslint"],
       "labels": ["linting", "automerge"],
       "automerge": true
     },

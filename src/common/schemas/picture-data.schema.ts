@@ -5,5 +5,5 @@ export const PictureDataSchema = new mongoose.Schema({
   id: Number,
   pictureId: String,
   thumbnail: String,
-  deleted: Boolean,
+  deleted: Boolean
 });

@@ -6,9 +6,7 @@ import { PlantDocument } from './interfaces/plant.interface';
 
 @Injectable()
 export class PlantService {
-  constructor(
-    @InjectModel('Plant') private readonly plantModel: Model<PlantDocument>,
-  ) {}
+  constructor(@InjectModel('Plant') private readonly plantModel: Model<PlantDocument>) {}
 
   async addPlant(createPlantDTO: PlantDTO): Promise<PlantDocument> {
     const newPlant = await this.plantModel.create(createPlantDTO);
@@ -23,12 +21,9 @@ export class PlantService {
     return this.plantModel.find().exec();
   }
 
-  async editPlant(
-    plantId: string,
-    createPlantDTO: PlantDTO,
-  ): Promise<PlantDocument | null> {
+  async editPlant(plantId: string, createPlantDTO: PlantDTO): Promise<PlantDocument | null> {
     return this.plantModel.findByIdAndUpdate(plantId, createPlantDTO, {
-      new: true,
+      new: true
     });
   }
 

@@ -9,5 +9,5 @@ export const ContainerSlotSchema = new mongoose.Schema({
   plantedDate: { type: Date },
   transplantedDate: { type: Date },
   pictures: [PictureDataSchema],
-  comments: [CommentSchema],
+  comments: [CommentSchema]
 });

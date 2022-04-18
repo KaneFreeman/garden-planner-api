@@ -7,5 +7,5 @@ export const TaskSchema = new mongoose.Schema({
   due: { type: Date },
   containerId: String,
   path: String,
-  completedOn: { type: Date },
+  completedOn: { type: Date }
 });

@@ -12,8 +12,6 @@ export class StaticController {
   @Get('/plantData')
   async getPlantDatas(@Res() res: Response) {
     const plantData = await this.staticService.getPlantData();
-    return res
-      .status(HttpStatus.OK)
-      .json(mapRecord(plantData, PlantDataDTO.toDTO));
+    return res.status(HttpStatus.OK).json(mapRecord(plantData, PlantDataDTO.toDTO));
   }
 }

@@ -9,7 +9,7 @@ import { AuthenticationMiddleware } from '../common/authentication.middleware';
   imports: [MongooseModule.forFeature([{ name: 'Task', schema: TaskSchema }])],
   providers: [TaskService],
   controllers: [TaskController],
-  exports: [TaskService],
+  exports: [TaskService]
 })
 export class TaskModule {
   configure(consumer: MiddlewareConsumer): MiddlewareConsumer | void {
@@ -20,7 +20,7 @@ export class TaskModule {
         { method: RequestMethod.GET, path: '/api/task/:taskId' },
         { method: RequestMethod.POST, path: '/api/task' },
         { method: RequestMethod.PUT, path: '/api/task' },
-        { method: RequestMethod.DELETE, path: '/api/task' },
+        { method: RequestMethod.DELETE, path: '/api/task' }
       );
   }
 }

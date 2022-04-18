@@ -1,15 +1,4 @@
-import {
-  Controller,
-  Get,
-  Res,
-  HttpStatus,
-  Param,
-  NotFoundException,
-  Post,
-  Body,
-  Put,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Res, HttpStatus, Param, NotFoundException, Post, Body, Put, Delete } from '@nestjs/common';
 import { ContainerService } from './container.service';
 import { ContainerDTO } from './dto/container.dto';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
@@ -21,22 +10,14 @@ export class ContainerController {
 
   // Submit a container
   @Post('')
-  async addContainer(
-    @Res() res: Response,
-    @Body() createContainerDTO: ContainerDTO,
-  ) {
-    const newContainer = await this.containerService.addContainer(
-      createContainerDTO,
-    );
+  async addContainer(@Res() res: Response, @Body() createContainerDTO: ContainerDTO) {
+    const newContainer = await this.containerService.addContainer(createContainerDTO);
     return res.status(HttpStatus.OK).json(newContainer);
   }
 
   // Fetch a particular container using ID
   @Get('/:containerId')
-  async getContainer(
-    @Res() res: Response,
-    @Param('containerId', new ValidateObjectId()) containerId: string,
-  ) {
+  async getContainer(@Res() res: Response, @Param('containerId', new ValidateObjectId()) containerId: string) {
     const container = await this.containerService.getContainer(containerId);
     if (!container) {
       throw new NotFoundException('Container does not exist!');
@@ -56,12 +37,9 @@ export class ContainerController {
   async editContainer(
     @Res() res: Response,
     @Param('containerId', new ValidateObjectId()) containerId: string,
-    @Body() createContainerDTO: ContainerDTO,
+    @Body() createContainerDTO: ContainerDTO
   ) {
-    const editedContainer = await this.containerService.editContainer(
-      containerId,
-      createContainerDTO,
-    );
+    const editedContainer = await this.containerService.editContainer(containerId, createContainerDTO);
     if (!editedContainer) {
       throw new NotFoundException('Container does not exist!');
     }
@@ -70,13 +48,8 @@ export class ContainerController {
 
   // Delete a container using ID
   @Delete('/:containerId')
-  async deleteContainer(
-    @Res() res: Response,
-    @Param('containerId', new ValidateObjectId()) containerId: string,
-  ) {
-    const deletedContainer = await this.containerService.deleteContainer(
-      containerId,
-    );
+  async deleteContainer(@Res() res: Response, @Param('containerId', new ValidateObjectId()) containerId: string) {
+    const deletedContainer = await this.containerService.deleteContainer(containerId);
     if (!deletedContainer) {
       throw new NotFoundException('Container does not exist!');
     }

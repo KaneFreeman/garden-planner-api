@@ -14,24 +14,18 @@ const env = process.env.NODE_ENV || 'production';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: [
-        env === 'production' ? '.env.production' : '.env.development',
-      ],
+      envFilePath: [env === 'production' ? '.env.production' : '.env.development']
     }),
-    MongooseModule.forRoot(
-      process.env.MONGO_URL ??
-        'mongodb://localhost:27017/garden-planner-development',
-      {
-        useNewUrlParser: true,
-      },
-    ),
+    MongooseModule.forRoot(process.env.MONGO_URL ?? 'mongodb://localhost:27017/garden-planner-development', {
+      useNewUrlParser: true
+    }),
     PlantModule,
     TaskModule,
     ContainerModule,
     PictureModule,
-    StaticModule,
+    StaticModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService]
 })
 export class AppModule {}

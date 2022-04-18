@@ -9,7 +9,7 @@ import {
   Body,
   Put,
   Delete,
-  Query,
+  Query
 } from '@nestjs/common';
 import { Response } from 'express';
 import { TaskService } from './task.service';
@@ -29,10 +29,7 @@ export class TaskController {
 
   // Fetch a particular task using ID
   @Get('/:taskId')
-  async getTask(
-    @Res() res: Response,
-    @Param('taskId', new ValidateObjectId()) taskId: string,
-  ) {
+  async getTask(@Res() res: Response, @Param('taskId', new ValidateObjectId()) taskId: string) {
     const task = await this.taskService.getTaskById(taskId);
     if (!task) {
       throw new NotFoundException('Task does not exist!');
@@ -43,9 +40,7 @@ export class TaskController {
   // Fetch all tasks
   @Get('')
   async getTasks(@Res() res: Response, @Query('path') path: string) {
-    const tasks = path
-      ? await this.taskService.getTasksByPath(path)
-      : await this.taskService.getTasks();
+    const tasks = path ? await this.taskService.getTasksByPath(path) : await this.taskService.getTasks();
     return res.status(HttpStatus.OK).json(tasks);
   }
 
@@ -54,7 +49,7 @@ export class TaskController {
   async editTask(
     @Res() res: Response,
     @Param('taskId', new ValidateObjectId()) taskId: string,
-    @Body() createTaskDTO: CreateTaskDTO,
+    @Body() createTaskDTO: CreateTaskDTO
   ) {
     const editedTask = await this.taskService.editTask(taskId, createTaskDTO);
     if (!editedTask) {
@@ -65,10 +60,7 @@ export class TaskController {
 
   // Delete a task using ID
   @Delete('/:taskId')
-  async deleteTask(
-    @Res() res: Response,
-    @Param('taskId', new ValidateObjectId()) taskId: string,
-  ) {
+  async deleteTask(@Res() res: Response, @Param('taskId', new ValidateObjectId()) taskId: string) {
     const deletedTask = await this.taskService.deleteTask(taskId);
     if (!deletedTask) {
       throw new NotFoundException('Task does not exist!');

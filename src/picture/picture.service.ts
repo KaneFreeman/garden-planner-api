@@ -6,9 +6,7 @@ import { Picture } from './interfaces/picture.interface';
 
 @Injectable()
 export class PictureService {
-  constructor(
-    @InjectModel('Picture') private readonly pictureModel: Model<Picture>,
-  ) {}
+  constructor(@InjectModel('Picture') private readonly pictureModel: Model<Picture>) {}
 
   async addPicture(createPictureDTO: PictureDTO): Promise<Picture> {
     const newPicture = await this.pictureModel.create(createPictureDTO);
