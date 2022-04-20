@@ -1625,7 +1625,25 @@ const plantData: Record<PlantType, PlantData> = {
     }
   },
   Spinach: {
-    howToGrow: { spring: { outdoor: { min: 42, max: 21 } } },
+    howToGrow: {
+      spring: {
+        outdoor: { min: 42, max: 21 },
+        fertilize: [
+          { start: 21, from: 'Planted' },
+          { start: 35, from: 'Planted' },
+          { start: 49, from: 'Planted' },
+          { start: 64, from: 'Planted' }
+        ]
+      },
+      fall: {
+        outdoor: { min: 56, max: 42 },
+        fertilize: [
+          { start: 21, from: 'Planted' },
+          { start: 35, from: 'Planted' },
+          { start: 49, from: 'Planted' }
+        ]
+      }
+    },
     faq: {}
   },
   'Sweet Potatoe': {
@@ -1830,7 +1848,13 @@ const plantData: Record<PlantType, PlantData> = {
           fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: -14, max: -28 },
-        outdoor: { min: -14, max: -28 }
+        outdoor: { min: -14, max: -28 },
+        fertilize: [
+          { start: 14, from: 'Transplanted' },
+          { start: 35, from: 'Transplanted' },
+          { start: 56, from: 'Transplanted' },
+          { start: 77, from: 'Transplanted' }
+        ]
       }
     },
     faq: {
@@ -2078,7 +2102,13 @@ const plantData: Record<PlantType, PlantData> = {
           fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 7, max: -35 },
-        outdoor: { min: -7, max: -35 }
+        outdoor: { min: -7, max: -35 },
+        fertilize: [
+          { start: 0, from: 'Transplanted' },
+          { start: 14, from: 'Transplanted' },
+          { start: 28, from: 'Transplanted' },
+          { start: 42, from: 'Transplanted' }
+        ]
       }
     },
     faq: {
@@ -2107,7 +2137,19 @@ const plantData: Record<PlantType, PlantData> = {
     }
   },
   Dill: {
-    howToGrow: { spring: { outdoor: { min: 21, max: -35 } } },
+    howToGrow: {
+      spring: {
+        indoor: {
+          min: 42,
+          max: 21,
+          transplant_min: 21,
+          transplant_max: 56,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
+        },
+        outdoor: { min: 21, max: -35 },
+        fertilize: [{ start: 28, from: 'Transplanted' }]
+      }
+    },
     faq: {
       how_to_grow: [
         [
@@ -2336,7 +2378,8 @@ const plantData: Record<PlantType, PlantData> = {
           transplant_max: 70,
           fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
-        plant: { min: 21, max: -28 }
+        plant: { min: 21, max: -28 },
+        fertilize: [{ start: 14, from: 'Transplanted' }]
       }
     },
     faq: {
@@ -2374,7 +2417,8 @@ const plantData: Record<PlantType, PlantData> = {
           transplant_max: 84,
           fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
-        plant: { min: -7, max: -42 }
+        plant: { min: -7, max: -42 },
+        fertilize: [{ start: 14, from: 'Transplanted' }]
       }
     },
     faq: {
@@ -2412,7 +2456,8 @@ const plantData: Record<PlantType, PlantData> = {
           transplant_max: 84,
           fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
-        plant: { min: 0, max: -28 }
+        plant: { min: 0, max: -28 },
+        fertilize: [{ start: 14, from: 'Transplanted' }]
       }
     },
     faq: {
@@ -2451,7 +2496,8 @@ const plantData: Record<PlantType, PlantData> = {
           fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: -7, max: -42 },
-        outdoor: { min: -7, max: -35 }
+        outdoor: { min: -7, max: -35 },
+        fertilize: [{ start: 42, from: 'Transplanted' }]
       }
     },
     faq: {
@@ -2489,7 +2535,8 @@ const plantData: Record<PlantType, PlantData> = {
           transplant_max: 84,
           fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
-        plant: { min: 0, max: -28 }
+        plant: { min: 0, max: -28 },
+        fertilize: [{ start: 14, from: 'Transplanted' }]
       }
     },
     faq: {
@@ -2678,7 +2725,8 @@ const plantData: Record<PlantType, PlantData> = {
           transplant_max: 56
         },
         plant: { min: -14, max: -28 },
-        outdoor: { min: -14, max: -28 }
+        outdoor: { min: -14, max: -28 },
+        fertilize: [{ start: 0, from: 'Transplanted' }]
       }
     },
     faq: {
@@ -2717,7 +2765,8 @@ const plantData: Record<PlantType, PlantData> = {
           fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: -14, max: -42 },
-        outdoor: { min: -14, max: -35 }
+        outdoor: { min: -14, max: -35 },
+        fertilize: [{ start: 14, from: 'Transplanted', description: 'phosphorous heavy' }]
       }
     },
     faq: {
@@ -2746,7 +2795,12 @@ const plantData: Record<PlantType, PlantData> = {
     }
   },
   Sunflower: {
-    howToGrow: { spring: { outdoor: { min: -14, max: -35 } } },
+    howToGrow: {
+      spring: {
+        outdoor: { min: -14, max: -35 },
+        fertilize: [{ start: 7, from: 'Planted', description: 'low nitrogen' }]
+      }
+    },
     faq: {
       how_to_grow: [
         [
