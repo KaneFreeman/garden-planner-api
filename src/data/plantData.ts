@@ -8,7 +8,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 78,
           max: 50,
           transplant_min: 64,
-          transplant_max: 85
+          transplant_max: 85,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         }
       }
     },
@@ -41,7 +42,14 @@ const plantData: Record<PlantType, PlantData> = {
     howToGrow: {
       spring: {
         plant: { min: 21, max: -28 },
-        outdoor: { min: 50, max: 29 }
+        outdoor: { min: 50, max: 29 },
+        fertilize: [
+          {
+            start: 28,
+            from: 'Planted',
+            description: 'balanced water-soluble or granular fertilizer'
+          }
+        ]
       },
       fall: { outdoor: { min: 56, max: 21 } }
     },
@@ -77,7 +85,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 84,
           max: 71,
           transplant_min: 56,
-          transplant_max: 99
+          transplant_max: 99,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 28, max: -28 }
       },
@@ -86,7 +95,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 98,
           max: 60,
           transplant_min: 18,
-          transplant_max: 35
+          transplant_max: 35,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 63, max: 42 }
       }
@@ -117,7 +127,12 @@ const plantData: Record<PlantType, PlantData> = {
     }
   },
   Bean: {
-    howToGrow: { spring: { outdoor: { min: -14, max: -42 } } },
+    howToGrow: {
+      spring: {
+        outdoor: { min: -14, max: -42 },
+        fertilize: [{ start: 28, end: 42, from: 'Planted', description: 'slow release, once plant is established' }]
+      }
+    },
     faq: {
       how_to_grow: [
         [
@@ -180,19 +195,23 @@ const plantData: Record<PlantType, PlantData> = {
           min: 63,
           max: 42,
           transplant_min: 40,
-          transplant_max: 54
+          transplant_max: 54,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 21, max: -14 },
-        outdoor: { min: 21, max: -7 }
+        outdoor: { min: 21, max: -7 },
+        fertilize: [{ start: 21, from: 'Transplanted', description: 'low-nitrogen fertilizer, like a 5-10-10 formula' }]
       },
       fall: {
         indoor: {
           min: 84,
           max: 70,
           transplant_min: 7,
-          transplant_max: 14
+          transplant_max: 14,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
-        plant: { min: 77, max: 56 }
+        plant: { min: 77, max: 56 },
+        fertilize: [{ start: 21, from: 'Transplanted', description: 'low-nitrogen fertilizer, like a 5-10-10 formula' }]
       }
     },
     faq: {
@@ -254,7 +273,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 63,
           max: 42,
           transplant_min: 42,
-          transplant_max: 56
+          transplant_max: 56,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 21, max: -14 },
         outdoor: { min: 21, max: -7 }
@@ -264,7 +284,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 84,
           max: 70,
           transplant_min: 7,
-          transplant_max: 14
+          transplant_max: 14,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 77, max: 56 }
       }
@@ -301,7 +322,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 77,
           max: 63,
           transplant_min: 49,
-          transplant_max: 63
+          transplant_max: 63,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 28, max: 0 }
       },
@@ -310,7 +332,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 84,
           max: 77,
           transplant_min: 21,
-          transplant_max: 35
+          transplant_max: 35,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 63, max: 42 }
       }
@@ -347,7 +370,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 63,
           max: 49,
           transplant_min: 42,
-          transplant_max: 56
+          transplant_max: 56,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 21, max: -7 }
       },
@@ -356,7 +380,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 84,
           max: 77,
           transplant_min: 22,
-          transplant_max: 35
+          transplant_max: 35,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 63, max: 42 }
       }
@@ -387,7 +412,18 @@ const plantData: Record<PlantType, PlantData> = {
     }
   },
   Cantaloupe: {
-    howToGrow: { spring: { outdoor: { min: -14, max: -21 } } },
+    howToGrow: {
+      spring: {
+        indoor: {
+          min: 28,
+          max: 21,
+          transplant_min: 28,
+          transplant_max: 28,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
+        },
+        outdoor: { min: -14, max: -21 }
+      }
+    },
     faq: {
       how_to_grow: [
         [
@@ -415,8 +451,14 @@ const plantData: Record<PlantType, PlantData> = {
   },
   Carrot: {
     howToGrow: {
-      spring: { outdoor: { min: 21, max: -14 } },
-      fall: { outdoor: { min: 77, max: 56 } }
+      spring: {
+        outdoor: { min: 21, max: -14 },
+        fertilize: [{ start: 21, end: 42, from: 'Planted', description: 'when tops are 4 inches high' }]
+      },
+      fall: {
+        outdoor: { min: 77, max: 56 },
+        fertilize: [{ start: 21, end: 42, from: 'Planted', description: 'when tops are 4 inches high' }]
+      }
     },
     faq: {
       how_to_grow: [
@@ -450,7 +492,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 63,
           max: 42,
           transplant_min: 42,
-          transplant_max: 49
+          transplant_max: 49,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 21, max: -7 }
       },
@@ -459,7 +502,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 84,
           max: 70,
           transplant_min: 14,
-          transplant_max: 28
+          transplant_max: 28,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 70, max: 42 }
       }
@@ -496,7 +540,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 84,
           max: 70,
           transplant_min: 64,
-          transplant_max: 70
+          transplant_max: 70,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 20, max: 0 }
       }
@@ -527,7 +572,18 @@ const plantData: Record<PlantType, PlantData> = {
     }
   },
   'Chinese Cabbage': {
-    howToGrow: { fall: { outdoor: { min: 100, max: 79 } } },
+    howToGrow: {
+      fall: {
+        indoor: {
+          min: 114,
+          max: 93,
+          transplant_min: 14,
+          transplant_max: 14,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
+        },
+        outdoor: { min: 100, max: 79 }
+      }
+    },
     faq: {
       how_to_grow: [
         [
@@ -668,7 +724,12 @@ const plantData: Record<PlantType, PlantData> = {
     }
   },
   Cucumber: {
-    howToGrow: { spring: { outdoor: { min: -14, max: -35 } } },
+    howToGrow: {
+      spring: {
+        outdoor: { min: -14, max: -35 },
+        fertilize: [{ start: 28, end: 60, from: 'Planted', description: 'after plant starts blooming' }]
+      }
+    },
     faq: {
       how_to_grow: [
         [
@@ -701,7 +762,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 70,
           max: 42,
           transplant_min: 77,
-          transplant_max: 84
+          transplant_max: 84,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: -14, max: -35 }
       }
@@ -916,7 +978,16 @@ const plantData: Record<PlantType, PlantData> = {
   Leek: {
     howToGrow: {
       spring: { outdoor: { min: 43, max: 29 } },
-      fall: { outdoor: { min: 37, max: 23 } }
+      fall: {
+        indoor: {
+          min: 70,
+          max: 42,
+          transplant_min: 14,
+          transplant_max: 28,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
+        },
+        outdoor: { min: 37, max: 23 }
+      }
     },
     faq: {
       how_to_grow: [
@@ -953,7 +1024,14 @@ const plantData: Record<PlantType, PlantData> = {
           transplant_max: 42
         },
         plant: { min: 21, max: -21 },
-        outdoor: { min: 21, max: -14 }
+        outdoor: { min: 21, max: -14 },
+        fertilize: [
+          { start: 21, from: 'Planted' },
+          { start: 35, from: 'Planted' },
+          { start: 49, from: 'Planted' },
+          { start: 64, from: 'Planted' },
+          { start: 78, from: 'Planted' }
+        ]
       },
       fall: {
         indoor: {
@@ -963,7 +1041,14 @@ const plantData: Record<PlantType, PlantData> = {
           transplant_max: 35
         },
         plant: { min: 63, max: 28 },
-        outdoor: { min: 56, max: 42 }
+        outdoor: { min: 56, max: 42 },
+        fertilize: [
+          { start: 21, from: 'Planted' },
+          { start: 35, from: 'Planted' },
+          { start: 49, from: 'Planted' },
+          { start: 64, from: 'Planted' },
+          { start: 78, from: 'Planted' }
+        ]
       }
     },
     faq: {
@@ -998,7 +1083,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 35,
           max: 28,
           transplant_min: 49,
-          transplant_max: 56
+          transplant_max: 56,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         outdoor: { min: -14, max: -28 }
       }
@@ -1122,9 +1208,19 @@ const plantData: Record<PlantType, PlantData> = {
           min: 77,
           max: 63,
           transplant_min: 49,
-          transplant_max: 70
+          transplant_max: 70,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
-        plant: { min: 28, max: -7 }
+        plant: { min: 28, max: -7 },
+        fertilize: [
+          { start: 21, from: 'Transplanted' },
+          { start: 36, from: 'Transplanted' },
+          { start: 51, from: 'Transplanted' },
+          { start: 66, from: 'Transplanted' },
+          { start: 71, from: 'Transplanted' },
+          { start: 86, from: 'Transplanted' },
+          { start: 101, from: 'Transplanted' }
+        ]
       }
     },
     faq: {
@@ -1240,9 +1336,19 @@ const plantData: Record<PlantType, PlantData> = {
           min: 70,
           max: 42,
           transplant_min: 70,
-          transplant_max: 84
+          transplant_max: 84,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
-        plant: { min: -14, max: -28 }
+        plant: { min: -14, max: -28 },
+        fertilize: [
+          { start: 21, from: 'Transplanted' },
+          { start: 36, from: 'Transplanted' },
+          { start: 51, from: 'Transplanted' },
+          { start: 66, from: 'Transplanted' },
+          { start: 71, from: 'Transplanted' },
+          { start: 86, from: 'Transplanted' },
+          { start: 101, from: 'Transplanted' }
+        ]
       }
     },
     faq: {
@@ -1298,7 +1404,21 @@ const plantData: Record<PlantType, PlantData> = {
     }
   },
   Pumpkin: {
-    howToGrow: { spring: { outdoor: { min: -14, max: -28 } } },
+    howToGrow: {
+      spring: {
+        outdoor: { min: -14, max: -28 },
+        fertilize: [
+          { start: 21, from: 'Planted', description: 'nitrogen heavy' },
+          { start: 35, from: 'Planted', description: 'nitrogen heavy' },
+          { start: 49, from: 'Planted', description: 'nitrogen heavy' },
+          { start: 56, end: 77, from: 'Planted', description: 'after flowers form, phosphorus heavy' },
+          { start: 88, from: 'Planted', description: 'after flowers form, phosphorus heavy' },
+          { start: 90, end: 105, from: 'Planted', description: 'after pumpkins form, potassium heavy' },
+          { start: 116, from: 'Planted', description: 'after pumpkins form, potassium heavy' },
+          { start: 127, from: 'Planted', description: 'after pumpkins form, potassium heavy' }
+        ]
+      }
+    },
     faq: {
       how_to_grow: [
         [
@@ -1597,10 +1717,13 @@ const plantData: Record<PlantType, PlantData> = {
           max: 42,
           transplant_min: 70,
           transplant_max: 70,
-          fertilize: [21]
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: -14, max: -28 },
-        fertilize: [91]
+        fertilize: [
+          { start: 0, from: 'Transplanted', description: 'At transplant' },
+          { start: 21, end: 49, from: 'Transplanted', description: 'At fruit set' }
+        ]
       }
     },
     faq: {
@@ -1659,7 +1782,18 @@ const plantData: Record<PlantType, PlantData> = {
     }
   },
   Watermelon: {
-    howToGrow: { spring: { outdoor: { min: -14, max: -28 } } },
+    howToGrow: {
+      spring: {
+        indoor: {
+          min: 28,
+          max: 21,
+          transplant_min: 42,
+          transplant_max: 49,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
+        },
+        outdoor: { min: -14, max: -28 }
+      }
+    },
     faq: {
       how_to_grow: [
         [
@@ -1692,7 +1826,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 56,
           max: 42,
           transplant_min: 70,
-          transplant_max: 70
+          transplant_max: 70,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: -14, max: -28 },
         outdoor: { min: -14, max: -28 }
@@ -1784,7 +1919,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 56,
           max: 35,
           transplant_min: 63,
-          transplant_max: 70
+          transplant_max: 70,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: -14, max: -28 },
         outdoor: { min: -14, max: -28 }
@@ -1822,7 +1958,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 63,
           max: 35,
           transplant_min: 63,
-          transplant_max: 77
+          transplant_max: 77,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: -14, max: -28 },
         outdoor: { min: -14, max: -28 }
@@ -1860,7 +1997,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 56,
           max: 28,
           transplant_min: 56,
-          transplant_max: 70
+          transplant_max: 70,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: -14, max: -28 },
         outdoor: { min: 7, max: -21 }
@@ -1898,7 +2036,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 70,
           max: 63,
           transplant_min: 42,
-          transplant_max: 77
+          transplant_max: 77,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 28, max: -14 }
       }
@@ -1935,7 +2074,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 63,
           max: 28,
           transplant_min: 56,
-          transplant_max: 63
+          transplant_max: 63,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 7, max: -35 },
         outdoor: { min: -7, max: -35 }
@@ -2000,7 +2140,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 56,
           max: 28,
           transplant_min: 56,
-          transplant_max: 70
+          transplant_max: 70,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: -14, max: -28 },
         outdoor: { min: -14, max: -28 }
@@ -2038,7 +2179,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 77,
           max: 56,
           transplant_min: 49,
-          transplant_max: 70
+          transplant_max: 70,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 28, max: -14 }
       },
@@ -2076,7 +2218,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 63,
           max: 42,
           transplant_min: 70,
-          transplant_max: 77
+          transplant_max: 77,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: -14, max: -28 },
         outdoor: { min: -14, max: -28 }
@@ -2151,7 +2294,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 77,
           max: 56,
           transplant_min: 84,
-          transplant_max: 91
+          transplant_max: 91,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: -14, max: -28 },
         outdoor: { min: -14, max: -28 }
@@ -2189,7 +2333,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 70,
           max: 42,
           transplant_min: 49,
-          transplant_max: 70
+          transplant_max: 70,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 21, max: -28 }
       }
@@ -2226,7 +2371,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 63,
           max: 42,
           transplant_min: 70,
-          transplant_max: 84
+          transplant_max: 84,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: -7, max: -42 }
       }
@@ -2263,7 +2409,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 70,
           max: 56,
           transplant_min: 70,
-          transplant_max: 84
+          transplant_max: 84,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 0, max: -28 }
       }
@@ -2300,7 +2447,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 42,
           max: 28,
           transplant_min: 49,
-          transplant_max: 70
+          transplant_max: 70,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: -7, max: -42 },
         outdoor: { min: -7, max: -35 }
@@ -2338,7 +2486,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 70,
           max: 56,
           transplant_min: 70,
-          transplant_max: 84
+          transplant_max: 84,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 0, max: -28 }
       }
@@ -2375,7 +2524,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 77,
           max: 56,
           transplant_min: 84,
-          transplant_max: 84
+          transplant_max: 84,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: -7, max: -28 }
       }
@@ -2412,7 +2562,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 77,
           max: 56,
           transplant_min: 84,
-          transplant_max: 84
+          transplant_max: 84,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: -7, max: -28 }
       }
@@ -2449,7 +2600,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 56,
           max: 42,
           transplant_min: 70,
-          transplant_max: 70
+          transplant_max: 70,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         }
       }
     },
@@ -2479,7 +2631,18 @@ const plantData: Record<PlantType, PlantData> = {
     }
   },
   Verbena: {
-    howToGrow: { spring: { plant: { min: -7, max: -28 } } },
+    howToGrow: {
+      spring: {
+        indoor: {
+          min: 70,
+          max: 56,
+          transplant_min: 77,
+          transplant_max: 84,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
+        },
+        plant: { min: -7, max: -28 }
+      }
+    },
     faq: {
       how_to_grow: [
         [
@@ -2550,7 +2713,8 @@ const plantData: Record<PlantType, PlantData> = {
           min: 49,
           max: 28,
           transplant_min: 63,
-          transplant_max: 70
+          transplant_max: 70,
+          fertilize: [{ start: 21, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: -14, max: -42 },
         outdoor: { min: -14, max: -35 }

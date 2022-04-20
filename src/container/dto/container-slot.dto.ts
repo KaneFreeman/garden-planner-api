@@ -10,6 +10,7 @@ export interface BaseContainerSlotDTO {
   readonly plantedDate?: string;
   readonly transplantedDate?: string;
   readonly transplantedTo: ContainerSlotIdentifierDTO | null;
+  readonly transplantedFromDate?: string;
   readonly transplantedFrom: ContainerSlotIdentifierDTO | null;
   readonly firstHarvestDate?: string;
   readonly startedFrom: StartedFromType;

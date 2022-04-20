@@ -6,13 +6,14 @@ import { CreateTaskDTO } from './dto/create-task.dto';
 import { TaskDocument } from './interfaces/task.interface';
 import { ContainerDocument } from '../container/interfaces/container.interface';
 import { BaseSlotDocument } from '../container/interfaces/slot.interface';
-import { ContainerType, PlantData, TaskType } from '../interface';
+import { ContainerType, FertilizerApplication, PlantData, TaskType } from '../interface';
 import { PlantDocument } from '../plant/interfaces/plant.interface';
 import growingZoneData from '../data/growingZoneData';
 import addDays from 'date-fns/addDays';
 import { ONE_WEEK, TWO_WEEKS } from '../constants';
 import { isValidDate } from '../util/date.util';
 import ordinalSuffixOf from '../util/number.util';
+import { isEmpty, isNotEmpty } from '../util/string.util';
 
 @Injectable()
 export class TaskService {
@@ -49,7 +50,12 @@ export class TaskService {
     });
   }
 
-  async deleteTask(taskId: string): Promise<TaskDocument | null> {
+  async deleteTask(taskId: string, force = false): Promise<TaskDocument | null> {
+    const task = await this.getTaskById(taskId);
+    if (!force && task?.type !== 'Custom') {
+      return null;
+    }
+
     return await this.taskModel.findByIdAndRemove(taskId);
   }
 
@@ -121,7 +127,7 @@ export class TaskService {
       (container.type === 'Outside' && slot.startedFrom === 'Transplant')
     ) {
       if (task) {
-        await this.deleteTask(task._id);
+        await this.deleteTask(task._id, true);
       }
       return;
     }
@@ -166,7 +172,7 @@ export class TaskService {
     const dates = this.getTransplantedStartAndDueDate(season, data, slot.plantedDate);
     if (slot.status === 'Not Planted' || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
       if (task) {
-        await this.deleteTask(task._id);
+        await this.deleteTask(task._id, true);
       }
       return;
     }
@@ -241,7 +247,7 @@ export class TaskService {
     const dates = this.getHarvestStartAndDueDate(plant, slot.plantedDate);
     if (slot.status === 'Not Planted' || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
       if (task) {
-        await this.deleteTask(task._id);
+        await this.deleteTask(task._id, true);
       }
       return;
     }
@@ -275,12 +281,14 @@ export class TaskService {
 
   getFertilizeStartAndDueDate(
     plantedDate: Date | undefined,
-    fertilizeDelay: number
+    transplantedDate: Date | undefined,
+    fertilizerApplication: FertilizerApplication
   ): { start: Date; due: Date } | undefined {
-    if (plantedDate) {
+    const fromDate = fertilizerApplication.from === 'Transplanted' ? transplantedDate : plantedDate;
+    if (fromDate) {
       return {
-        start: addDays(plantedDate, fertilizeDelay),
-        due: addDays(addDays(plantedDate, fertilizeDelay), ONE_WEEK)
+        start: addDays(fromDate, fertilizerApplication.start),
+        due: addDays(addDays(fromDate, fertilizerApplication.start), fertilizerApplication.end ?? ONE_WEEK)
       };
     }
 
@@ -309,39 +317,33 @@ export class TaskService {
     if (fertilizeData === undefined) {
       if (tasks.length > 0) {
         for (const task of tasks) {
-          await this.deleteTask(task._id);
+          await this.deleteTask(task._id, true);
         }
-      }
-      if (path === '/container/624c6a31f07a1abe49d5ee21/slot/43') {
-        console.log('No fertilizing');
       }
       return;
     }
 
     let i = 0;
-    for (const fertilizeDelay of fertilizeData) {
+    for (const fertilizerApplication of fertilizeData) {
       i += 1;
-      if (path === '/container/624c6a31f07a1abe49d5ee21/slot/43') {
-        console.log('fertilizeDelay', i, fertilizeDelay);
-      }
-      const dates = this.getFertilizeStartAndDueDate(slot.plantedDate, fertilizeDelay);
+      const dates = this.getFertilizeStartAndDueDate(
+        slot.plantedDate,
+        slot.transplantedFromDate,
+        fertilizerApplication
+      );
       if (slot.status === 'Not Planted' || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
         continue;
-      }
-      if (path === '/container/624c6a31f07a1abe49d5ee21/slot/43') {
-        console.log('dates', dates);
       }
 
       const { start, due } = dates;
 
       let text: string;
-      if (fertilizeData.length > 1) {
+      if (fertilizeData.length > 1 && isEmpty(fertilizerApplication.description)) {
         text = `Fertilize (${ordinalSuffixOf(i)} time) ${plant.name} in ${container.name} at ${slotTitle}`;
+      } else if (isNotEmpty(fertilizerApplication.description)) {
+        text = `Fertilize ${plant.name} (${fertilizerApplication.description}) in ${container.name} at ${slotTitle}`;
       } else {
         text = `Fertilize ${plant.name} in ${container.name} at ${slotTitle}`;
-      }
-      if (path === '/container/624c6a31f07a1abe49d5ee21/slot/43') {
-        console.log('text', text);
       }
 
       const task = tasksByText[text];
@@ -356,17 +358,16 @@ export class TaskService {
           path,
           completedOn: null
         });
-        if (path === '/container/624c6a31f07a1abe49d5ee21/slot/43') {
-          console.log('creating task', {
-            text,
-            type: 'Fertilize',
-            start,
-            due,
-            containerId: container._id,
-            path,
-            completedOn: null
-          });
-        }
+      } else if (task.completedOn === null) {
+        await this.editTask(task._id, {
+          text,
+          type: 'Fertilize',
+          start,
+          due,
+          containerId: container._id,
+          path,
+          completedOn: null
+        });
       }
     }
 
@@ -375,7 +376,7 @@ export class TaskService {
         continue;
       }
 
-      await this.deleteTask(task._id);
+      await this.deleteTask(task._id, true);
     }
   }
 }

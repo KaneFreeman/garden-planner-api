@@ -69,29 +69,27 @@ export class ContainerService {
 
       const transplantedTo = `${slot.transplantedTo.slotId}`;
 
-      let newSlot: Slot;
+      const otherSlot = otherContainer.slots?.get(transplantedTo);
       if (otherContainer.slots && otherContainer.slots.has(transplantedTo)) {
-        const otherSlot = otherContainer.slots.get(transplantedTo);
-        if (otherSlot?.status !== 'Not Planted' || otherSlot?.plant !== slot.plant) {
+        if (
+          (otherSlot?.status ?? 'Not Planted') !== 'Not Planted' ||
+          (otherSlot?.plant !== undefined && otherSlot?.plant !== slot.plant)
+        ) {
           continue;
         }
-
-        newSlot = { ...otherSlot.toObject<Slot>() };
-        newSlot.transplantedFrom = {
-          containerId: container._id,
-          slotId: +slotIndex
-        };
-        newSlot.plantedDate = slot.plantedDate;
-        newSlot.status = 'Planted';
-      } else {
-        newSlot = { ...slot.toObject<Slot>() };
-        newSlot.transplantedTo = null;
-        newSlot.transplantedFrom = {
-          containerId: container._id,
-          slotId: +slotIndex
-        };
-        newSlot.status = 'Planted';
       }
+
+      const newSlot: Slot = { ...(otherSlot?.toObject<Slot>() ?? { transplantedFrom: null, transplantedTo: null }) };
+      newSlot.plant = slot.plant;
+      newSlot.plantedDate = slot.plantedDate;
+      newSlot.transplantedTo = null;
+      newSlot.transplantedFromDate = slot.transplantedDate;
+      newSlot.transplantedFrom = {
+        containerId: container._id,
+        slotId: +slotIndex
+      };
+      newSlot.plantedDate = slot.plantedDate;
+      newSlot.status = 'Planted';
 
       const newSlots: Record<string, Slot> = {};
       otherContainer.slots?.forEach((slot, key) => {

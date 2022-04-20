@@ -268,13 +268,20 @@ export const CUSTOM = 'Custom';
 export type TaskType = typeof PLANT | typeof TRANSPLANT | typeof HARVEST | typeof FERTILIZE | typeof CUSTOM;
 export const TASK_TYPES: TaskType[] = [PLANT, TRANSPLANT, HARVEST, FERTILIZE, CUSTOM];
 
+export interface FertilizerApplication {
+  start: number;
+  end?: number;
+  from: 'Planted' | 'Transplanted';
+  description?: string;
+}
+
 export interface GrowDates {
   indoor?: {
     min: number;
     max: number;
     transplant_min: number;
     transplant_max: number;
-    fertilize?: number[];
+    fertilize?: FertilizerApplication[];
   };
   plant?: {
     min: number;
@@ -284,7 +291,7 @@ export interface GrowDates {
     min: number;
     max: number;
   };
-  fertilize?: number[];
+  fertilize?: FertilizerApplication[];
 }
 
 export interface PlantData {
@@ -331,6 +338,7 @@ export interface BaseSlot {
   plantedDate?: Date;
   transplantedDate?: Date;
   transplantedTo: ContainerSlotIdentifier | null;
+  transplantedFromDate?: Date;
   transplantedFrom: ContainerSlotIdentifier | null;
   comments?: Comment[];
   pictures?: PictureData[];

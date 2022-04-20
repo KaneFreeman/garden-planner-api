@@ -11,6 +11,7 @@ export interface BaseSlotDocument extends Document {
   readonly plantedDate?: Date;
   readonly transplantedDate?: Date;
   readonly transplantedTo: ContainerSlotIdentifier | null;
+  readonly transplantedFromDate?: Date;
   readonly transplantedFrom: ContainerSlotIdentifier | null;
   readonly firstHarvestDate?: Date;
   readonly startedFrom: StartedFromType;

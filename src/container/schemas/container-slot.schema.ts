@@ -10,6 +10,7 @@ export const BaseContainerSlotSchema = {
   plantedDate: { type: Date },
   transplantedDate: { type: Date },
   transplantedTo: TransplantedSchema,
+  transplantedFromDate: { type: Date },
   transplantedFrom: TransplantedSchema,
   firstHarvestDate: { type: Date },
   startedFrom: String,
