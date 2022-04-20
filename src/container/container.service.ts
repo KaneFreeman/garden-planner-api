@@ -9,6 +9,7 @@ import plantData from '../data/plantData';
 import getSlotTitle from '../util/slot.util';
 import { Slot } from '../interface';
 import { BaseSlotDocument } from './interfaces/slot.interface';
+import { ContainerFertilizeDTO } from './dto/container-fertilize.dto';
 
 @Injectable()
 export class ContainerService {
@@ -47,6 +48,13 @@ export class ContainerService {
     const deletedContainer = await this.containerModel.findByIdAndRemove(containerId);
     await this.taskService.deleteTasksByContainer(containerId);
     return deletedContainer;
+  }
+
+  async fertilizeContainer(containerId: string, data: ContainerFertilizeDTO): Promise<number> {
+    return this.taskService.bulkEditTasks(
+      { containerId, type: 'Fertilize', completedOn: null, start: { $lt: data.date } },
+      { completedOn: data.date }
+    );
   }
 
   async updateTransplants(container: ContainerDocument | undefined) {

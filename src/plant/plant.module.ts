@@ -19,8 +19,8 @@ export class PlantModule {
         { method: RequestMethod.GET, path: '/api/plant' },
         { method: RequestMethod.GET, path: '/api/plant/:plantId' },
         { method: RequestMethod.POST, path: '/api/plant' },
-        { method: RequestMethod.PUT, path: '/api/plant' },
-        { method: RequestMethod.DELETE, path: '/api/plant' }
+        { method: RequestMethod.PUT, path: '/api/plant/:plantId' },
+        { method: RequestMethod.DELETE, path: '/api/plant/:plantId' }
       );
   }
 }

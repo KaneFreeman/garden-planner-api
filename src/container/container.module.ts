@@ -20,8 +20,9 @@ export class ContainerModule {
         { method: RequestMethod.GET, path: '/api/container' },
         { method: RequestMethod.GET, path: '/api/container/:containerId' },
         { method: RequestMethod.POST, path: '/api/container' },
-        { method: RequestMethod.PUT, path: '/api/container' },
-        { method: RequestMethod.DELETE, path: '/api/container' }
+        { method: RequestMethod.POST, path: '/api/container/:containerId/fertilize' },
+        { method: RequestMethod.PUT, path: '/api/container/:containerId' },
+        { method: RequestMethod.DELETE, path: '/api/container/:containerId' }
       );
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { FilterQuery, UpdateWithAggregationPipeline, UpdateQuery } from 'mongoose';
 import subDays from 'date-fns/subDays';
 import { CreateTaskDTO } from './dto/create-task.dto';
 import { TaskDocument } from './interfaces/task.interface';
@@ -48,6 +49,14 @@ export class TaskService {
     return this.taskModel.findByIdAndUpdate(taskId, createTaskDTO, {
       new: true
     });
+  }
+
+  async bulkEditTasks(
+    filter: FilterQuery<TaskDocument>,
+    update: UpdateWithAggregationPipeline | UpdateQuery<TaskDocument>
+  ): Promise<number> {
+    const result = await this.taskModel.updateMany(filter, update);
+    return result.modifiedCount;
   }
 
   async deleteTask(taskId: string, force = false): Promise<TaskDocument | null> {

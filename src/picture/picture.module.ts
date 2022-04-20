@@ -17,7 +17,7 @@ export class PictureModule {
       .forRoutes(
         { method: RequestMethod.GET, path: '/api/picture/:pictureId' },
         { method: RequestMethod.POST, path: '/api/picture' },
-        { method: RequestMethod.DELETE, path: '/api/picture' }
+        { method: RequestMethod.DELETE, path: '/api/picture/:pictureId' }
       );
   }
 }

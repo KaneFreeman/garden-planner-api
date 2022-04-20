@@ -19,8 +19,8 @@ export class TaskModule {
         { method: RequestMethod.GET, path: '/api/task' },
         { method: RequestMethod.GET, path: '/api/task/:taskId' },
         { method: RequestMethod.POST, path: '/api/task' },
-        { method: RequestMethod.PUT, path: '/api/task' },
-        { method: RequestMethod.DELETE, path: '/api/task' }
+        { method: RequestMethod.PUT, path: '/api/task/:taskId' },
+        { method: RequestMethod.DELETE, path: '/api/task/:taskId' }
       );
   }
 }
