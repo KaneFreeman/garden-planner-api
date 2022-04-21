@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { json, urlencoded } from 'express';
+import { auth } from 'express-oauth2-jwt-bearer';
 import { AppModule } from './app.module';
 
 const env = process.env.NODE_ENV || 'production';
@@ -10,6 +11,7 @@ async function bootstrap() {
   app.use(json({ limit: '25mb' }));
   app.use(urlencoded({ extended: true, limit: '25mb' }));
   app.enableCors();
+  app.use(auth());
 
   if (env === 'development') {
     const options = new DocumentBuilder()
