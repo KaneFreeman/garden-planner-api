@@ -87,7 +87,9 @@ export class ContainerService {
         }
       }
 
-      const newSlot: Slot = { ...(otherSlot?.toObject<Slot>() ?? { transplantedFrom: null, transplantedTo: null }) };
+      const newSlot: Slot = {
+        ...(otherSlot?.toObject<Slot>() ?? { transplantedFrom: null, transplantedTo: null, startedFrom: 'Transplant' })
+      };
       newSlot.plant = slot.plant;
       newSlot.plantedDate = slot.plantedDate;
       newSlot.transplantedTo = null;

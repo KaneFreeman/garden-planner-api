@@ -340,6 +340,7 @@ export interface BaseSlot {
   transplantedTo: ContainerSlotIdentifier | null;
   transplantedFromDate?: Date;
   transplantedFrom: ContainerSlotIdentifier | null;
+  startedFrom: StartedFromType;
   comments?: Comment[];
   pictures?: PictureData[];
 }

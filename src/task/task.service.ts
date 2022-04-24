@@ -323,7 +323,7 @@ export class TaskService {
     const howToGrowData = data.howToGrow[season];
     const fertilizeData = container.type === 'Inside' ? howToGrowData?.indoor?.fertilize : howToGrowData?.fertilize;
 
-    if (fertilizeData === undefined) {
+    if (fertilizeData === undefined || (container.type === 'Inside' && slot.startedFrom === 'Transplant')) {
       if (tasks.length > 0) {
         for (const task of tasks) {
           await this.deleteTask(task._id, true);
