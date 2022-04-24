@@ -129,12 +129,7 @@ export class TaskService {
   ) {
     const task = await this.getTaskByTypeAndPath('Plant', path);
     const dates = this.getPlantedStartAndDueDate(season, container.type, data);
-    if (
-      !dates ||
-      !isValidDate(dates.start) ||
-      !isValidDate(dates.due) ||
-      (container.type === 'Outside' && slot.startedFrom === 'Transplant')
-    ) {
+    if (!dates || !isValidDate(dates.start) || !isValidDate(dates.due) || slot.startedFrom === 'Transplant') {
       if (task) {
         await this.deleteTask(task._id, true);
       }
@@ -179,7 +174,13 @@ export class TaskService {
   ) {
     const task = await this.getTaskByTypeAndPath('Transplant', path);
     const dates = this.getTransplantedStartAndDueDate(season, data, slot.plantedDate);
-    if (slot.status === 'Not Planted' || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
+    if (
+      !slot.status ||
+      slot.status === 'Not Planted' ||
+      !dates ||
+      !isValidDate(dates.start) ||
+      !isValidDate(dates.due)
+    ) {
       if (task) {
         await this.deleteTask(task._id, true);
       }
