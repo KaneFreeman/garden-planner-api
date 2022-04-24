@@ -125,19 +125,8 @@ export class ContainerService {
     path: string,
     slotTitle: string
   ) {
-    if (!slot?.plant) {
-      return;
-    }
-
     const plant = await this.plantService.getPlant(slot.plant);
-    if (!plant?.type) {
-      return;
-    }
-
-    const data = plantData[plant.type];
-    if (!data) {
-      return;
-    }
+    const data = plant?.type ? plantData[plant.type] : undefined;
 
     await this.taskService.createUpdatePlantedTask('spring', container, slot, plant, data, path, slotTitle);
 

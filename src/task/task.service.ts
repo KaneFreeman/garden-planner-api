@@ -75,9 +75,9 @@ export class TaskService {
   getPlantedStartAndDueDate(
     season: 'spring' | 'fall',
     type: ContainerType,
-    data: PlantData
+    data: PlantData | undefined
   ): { start: Date; due: Date } | undefined {
-    const howToGrowData = data.howToGrow[season];
+    const howToGrowData = data?.howToGrow[season];
     if (type === 'Inside' && howToGrowData?.indoor) {
       return {
         start: subDays(growingZoneData.lastFrost, howToGrowData.indoor.min),
@@ -97,10 +97,10 @@ export class TaskService {
 
   getTransplantedStartAndDueDate(
     season: 'spring' | 'fall',
-    data: PlantData,
+    data: PlantData | undefined,
     plantedDate: Date | undefined
   ): { start: Date; due: Date } | undefined {
-    const howToGrowData = data.howToGrow[season];
+    const howToGrowData = data?.howToGrow[season];
     if (howToGrowData?.indoor) {
       if (plantedDate) {
         return {
@@ -122,14 +122,21 @@ export class TaskService {
     season: 'spring' | 'fall',
     container: ContainerDocument,
     slot: BaseSlotDocument,
-    plant: PlantDocument,
-    data: PlantData,
+    plant: PlantDocument | null,
+    data: PlantData | undefined,
     path: string,
     slotTitle: string
   ) {
     const task = await this.getTaskByTypeAndPath('Plant', path);
     const dates = this.getPlantedStartAndDueDate(season, container.type, data);
-    if (!dates || !isValidDate(dates.start) || !isValidDate(dates.due) || slot.startedFrom === 'Transplant') {
+    if (
+      !plant ||
+      !data ||
+      !dates ||
+      !isValidDate(dates.start) ||
+      !isValidDate(dates.due) ||
+      slot.startedFrom === 'Transplant'
+    ) {
       if (task) {
         await this.deleteTask(task._id, true);
       }
@@ -167,14 +174,16 @@ export class TaskService {
     season: 'spring' | 'fall',
     container: ContainerDocument,
     slot: BaseSlotDocument,
-    plant: PlantDocument,
-    data: PlantData,
+    plant: PlantDocument | null,
+    data: PlantData | undefined,
     path: string,
     slotTitle: string
   ) {
     const task = await this.getTaskByTypeAndPath('Transplant', path);
     const dates = this.getTransplantedStartAndDueDate(season, data, slot.plantedDate);
     if (
+      !plant ||
+      !data ||
       !slot.status ||
       slot.status === 'Not Planted' ||
       !dates ||
@@ -215,14 +224,14 @@ export class TaskService {
   }
 
   getHarvestStartAndDueDate(
-    plant: PlantDocument,
+    plant: PlantDocument | null,
     plantedDate: Date | undefined
   ): { start: Date; due: Date } | undefined {
     if (
       plantedDate &&
-      plant.daysToMaturity !== undefined &&
-      plant.daysToMaturity.length > 0 &&
-      plant.daysToMaturity[0] !== undefined
+      plant?.daysToMaturity !== undefined &&
+      plant?.daysToMaturity.length > 0 &&
+      plant?.daysToMaturity[0] !== undefined
     ) {
       if (
         plant.daysToMaturity.length > 1 &&
@@ -248,14 +257,14 @@ export class TaskService {
   async createUpdateHarvestTask(
     container: ContainerDocument,
     slot: BaseSlotDocument,
-    plant: PlantDocument,
+    plant: PlantDocument | null,
     path: string,
     slotTitle: string
   ) {
     const task = await this.getTaskByTypeAndPath('Harvest', path);
 
     const dates = this.getHarvestStartAndDueDate(plant, slot.plantedDate);
-    if (slot.status === 'Not Planted' || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
+    if (!plant || slot.status === 'Not Planted' || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
       if (task) {
         await this.deleteTask(task._id, true);
       }
@@ -309,8 +318,8 @@ export class TaskService {
     season: 'spring' | 'fall',
     container: ContainerDocument,
     slot: BaseSlotDocument,
-    plant: PlantDocument,
-    data: PlantData,
+    plant: PlantDocument | null,
+    data: PlantData | undefined,
     path: string,
     slotTitle: string
   ) {
@@ -321,10 +330,15 @@ export class TaskService {
       return byText;
     }, {} as Record<string, TaskDocument>);
 
-    const howToGrowData = data.howToGrow[season];
+    const howToGrowData = data?.howToGrow[season];
     const fertilizeData = container.type === 'Inside' ? howToGrowData?.indoor?.fertilize : howToGrowData?.fertilize;
 
-    if (fertilizeData === undefined || (container.type === 'Inside' && slot.startedFrom === 'Transplant')) {
+    if (
+      !plant ||
+      !data ||
+      fertilizeData === undefined ||
+      (container.type === 'Inside' && slot.startedFrom === 'Transplant')
+    ) {
       if (tasks.length > 0) {
         for (const task of tasks) {
           await this.deleteTask(task._id, true);

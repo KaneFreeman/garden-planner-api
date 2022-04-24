@@ -3,6 +3,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { PlantDTO } from './dto/plant.dto';
 import { PlantDocument } from './interfaces/plant.interface';
+import { isNullish } from '../util/null.util';
 
 @Injectable()
 export class PlantService {
@@ -13,7 +14,10 @@ export class PlantService {
     return newPlant.save();
   }
 
-  async getPlant(plantId: string): Promise<PlantDocument | null> {
+  async getPlant(plantId: string | null | undefined): Promise<PlantDocument | null> {
+    if (isNullish(plantId)) {
+      return null;
+    }
     return this.plantModel.findById(plantId).exec();
   }
 
