@@ -9,5 +9,6 @@ export const ContainerSchema = new mongoose.Schema({
   slots: {
     type: Map,
     of: ContainerSlotSchema
-  }
+  },
+  startedFrom: String
 });

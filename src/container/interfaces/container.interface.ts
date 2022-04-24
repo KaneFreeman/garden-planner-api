@@ -1,5 +1,5 @@
 import { Document } from 'mongoose';
-import { ContainerType } from '../../interface';
+import { ContainerType, StartedFromType } from '../../interface';
 import { SlotDocument } from './slot.interface';
 
 export interface ContainerDocument extends Document {
@@ -8,4 +8,5 @@ export interface ContainerDocument extends Document {
   readonly rows: number;
   readonly columns: number;
   readonly slots?: Map<string, SlotDocument>;
+  readonly startedFrom?: StartedFromType;
 }
