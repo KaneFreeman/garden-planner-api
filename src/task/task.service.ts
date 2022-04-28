@@ -51,6 +51,16 @@ export class TaskService {
     });
   }
 
+  async updatePlantName(path: string, oldName: string, newName: string) {
+    const tasks = await this.getTasksByPath(path);
+
+    for (const task of tasks) {
+      await this.taskModel.findByIdAndUpdate(task._id, {
+        text: task.text.replaceAll(oldName, newName)
+      });
+    }
+  }
+
   async bulkEditTasks(
     filter: FilterQuery<TaskDocument>,
     update: UpdateWithAggregationPipeline | UpdateQuery<TaskDocument>
@@ -198,7 +208,7 @@ export class TaskService {
 
     const { start, due } = dates;
 
-    const completedOn = slot.status === 'Transplanted' ? slot.plantedDate ?? null : null;
+    const completedOn = slot.status === 'Transplanted' ? slot.transplantedDate ?? null : null;
 
     if (!task) {
       await this.addTask({
@@ -264,7 +274,14 @@ export class TaskService {
     const task = await this.getTaskByTypeAndPath('Harvest', path);
 
     const dates = this.getHarvestStartAndDueDate(plant, slot.plantedDate);
-    if (!plant || slot.status === 'Not Planted' || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
+    if (
+      !plant ||
+      slot.status === 'Not Planted' ||
+      slot.status === 'Transplanted' ||
+      !dates ||
+      !isValidDate(dates.start) ||
+      !isValidDate(dates.due)
+    ) {
       if (task) {
         await this.deleteTask(task._id, true);
       }
@@ -337,7 +354,8 @@ export class TaskService {
       !plant ||
       !data ||
       fertilizeData === undefined ||
-      (container.type === 'Inside' && slot.startedFrom === 'Transplant')
+      (container.type === 'Inside' && slot.startedFrom === 'Transplant') ||
+      slot.status === 'Transplanted'
     ) {
       if (tasks.length > 0) {
         for (const task of tasks) {

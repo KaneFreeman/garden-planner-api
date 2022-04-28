@@ -331,6 +331,11 @@ export interface ContainerSlotIdentifier {
   slotId: number;
 }
 
+export interface Comment {
+  date: Date;
+  text: string;
+}
+
 export interface BaseSlot {
   plant?: string | null;
   status?: Status;

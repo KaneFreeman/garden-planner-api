@@ -18,6 +18,7 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true,
-    "strict": true
+    "strict": true,
+    "lib": ["ES2021"]
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { ContainerDTO } from './dto/container.dto';
@@ -16,7 +16,7 @@ export class ContainerService {
   constructor(
     @InjectModel('Container')
     private readonly containerModel: Model<ContainerDocument>,
-    private plantService: PlantService,
+    @Inject(forwardRef(() => PlantService)) private plantService: PlantService,
     private taskService: TaskService
   ) {}
 
