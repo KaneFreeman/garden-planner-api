@@ -329,6 +329,7 @@ export interface PictureDataDTO {
 export interface ContainerSlotIdentifier {
   containerId: string;
   slotId: number;
+  subSlot?: boolean;
 }
 
 export interface Comment {
