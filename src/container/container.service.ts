@@ -7,7 +7,7 @@ import { TaskService } from '../task/task.service';
 import { PlantService } from '../plant/plant.service';
 import plantData from '../data/plantData';
 import getSlotTitle from '../util/slot.util';
-import { Slot } from '../interface';
+import { BaseSlot, Slot } from '../interface';
 import { BaseSlotDocument } from './interfaces/slot.interface';
 import { ContainerFertilizeDTO } from './dto/container-fertilize.dto';
 
@@ -65,57 +65,105 @@ export class ContainerService {
     const { slots } = container;
 
     for (const [slotIndex, slot] of slots) {
-      if (!slot?.transplantedTo) {
-        continue;
+      await this.updateTransplantsForSlot(container, slotIndex, slot, false);
+
+      if (slot.subSlot) {
+        await this.updateTransplantsForSlot(container, slotIndex, slot.subSlot, true);
+      }
+    }
+  }
+
+  async updateTransplantsForSlot(
+    container: ContainerDocument,
+    slotIndex: string,
+    slot: BaseSlotDocument,
+    isSubSlot: boolean
+  ) {
+    if (!slot?.transplantedTo) {
+      return;
+    }
+
+    const otherContainer = await this.getContainer(slot.transplantedTo.containerId);
+
+    if (!otherContainer) {
+      return;
+    }
+
+    const transplantedTo = `${slot.transplantedTo.slotId}`;
+
+    const otherSlot = otherContainer.slots?.get(transplantedTo);
+    if (otherContainer.slots && otherContainer.slots.has(transplantedTo)) {
+      if (
+        slot.transplantedTo.subSlot !== true &&
+        ((otherSlot?.status ?? 'Not Planted') !== 'Not Planted' ||
+          (otherSlot?.plant !== undefined && otherSlot?.plant !== slot.plant))
+      ) {
+        return;
       }
 
-      const otherContainer = await this.getContainer(slot.transplantedTo.containerId);
-
-      if (!otherContainer) {
-        continue;
+      if (
+        slot.transplantedTo.subSlot === true &&
+        ((otherSlot?.subSlot?.status ?? 'Not Planted') !== 'Not Planted' ||
+          (otherSlot?.subSlot?.plant !== undefined && otherSlot?.subSlot?.plant !== slot.plant))
+      ) {
+        return;
       }
+    }
 
-      const transplantedTo = `${slot.transplantedTo.slotId}`;
-
-      const otherSlot = otherContainer.slots?.get(transplantedTo);
-      if (otherContainer.slots && otherContainer.slots.has(transplantedTo)) {
-        if (
-          (otherSlot?.status ?? 'Not Planted') !== 'Not Planted' ||
-          (otherSlot?.plant !== undefined && otherSlot?.plant !== slot.plant)
-        ) {
-          continue;
-        }
-      }
-
-      const newSlot: Slot = {
-        ...(otherSlot?.toObject<Slot>() ?? { transplantedFrom: null, transplantedTo: null, startedFrom: 'Transplant' })
+    let newSlot: BaseSlot;
+    if (slot.transplantedTo.subSlot === true) {
+      newSlot = {
+        ...(otherSlot?.subSlot?.toObject<Slot>() ?? {
+          transplantedFrom: null,
+          transplantedTo: null,
+          startedFrom: 'Transplant'
+        })
       };
-      newSlot.plant = slot.plant;
-      newSlot.plantedDate = slot.plantedDate;
-      newSlot.transplantedTo = null;
-      newSlot.transplantedFromDate = slot.transplantedDate;
-      newSlot.transplantedFrom = {
-        containerId: container._id,
-        slotId: +slotIndex
+    } else {
+      newSlot = {
+        ...(otherSlot?.toObject<Slot>() ?? {
+          transplantedFrom: null,
+          transplantedTo: null,
+          startedFrom: 'Transplant'
+        })
       };
-      newSlot.plantedDate = slot.plantedDate;
-      newSlot.status = 'Planted';
+    }
 
-      const newSlots: Record<string, Slot> = {};
-      otherContainer.slots?.forEach((slot, key) => {
-        newSlots[key] = slot.toObject<Slot>();
-      });
+    newSlot.plant = slot.plant;
+    console.log(slotIndex, slot.plant);
+    newSlot.plantedDate = slot.plantedDate;
+    newSlot.transplantedTo = null;
+    newSlot.transplantedFromDate = slot.transplantedDate;
+    newSlot.transplantedFrom = {
+      containerId: container._id,
+      slotId: +slotIndex,
+      subSlot: isSubSlot
+    };
+    newSlot.plantedDate = slot.plantedDate;
+    newSlot.status = 'Planted';
+
+    const newSlots: Record<string, Slot> = {};
+    otherContainer.slots?.forEach((slot, key) => {
+      newSlots[key] = slot.toObject<Slot>();
+    });
+
+    if (slot.transplantedTo.subSlot === true) {
+      newSlots[slot.transplantedTo.slotId] = {
+        ...newSlots[slot.transplantedTo.slotId],
+        subSlot: newSlot
+      };
+    } else {
       newSlots[slot.transplantedTo.slotId] = newSlot;
+    }
 
-      const editedContainer = await this.containerModel.findByIdAndUpdate(
-        otherContainer._id,
-        { slots: newSlots },
-        { new: true }
-      );
+    const editedContainer = await this.containerModel.findByIdAndUpdate(
+      otherContainer._id,
+      { slots: newSlots },
+      { new: true }
+    );
 
-      if (editedContainer) {
-        await this.createUpdatePlantTasks(editedContainer);
-      }
+    if (editedContainer) {
+      await this.createUpdatePlantTasks(editedContainer);
     }
   }
 
