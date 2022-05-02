@@ -9,4 +9,5 @@ export interface ContainerDocument extends Document {
   readonly columns: number;
   readonly slots?: Map<string, SlotDocument>;
   readonly startedFrom?: StartedFromType;
+  readonly archived?: boolean;
 }

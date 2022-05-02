@@ -8,4 +8,5 @@ export interface ContainerDTO {
   readonly columns: number;
   readonly slots?: Record<string, ContainerSlotDTO>;
   readonly startedFrom?: StartedFromType;
+  readonly archived?: boolean;
 }

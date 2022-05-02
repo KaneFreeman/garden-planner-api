@@ -10,5 +10,6 @@ export const ContainerSchema = new mongoose.Schema({
     type: Map,
     of: ContainerSlotSchema
   },
-  startedFrom: String
+  startedFrom: String,
+  archived: Boolean
 });
