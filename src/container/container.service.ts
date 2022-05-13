@@ -130,7 +130,6 @@ export class ContainerService {
     }
 
     newSlot.plant = slot.plant;
-    console.log(slotIndex, slot.plant);
     newSlot.plantedDate = slot.plantedDate;
     newSlot.transplantedTo = null;
     newSlot.transplantedFromDate = slot.transplantedDate;
