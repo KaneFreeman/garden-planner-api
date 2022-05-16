@@ -241,12 +241,15 @@ export class TaskService {
       plantedDate &&
       plant?.daysToMaturity !== undefined &&
       plant?.daysToMaturity.length > 0 &&
-      plant?.daysToMaturity[0] !== undefined
+      plant?.daysToMaturity[0] !== undefined &&
+      plant?.daysToMaturity[0] !== null &&
+      plant?.daysToMaturity[0] !== 0
     ) {
       if (
         plant.daysToMaturity.length > 1 &&
         plant.daysToMaturity[1] !== undefined &&
         plant.daysToMaturity[1] !== null &&
+        plant.daysToMaturity[1] !== 0 &&
         plant.daysToMaturity[0] !== plant.daysToMaturity[1]
       ) {
         return {
