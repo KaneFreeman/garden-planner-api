@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { CommentSchema } from '../../common/schemas/comment.schema';
 import { PictureDataSchema } from '../../common/schemas/picture-data.schema';
-import { TransplantedSchema } from './transplanted.schema';
+import { ContainerSlotIdentifierSchema } from './container-slot-identifier.schema';
 
 export const BaseContainerSlotSchema = {
   plant: String,
@@ -9,9 +9,9 @@ export const BaseContainerSlotSchema = {
   plantedCount: Number,
   plantedDate: { type: Date },
   transplantedDate: { type: Date },
-  transplantedTo: TransplantedSchema,
+  transplantedTo: ContainerSlotIdentifierSchema,
   transplantedFromDate: { type: Date },
-  transplantedFrom: TransplantedSchema,
+  transplantedFrom: ContainerSlotIdentifierSchema,
   firstHarvestDate: { type: Date },
   startedFrom: String,
   pictures: [PictureDataSchema],

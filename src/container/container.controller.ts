@@ -3,7 +3,7 @@ import { ContainerService } from './container.service';
 import { ContainerDTO } from './dto/container.dto';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
 import { Response } from 'express';
-import { ContainerFertilizeDTO } from './dto/container-fertilize.dto';
+// import { ContainerFertilizeDTO } from './dto/container-fertilize.dto';
 
 @Controller('/api/container')
 export class ContainerController {
@@ -57,14 +57,14 @@ export class ContainerController {
     return res.status(HttpStatus.OK).json(deletedContainer);
   }
 
-  // Fertilize a container
-  @Post('/:containerId/fertilize')
-  async fertilizeContainer(
-    @Res() res: Response,
-    @Param('containerId', new ValidateObjectId()) containerId: string,
-    @Body() containerFertilizeDTO: ContainerFertilizeDTO
-  ) {
-    const updatedTasksCount = await this.containerService.fertilizeContainer(containerId, containerFertilizeDTO);
-    return res.status(HttpStatus.OK).json(updatedTasksCount);
-  }
+  // TODO Fertilize a container
+  // @Post('/:containerId/fertilize')
+  // async fertilizeContainer(
+  //   @Res() res: Response,
+  //   @Param('containerId', new ValidateObjectId()) containerId: string,
+  //   @Body() containerFertilizeDTO: ContainerFertilizeDTO
+  // ) {
+  //   const updatedTasksCount = await this.containerService.fertilizeContainer(containerId, containerFertilizeDTO);
+  //   return res.status(HttpStatus.OK).json(updatedTasksCount);
+  // }
 }

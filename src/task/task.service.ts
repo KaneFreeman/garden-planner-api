@@ -3,18 +3,19 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, UpdateWithAggregationPipeline, UpdateQuery } from 'mongoose';
 import subDays from 'date-fns/subDays';
-import { CreateTaskDTO } from './dto/create-task.dto';
-import { TaskDocument } from './interfaces/task.interface';
+import addDays from 'date-fns/addDays';
 import { ContainerDocument } from '../container/interfaces/container.interface';
-import { BaseSlotDocument } from '../container/interfaces/slot.interface';
-import { ContainerType, FertilizerApplication, PlantData, TaskType } from '../interface';
+import { ContainerType, FertilizerApplication, HARVESTED, PlantData, TaskType, TRANSPLANTED } from '../interface';
 import { PlantDocument } from '../plant/interfaces/plant.interface';
 import growingZoneData from '../data/growingZoneData';
-import addDays from 'date-fns/addDays';
 import { ONE_WEEK, TWO_WEEKS } from '../constants';
 import { isValidDate } from '../util/date.util';
 import ordinalSuffixOf from '../util/number.util';
 import { isEmpty, isNotEmpty } from '../util/string.util';
+import { PlantInstanceDocument } from '../plant-instance/interfaces/plant-instance.interface';
+import { CreateTaskDTO } from './dto/create-task.dto';
+import { TaskDocument } from './interfaces/task.interface';
+import { findHistoryFrom, getPlantedDate, getTransplantedDate } from '../plant-instance/util/history.util';
 
 @Injectable()
 export class TaskService {
@@ -45,14 +46,18 @@ export class TaskService {
     return this.taskModel.find({ path }).exec();
   }
 
+  async getTasksByPlantInstanceId(plantInstanceId: string): Promise<TaskDocument[]> {
+    return this.taskModel.find({ plantInstanceId }).exec();
+  }
+
   async editTask(taskId: string, createTaskDTO: CreateTaskDTO): Promise<TaskDocument | null> {
     return this.taskModel.findByIdAndUpdate(taskId, createTaskDTO, {
       new: true
     });
   }
 
-  async updatePlantName(path: string, oldName: string, newName: string) {
-    const tasks = await this.getTasksByPath(path);
+  async updatePlantName(plantInstanceId: string, oldName: string, newName: string) {
+    const tasks = await this.getTasksByPlantInstanceId(plantInstanceId);
 
     for (const task of tasks) {
       await this.taskModel.findByIdAndUpdate(task._id, {
@@ -78,8 +83,8 @@ export class TaskService {
     return await this.taskModel.findByIdAndRemove(taskId);
   }
 
-  async deleteTasksByContainer(containerId: string): Promise<void> {
-    await this.taskModel.deleteMany({ containerId }).exec();
+  async deleteOpenTasksByPlantInstance(plantInstanceId: string): Promise<void> {
+    await this.taskModel.deleteMany({ plantInstanceId, completedOn: null }).exec();
   }
 
   getPlantedStartAndDueDate(
@@ -108,7 +113,7 @@ export class TaskService {
   getTransplantedStartAndDueDate(
     season: 'spring' | 'fall',
     data: PlantData | undefined,
-    plantedDate: Date | undefined
+    plantedDate: Date | null
   ): { start: Date; due: Date } | undefined {
     const howToGrowData = data?.howToGrow[season];
     if (howToGrowData?.indoor) {
@@ -131,22 +136,19 @@ export class TaskService {
   async createUpdatePlantedTask(
     season: 'spring' | 'fall',
     container: ContainerDocument,
-    slot: BaseSlotDocument,
+    instance: PlantInstanceDocument | null,
     plant: PlantDocument | null,
     data: PlantData | undefined,
     path: string,
     slotTitle: string
   ) {
+    if (!container._id) {
+      return;
+    }
+
     const task = await this.getTaskByTypeAndPath('Plant', path);
     const dates = this.getPlantedStartAndDueDate(season, container.type, data);
-    if (
-      !plant ||
-      !data ||
-      !dates ||
-      !isValidDate(dates.start) ||
-      !isValidDate(dates.due) ||
-      slot.startedFrom === 'Transplant'
-    ) {
+    if (!plant || !data || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
       if (task) {
         await this.deleteTask(task._id, true);
       }
@@ -155,7 +157,7 @@ export class TaskService {
 
     const { start, due } = dates;
 
-    const completedOn = slot.status && slot.status !== 'Not Planted' ? slot.plantedDate ?? null : null;
+    const completedOn = getPlantedDate(instance);
 
     if (!task) {
       await this.addTask({
@@ -183,23 +185,21 @@ export class TaskService {
   async createUpdateTransplantedTask(
     season: 'spring' | 'fall',
     container: ContainerDocument,
-    slot: BaseSlotDocument,
+    slotId: number,
+    subSlot: boolean,
+    instance: PlantInstanceDocument | null,
     plant: PlantDocument | null,
     data: PlantData | undefined,
     path: string,
     slotTitle: string
   ) {
+    if (!container._id || !instance) {
+      return;
+    }
+
     const task = await this.getTaskByTypeAndPath('Transplant', path);
-    const dates = this.getTransplantedStartAndDueDate(season, data, slot.plantedDate);
-    if (
-      !plant ||
-      !data ||
-      !slot.status ||
-      slot.status === 'Not Planted' ||
-      !dates ||
-      !isValidDate(dates.start) ||
-      !isValidDate(dates.due)
-    ) {
+    const dates = this.getTransplantedStartAndDueDate(season, data, getPlantedDate(instance));
+    if (!plant || !data || !instance || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
       if (task) {
         await this.deleteTask(task._id, true);
       }
@@ -208,7 +208,19 @@ export class TaskService {
 
     const { start, due } = dates;
 
-    const completedOn = slot.status === 'Transplanted' ? slot.transplantedDate ?? null : null;
+    let completedOn: Date | null = null;
+    if (container._id !== instance.containerId) {
+      completedOn =
+        findHistoryFrom(
+          instance,
+          {
+            containerId: container._id,
+            slotId,
+            subSlot
+          },
+          TRANSPLANTED
+        )?.date ?? null;
+    }
 
     if (!task) {
       await this.addTask({
@@ -235,7 +247,7 @@ export class TaskService {
 
   getHarvestStartAndDueDate(
     plant: PlantDocument | null,
-    plantedDate: Date | undefined
+    plantedDate: Date | null
   ): { start: Date; due: Date } | undefined {
     if (
       plantedDate &&
@@ -269,18 +281,23 @@ export class TaskService {
 
   async createUpdateHarvestTask(
     container: ContainerDocument,
-    slot: BaseSlotDocument,
+    slotId: number,
+    subSlot: boolean,
+    instance: PlantInstanceDocument | null,
     plant: PlantDocument | null,
     path: string,
     slotTitle: string
   ) {
+    if (!container._id || !instance) {
+      return;
+    }
+
     const task = await this.getTaskByTypeAndPath('Harvest', path);
 
-    const dates = this.getHarvestStartAndDueDate(plant, slot.plantedDate);
+    const dates = this.getHarvestStartAndDueDate(plant, getPlantedDate(instance));
     if (
       !plant ||
-      slot.status === 'Not Planted' ||
-      slot.status === 'Transplanted' ||
+      instance?.containerId !== container._id ||
       !dates ||
       !isValidDate(dates.start) ||
       !isValidDate(dates.due)
@@ -293,7 +310,19 @@ export class TaskService {
 
     const { start, due } = dates;
 
-    const completedOn = slot.status === 'Harvested' ? slot.plantedDate ?? null : null;
+    let completedOn: Date | null = null;
+    if (container._id !== instance.containerId) {
+      completedOn =
+        findHistoryFrom(
+          instance,
+          {
+            containerId: container._id,
+            slotId,
+            subSlot
+          },
+          HARVESTED
+        )?.date ?? null;
+    }
 
     if (!task) {
       await this.addTask({
@@ -319,8 +348,8 @@ export class TaskService {
   }
 
   getFertilizeStartAndDueDate(
-    plantedDate: Date | undefined,
-    transplantedDate: Date | undefined,
+    plantedDate: Date | null,
+    transplantedDate: Date | null,
     fertilizerApplication: FertilizerApplication
   ): { start: Date; due: Date } | undefined {
     const fromDate = fertilizerApplication.from === 'Transplanted' ? transplantedDate : plantedDate;
@@ -337,12 +366,18 @@ export class TaskService {
   async createUpdateIndoorFertilzeTasksTask(
     season: 'spring' | 'fall',
     container: ContainerDocument,
-    slot: BaseSlotDocument,
+    slotId: number,
+    subSlot: boolean,
+    instance: PlantInstanceDocument | null,
     plant: PlantDocument | null,
     data: PlantData | undefined,
     path: string,
     slotTitle: string
   ) {
+    if (!container._id || !instance) {
+      return;
+    }
+
     const tasks = await this.getTasksByTypeAndPath('Fertilize', path);
     const taskTexts: string[] = [];
     const tasksByText = tasks.reduce((byText, task) => {
@@ -353,13 +388,7 @@ export class TaskService {
     const howToGrowData = data?.howToGrow[season];
     const fertilizeData = container.type === 'Inside' ? howToGrowData?.indoor?.fertilize : howToGrowData?.fertilize;
 
-    if (
-      !plant ||
-      !data ||
-      fertilizeData === undefined ||
-      (container.type === 'Inside' && slot.startedFrom === 'Transplant') ||
-      slot.status === 'Transplanted'
-    ) {
+    if (!plant || !data || fertilizeData === undefined || instance?.containerId !== container._id) {
       if (tasks.length > 0) {
         for (const task of tasks) {
           await this.deleteTask(task._id, true);
@@ -372,11 +401,15 @@ export class TaskService {
     for (const fertilizerApplication of fertilizeData) {
       i += 1;
       const dates = this.getFertilizeStartAndDueDate(
-        slot.plantedDate,
-        slot.transplantedFromDate,
+        getPlantedDate(instance),
+        getTransplantedDate(instance, {
+          containerId: container._id,
+          slotId,
+          subSlot
+        }),
         fertilizerApplication
       );
-      if (slot.status === 'Not Planted' || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
+      if (!dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
         continue;
       }
 

@@ -8,6 +8,7 @@ import { TaskModule } from './task/task.module';
 import { ContainerModule } from './container/container.module';
 import { PictureModule } from './picture/picture.module';
 import { StaticModule } from './static/static.module';
+import { PlantInstanceModule } from './plant-instance/plant-instance.module';
 
 const env = process.env.NODE_ENV || 'production';
 
@@ -20,6 +21,7 @@ const env = process.env.NODE_ENV || 'production';
       useNewUrlParser: true
     }),
     PlantModule,
+    PlantInstanceModule,
     TaskModule,
     ContainerModule,
     PictureModule,
