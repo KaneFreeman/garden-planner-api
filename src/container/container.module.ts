@@ -9,7 +9,7 @@ import { PlantModule } from '../plant/plant.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Container', schema: ContainerSchema }]),
-    TaskModule,
+    forwardRef(() => TaskModule),
     forwardRef(() => PlantModule)
   ],
   providers: [ContainerService],

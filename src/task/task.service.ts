@@ -1,24 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, UpdateWithAggregationPipeline, UpdateQuery } from 'mongoose';
 import subDays from 'date-fns/subDays';
+import addDays from 'date-fns/addDays';
 import { CreateTaskDTO } from './dto/create-task.dto';
 import { TaskDocument } from './interfaces/task.interface';
 import { ContainerDocument } from '../container/interfaces/container.interface';
 import { BaseSlotDocument } from '../container/interfaces/slot.interface';
-import { ContainerType, FertilizerApplication, PlantData, TaskType } from '../interface';
+import { ContainerType, FERTILIZE, FertilizerApplication, PlantData, TaskType } from '../interface';
 import { PlantDocument } from '../plant/interfaces/plant.interface';
 import growingZoneData from '../data/growingZoneData';
-import addDays from 'date-fns/addDays';
 import { ONE_WEEK, TWO_WEEKS } from '../constants';
 import { isValidDate } from '../util/date.util';
 import ordinalSuffixOf from '../util/number.util';
 import { isEmpty, isNotEmpty } from '../util/string.util';
+import { isNullish } from '../util/null.util';
+import { ContainerService } from '../container/container.service';
 
 @Injectable()
 export class TaskService {
-  constructor(@InjectModel('Task') private readonly taskModel: Model<TaskDocument>) {}
+  constructor(
+    @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
+    @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService
+  ) {}
 
   async addTask(createTaskDTO: CreateTaskDTO): Promise<TaskDocument> {
     const newTask = await this.taskModel.create(createTaskDTO);
@@ -45,10 +50,21 @@ export class TaskService {
     return this.taskModel.find({ path }).exec();
   }
 
-  async editTask(taskId: string, createTaskDTO: CreateTaskDTO): Promise<TaskDocument | null> {
-    return this.taskModel.findByIdAndUpdate(taskId, createTaskDTO, {
+  async editTask(
+    taskId: string,
+    createTaskDTO: CreateTaskDTO,
+    updateContainerTasks: boolean
+  ): Promise<TaskDocument | null> {
+    const task = await this.taskModel.findByIdAndUpdate(taskId, createTaskDTO, {
       new: true
     });
+
+    if (task?.type === FERTILIZE && updateContainerTasks) {
+      const container = await this.containerService.getContainer(task.containerId);
+      await this.containerService.createUpdatePlantTasks(container);
+    }
+
+    return task;
   }
 
   async updatePlantName(path: string, oldName: string, newName: string) {
@@ -168,15 +184,19 @@ export class TaskService {
         completedOn
       });
     } else {
-      await this.editTask(task._id, {
-        text: `Plant ${plant.name} in ${container.name} at ${slotTitle}`,
-        type: task.type,
-        start,
-        due,
-        containerId: container._id,
-        path: task.path,
-        completedOn
-      });
+      await this.editTask(
+        task._id,
+        {
+          text: `Plant ${plant.name} in ${container.name} at ${slotTitle}`,
+          type: task.type,
+          start,
+          due,
+          containerId: container._id,
+          path: task.path,
+          completedOn
+        },
+        false
+      );
     }
   }
 
@@ -221,15 +241,19 @@ export class TaskService {
         completedOn
       });
     } else {
-      await this.editTask(task._id, {
-        text: `Transplant ${plant.name} from ${container.name} at ${slotTitle}`,
-        type: task.type,
-        start,
-        due,
-        containerId: container._id,
-        path: task.path,
-        completedOn
-      });
+      await this.editTask(
+        task._id,
+        {
+          text: `Transplant ${plant.name} from ${container.name} at ${slotTitle}`,
+          type: task.type,
+          start,
+          due,
+          containerId: container._id,
+          path: task.path,
+          completedOn
+        },
+        false
+      );
     }
   }
 
@@ -306,28 +330,47 @@ export class TaskService {
         completedOn
       });
     } else {
-      await this.editTask(task._id, {
-        text: `Harvest ${plant.name} from ${container.name} at ${slotTitle}`,
-        type: task.type,
-        start,
-        due,
-        containerId: container._id,
-        path: task.path,
-        completedOn
-      });
+      await this.editTask(
+        task._id,
+        {
+          text: `Harvest ${plant.name} from ${container.name} at ${slotTitle}`,
+          type: task.type,
+          start,
+          due,
+          containerId: container._id,
+          path: task.path,
+          completedOn
+        },
+        false
+      );
     }
   }
 
   getFertilizeStartAndDueDate(
     plantedDate: Date | undefined,
     transplantedDate: Date | undefined,
-    fertilizerApplication: FertilizerApplication
+    fertilizerApplication: FertilizerApplication,
+    previousTask: TaskDocument | null | undefined
   ): { start: Date; due: Date } | undefined {
     const fromDate = fertilizerApplication.from === 'Transplanted' ? transplantedDate : plantedDate;
     if (fromDate) {
+      const startDays = fertilizerApplication.start;
+      const endDays = fertilizerApplication.end ?? ONE_WEEK;
+
+      if (fertilizerApplication.relative) {
+        if (!previousTask || isNullish(previousTask?.completedOn)) {
+          return undefined;
+        }
+
+        return {
+          start: addDays(previousTask.completedOn, startDays),
+          due: addDays(addDays(previousTask.completedOn, startDays), endDays)
+        };
+      }
+
       return {
-        start: addDays(fromDate, fertilizerApplication.start),
-        due: addDays(addDays(fromDate, fertilizerApplication.start), fertilizerApplication.end ?? ONE_WEEK)
+        start: addDays(fromDate, startDays),
+        due: addDays(addDays(fromDate, startDays), endDays)
       };
     }
 
@@ -368,13 +411,16 @@ export class TaskService {
       return;
     }
 
+    let previousTask: TaskDocument | null | undefined;
+
     let i = 0;
     for (const fertilizerApplication of fertilizeData) {
       i += 1;
       const dates = this.getFertilizeStartAndDueDate(
         slot.plantedDate,
         slot.transplantedFromDate,
-        fertilizerApplication
+        fertilizerApplication,
+        previousTask
       );
       if (slot.status === 'Not Planted' || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
         continue;
@@ -394,7 +440,7 @@ export class TaskService {
       const task = tasksByText[text];
       taskTexts.push(text);
       if (!task) {
-        await this.addTask({
+        previousTask = await this.addTask({
           text,
           type: 'Fertilize',
           start,
@@ -404,15 +450,21 @@ export class TaskService {
           completedOn: null
         });
       } else if (task.completedOn === null) {
-        await this.editTask(task._id, {
-          text,
-          type: 'Fertilize',
-          start,
-          due,
-          containerId: container._id,
-          path,
-          completedOn: null
-        });
+        previousTask = await this.editTask(
+          task._id,
+          {
+            text,
+            type: 'Fertilize',
+            start,
+            due,
+            containerId: container._id,
+            path,
+            completedOn: null
+          },
+          false
+        );
+      } else {
+        previousTask = task;
       }
     }
 

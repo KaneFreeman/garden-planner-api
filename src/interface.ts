@@ -269,6 +269,7 @@ export type TaskType = typeof PLANT | typeof TRANSPLANT | typeof HARVEST | typeo
 export const TASK_TYPES: TaskType[] = [PLANT, TRANSPLANT, HARVEST, FERTILIZE, CUSTOM];
 
 export interface FertilizerApplication {
+  relative?: boolean;
   start: number;
   end?: number;
   from: 'Planted' | 'Transplanted';

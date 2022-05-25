@@ -17,7 +17,7 @@ export class ContainerService {
     @InjectModel('Container')
     private readonly containerModel: Model<ContainerDocument>,
     @Inject(forwardRef(() => PlantService)) private plantService: PlantService,
-    private taskService: TaskService
+    @Inject(forwardRef(() => TaskService)) private taskService: TaskService
   ) {}
 
   async addContainer(createContainerDTO: ContainerDTO): Promise<ContainerDocument> {
@@ -25,7 +25,11 @@ export class ContainerService {
     return newContainer.save();
   }
 
-  async getContainer(containerId: string): Promise<ContainerDocument | null> {
+  async getContainer(containerId: string | null | undefined): Promise<ContainerDocument | null> {
+    if (!containerId) {
+      return null;
+    }
+
     return this.containerModel.findById(containerId).exec();
   }
 
@@ -51,10 +55,15 @@ export class ContainerService {
   }
 
   async fertilizeContainer(containerId: string, data: ContainerFertilizeDTO): Promise<number> {
-    return this.taskService.bulkEditTasks(
+    const editedCount = await this.taskService.bulkEditTasks(
       { containerId, type: 'Fertilize', completedOn: null, start: { $lt: data.date } },
       { completedOn: data.date }
     );
+
+    const container = await this.getContainer(containerId);
+    await this.createUpdatePlantTasks(container);
+
+    return editedCount;
   }
 
   async updateTransplants(container: ContainerDocument | undefined) {
@@ -186,7 +195,7 @@ export class ContainerService {
     await this.taskService.createUpdateIndoorFertilzeTasksTask('spring', container, slot, plant, data, path, slotTitle);
   }
 
-  async createUpdatePlantTasks(container: ContainerDocument | undefined) {
+  async createUpdatePlantTasks(container: ContainerDocument | null | undefined) {
     if (!container?.slots) {
       return;
     }
