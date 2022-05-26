@@ -35,11 +35,11 @@ export class TaskService {
   }
 
   async getTaskByTypeAndPath(type: TaskType, path: string): Promise<TaskDocument | null> {
-    return this.taskModel.findOne({ type, path }).exec();
+    return this.taskModel.findOne({ type: { $eq: type }, path: { $eq: path } }).exec();
   }
 
   async getTasksByTypeAndPath(type: TaskType, path: string): Promise<TaskDocument[]> {
-    return this.taskModel.find({ type, path }).exec();
+    return this.taskModel.find({ type: { $eq: type }, path: { $eq: path } }).exec();
   }
 
   async getTasks(): Promise<TaskDocument[]> {
