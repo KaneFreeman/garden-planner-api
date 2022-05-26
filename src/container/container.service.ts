@@ -38,7 +38,11 @@ export class ContainerService {
   }
 
   async editContainer(containerId: string, createContainerDTO: ContainerDTO): Promise<ContainerDocument | null> {
-    const editedContainer = await this.containerModel.findByIdAndUpdate(containerId, createContainerDTO, { new: true });
+    const editedContainer = await this.containerModel.findByIdAndUpdate(
+      { _id: { $eq: containerId } },
+      createContainerDTO,
+      { new: true }
+    );
 
     if (editedContainer) {
       await this.createUpdatePlantTasks(editedContainer);
@@ -165,7 +169,7 @@ export class ContainerService {
     }
 
     const editedContainer = await this.containerModel.findByIdAndUpdate(
-      otherContainer._id,
+      { _id: { $eq: otherContainer._id } },
       { slots: newSlots },
       { new: true }
     );
