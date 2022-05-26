@@ -51,7 +51,7 @@ export class TaskController {
     @Param('taskId', new ValidateObjectId()) taskId: string,
     @Body() createTaskDTO: CreateTaskDTO
   ) {
-    const editedTask = await this.taskService.editTask(taskId, createTaskDTO);
+    const editedTask = await this.taskService.editTask(taskId, createTaskDTO, true);
     if (!editedTask) {
       throw new NotFoundException('Task does not exist!');
     }

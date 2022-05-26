@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-// import { TaskService } from '../task/task.service';
+import { TaskService } from '../task/task.service';
 import { PlantService } from '../plant/plant.service';
 import getSlotTitle from '../util/slot.util';
 import { PlantInstanceService } from '../plant-instance/plant-instance.service';
@@ -16,7 +16,7 @@ export class ContainerService {
     @InjectModel('Container')
     private readonly containerModel: Model<ContainerDocument>,
     @Inject(forwardRef(() => PlantService)) private plantService: PlantService,
-    // private taskService: TaskService,
+    @Inject(forwardRef(() => TaskService)) private taskService: TaskService,
     @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService
   ) {}
 
@@ -25,7 +25,11 @@ export class ContainerService {
     return newContainer.save();
   }
 
-  async getContainer(containerId: string): Promise<ContainerDocument | null> {
+  async getContainer(containerId: string | null | undefined): Promise<ContainerDocument | null> {
+    if (!containerId) {
+      return null;
+    }
+
     return this.containerModel.findById(containerId).exec();
   }
 
@@ -34,7 +38,11 @@ export class ContainerService {
   }
 
   async editContainer(containerId: string, createContainerDTO: ContainerDTO): Promise<ContainerDocument | null> {
-    const editedContainer = await this.containerModel.findByIdAndUpdate(containerId, createContainerDTO, { new: true });
+    const editedContainer = await this.containerModel.findByIdAndUpdate(
+      { _id: { $eq: containerId } },
+      createContainerDTO,
+      { new: true }
+    );
 
     if (editedContainer) {
       await this.createUpdatePlantTasks(editedContainer);
@@ -47,11 +55,16 @@ export class ContainerService {
     return this.containerModel.findByIdAndRemove(containerId);
   }
 
-  // TODO async fertilizeContainer(containerId: string, data: ContainerFertilizeDTO): Promise<number> {
-  //   return this.taskService.bulkEditTasks(
+  // async fertilizeContainer(containerId: string, data: ContainerFertilizeDTO): Promise<number> {
+  //   const editedCount = await this.taskService.bulkEditTasks(
   //     { containerId, type: 'Fertilize', completedOn: null, start: { $lt: data.date } },
   //     { completedOn: data.date }
   //   );
+
+  //   const container = await this.getContainer(containerId);
+  //   await this.createUpdatePlantTasks(container);
+
+  //   return editedCount;
   // }
 
   async createUpdatePlantTasksForSlot(
@@ -66,7 +79,7 @@ export class ContainerService {
     }
   }
 
-  async createUpdatePlantTasks(container: ContainerDocument | undefined) {
+  async createUpdatePlantTasks(container: ContainerDocument | null | undefined) {
     if (!container?.slots) {
       return;
     }

@@ -10,7 +10,7 @@ import { PlantInstanceModule } from '../plant-instance/plant-instance.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Container', schema: ContainerSchema }]),
-    TaskModule,
+    forwardRef(() => TaskModule),
     forwardRef(() => PlantModule),
     forwardRef(() => PlantInstanceModule)
   ],
