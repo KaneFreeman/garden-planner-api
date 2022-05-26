@@ -9,6 +9,8 @@ import plantData from '../data/plantData';
 import getSlotTitle from '../util/slot.util';
 import { ContainerDocument } from '../container/interfaces/container.interface';
 import { ContainerService } from '../container/container.service';
+import { isNullish } from '../util/null.util';
+import { ContainerSlotDTO } from '../container/dto/container-slot.dto';
 
 @Injectable()
 export class PlantInstanceService {
@@ -52,6 +54,42 @@ export class PlantInstanceService {
 
     if (editedPlantInstance) {
       await this.createUpdatePlantInstanceTasks(editedPlantInstance);
+
+      const container = await this.containerService.getContainer(editedPlantInstance.containerId);
+      if (container && container._id) {
+        const slot = container.slots?.get(`${editedPlantInstance.slotId}`);
+        const newSlots: Record<string, ContainerSlotDTO> = {};
+        container.slots?.forEach((slot, key) => {
+          newSlots[key] = slot.toObject<ContainerSlotDTO>();
+        });
+
+        if (editedPlantInstance.subSlot) {
+          const subSlot = slot?.subSlot;
+
+          if (
+            !subSlot ||
+            ((subSlot.plannedPlantId === editedPlantInstance.plant || isNullish(subSlot.plannedPlantId)) &&
+              isNullish(subSlot.plantInstanceId))
+          ) {
+            newSlots[`${editedPlantInstance.slotId}`] = {
+              ...newSlots[`${editedPlantInstance.slotId}`],
+              subSlot: {
+                plantInstanceId: editedPlantInstance._id,
+                plannedPlantId: undefined
+              }
+            };
+          }
+        } else {
+          newSlots[`${editedPlantInstance.slotId}`] = {
+            plantInstanceId: editedPlantInstance._id,
+            plannedPlantId: undefined
+          };
+        }
+
+        await this.containerService.editContainer(container._id, {
+          slots: newSlots
+        });
+      }
     }
 
     return editedPlantInstance;

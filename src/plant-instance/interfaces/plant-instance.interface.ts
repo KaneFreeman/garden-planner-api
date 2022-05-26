@@ -5,6 +5,7 @@ import { PlantInstanceHistoryDocument } from './plant-instance-history.interface
 
 export interface PlantInstanceDocument extends ContainerSlotIdentifierDocument {
   readonly plant?: string | null;
+  readonly created: Date;
   readonly comments?: CommentDocument[];
   readonly pictures?: PictureDataDocument[];
   readonly history?: PlantInstanceHistoryDocument[];

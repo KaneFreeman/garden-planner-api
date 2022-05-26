@@ -2,8 +2,8 @@ import { ContainerSlotIdentifierDTO } from '../../container/dto/container-slot-i
 import { Status } from '../../interface';
 
 export interface PlantInstanceHistoryDto {
-  readonly from?: ContainerSlotIdentifierDTO;
-  readonly to: ContainerSlotIdentifierDTO;
+  readonly from: ContainerSlotIdentifierDTO;
+  readonly to?: ContainerSlotIdentifierDTO;
   readonly status: Status;
   readonly date: string;
 }

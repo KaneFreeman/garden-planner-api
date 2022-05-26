@@ -3,9 +3,8 @@ import { PlantInstanceService } from './plant-instance.service';
 import { PlantInstanceDTO } from './dto/plant-instance.dto';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
 import { Response } from 'express';
-// import { PlantInstanceFertilizeDTO } from './dto/plant-instance-fertilize.dto';
 
-@Controller('/api/PlantInstance')
+@Controller('/api/plant-instance')
 export class PlantInstanceController {
   constructor(private plantInstanceService: PlantInstanceService) {}
 
@@ -65,18 +64,4 @@ export class PlantInstanceController {
     }
     return res.status(HttpStatus.OK).json(deletedPlantInstance);
   }
-
-  // TODO Fertilize a PlantInstance
-  // @Post('/:plantInstanceId/fertilize')
-  // async fertilizePlantInstance(
-  //   @Res() res: Response,
-  //   @Param('plantInstanceId', new ValidateObjectId()) plantInstanceId: string,
-  //   @Body() PlantInstanceFertilizeDTO: PlantInstanceFertilizeDTO
-  // ) {
-  //   const updatedTasksCount = await this.plantInstanceService.fertilizePlantInstance(
-  //     plantInstanceId,
-  //     PlantInstanceFertilizeDTO
-  //   );
-  //   return res.status(HttpStatus.OK).json(updatedTasksCount);
-  // }
 }

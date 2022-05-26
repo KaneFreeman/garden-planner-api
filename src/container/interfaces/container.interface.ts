@@ -1,6 +1,6 @@
 import { Document } from 'mongoose';
 import { ContainerType, StartedFromType } from '../../interface';
-import { SlotDocument } from './slot.interface';
+import { SlotDocument } from './container-slot.interface';
 
 export interface ContainerDocument extends Document<string> {
   readonly name: string;

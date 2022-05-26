@@ -2,8 +2,8 @@ import { ContainerSlotIdentifierDocument } from '../../container/interfaces/cont
 import { Status } from '../../interface';
 
 export interface PlantInstanceHistoryDocument {
-  from: ContainerSlotIdentifierDocument;
-  to?: ContainerSlotIdentifierDocument;
+  readonly from: ContainerSlotIdentifierDocument;
+  readonly to?: ContainerSlotIdentifierDocument;
   readonly status: Status;
   readonly date: Date;
 }

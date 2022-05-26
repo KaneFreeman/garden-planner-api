@@ -311,47 +311,8 @@ export interface GrowingZoneData {
   firstFrost: Date;
 }
 
-export interface PictureData {
-  date: Date;
-  id: number;
-  pictureId: string;
-  thumbnail: string;
-  deleted?: boolean;
-}
-
-export interface PictureDataDTO {
-  date: string;
-  id: number;
-  pictureId: string;
-  thumbnail: string;
-  deleted?: boolean;
-}
-
 export interface ContainerSlotIdentifier {
   containerId: string;
   slotId: number;
   subSlot?: boolean;
-}
-
-export interface Comment {
-  date: Date;
-  text: string;
-}
-
-export interface BaseSlot {
-  plant?: string | null;
-  status?: Status;
-  plantedCount?: number;
-  plantedDate?: Date;
-  transplantedDate?: Date;
-  transplantedTo: ContainerSlotIdentifier | null;
-  transplantedFromDate?: Date;
-  transplantedFrom: ContainerSlotIdentifier | null;
-  startedFrom: StartedFromType;
-  comments?: Comment[];
-  pictures?: PictureData[];
-}
-
-export interface Slot extends BaseSlot {
-  subSlot?: BaseSlot;
 }

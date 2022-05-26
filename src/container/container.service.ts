@@ -8,7 +8,7 @@ import { PlantInstanceService } from '../plant-instance/plant-instance.service';
 import { ContainerDTO } from './dto/container.dto';
 // import { ContainerFertilizeDTO } from './dto/container-fertilize.dto';
 import { ContainerDocument } from './interfaces/container.interface';
-import { BaseSlotDocument } from './interfaces/slot.interface';
+import { BaseSlotDocument } from './interfaces/container-slot.interface';
 
 @Injectable()
 export class ContainerService {
@@ -37,7 +37,10 @@ export class ContainerService {
     return this.containerModel.find().exec();
   }
 
-  async editContainer(containerId: string, createContainerDTO: ContainerDTO): Promise<ContainerDocument | null> {
+  async editContainer(
+    containerId: string,
+    createContainerDTO: Partial<ContainerDTO>
+  ): Promise<ContainerDocument | null> {
     const editedContainer = await this.containerModel.findByIdAndUpdate(
       { _id: { $eq: containerId } },
       createContainerDTO,
