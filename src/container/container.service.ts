@@ -41,11 +41,7 @@ export class ContainerService {
     containerId: string,
     createContainerDTO: Partial<ContainerDTO>
   ): Promise<ContainerDocument | null> {
-    const editedContainer = await this.containerModel.findByIdAndUpdate(
-      { _id: { $eq: containerId } },
-      createContainerDTO,
-      { new: true }
-    );
+    const editedContainer = await this.containerModel.findByIdAndUpdate(containerId, createContainerDTO, { new: true });
 
     if (editedContainer) {
       await this.createUpdatePlantTasks(editedContainer);

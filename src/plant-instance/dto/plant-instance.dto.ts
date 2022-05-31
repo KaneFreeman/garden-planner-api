@@ -10,4 +10,6 @@ export interface PlantInstanceDTO extends ContainerSlotIdentifierDTO {
   readonly pictures?: PictureDataDto[];
   readonly history?: PlantInstanceHistoryDto[];
   readonly closed?: boolean;
+  readonly startedFrom: string;
+  readonly plantedCount: number;
 }

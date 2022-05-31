@@ -1,10 +1,10 @@
-import { ContainerSlotIdentifier, Status, TRANSPLANTED } from '../../interface';
+import { ContainerSlotIdentifier, HistoryStatus, TRANSPLANTED } from '../../interface';
 import { PlantInstanceDocument } from '../interfaces/plant-instance.interface';
 
 export function findHistoryFrom(
   plantInstance: PlantInstanceDocument | undefined | null,
   from: ContainerSlotIdentifier,
-  status?: Status
+  status?: HistoryStatus
 ) {
   if (!plantInstance) {
     return undefined;
@@ -12,9 +12,9 @@ export function findHistoryFrom(
 
   return plantInstance.history?.find((entry) => {
     const fromMatch =
-      entry.from.containerId === from.containerId &&
-      entry.from.slotId === from.slotId &&
-      entry.from.subSlot === from.subSlot;
+      entry.from?.containerId === from.containerId &&
+      entry.from?.slotId === from.slotId &&
+      entry.from?.subSlot === from.subSlot;
 
     if (status) {
       return fromMatch && entry.status === status;
@@ -27,7 +27,7 @@ export function findHistoryFrom(
 export function findHistoryTo(
   plantInstance: PlantInstanceDocument | undefined | null,
   from: ContainerSlotIdentifier,
-  status?: Status
+  status?: HistoryStatus
 ) {
   if (!plantInstance) {
     return undefined;
@@ -35,9 +35,9 @@ export function findHistoryTo(
 
   return plantInstance.history?.find((entry) => {
     const fromMatch =
-      entry.from.containerId === from.containerId &&
-      entry.from.slotId === from.slotId &&
-      entry.from.subSlot === from.subSlot;
+      entry.from?.containerId === from.containerId &&
+      entry.from?.slotId === from.slotId &&
+      entry.from?.subSlot === from.subSlot;
 
     if (status) {
       return fromMatch && entry.status === status;
@@ -47,8 +47,12 @@ export function findHistoryTo(
   });
 }
 
+export function getPlantedEvent(plantInstance: PlantInstanceDocument | undefined | null) {
+  return plantInstance?.history?.[0];
+}
+
 export function getPlantedDate(plantInstance: PlantInstanceDocument | undefined | null) {
-  return plantInstance?.history?.[0]?.date ?? null;
+  return getPlantedEvent(plantInstance)?.date ?? null;
 }
 
 export function getTransplantedDate(

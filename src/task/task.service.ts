@@ -68,7 +68,7 @@ export class TaskService {
     createTaskDTO: CreateTaskDTO,
     updateContainerTasks: boolean
   ): Promise<TaskDocument | null> {
-    const task = await this.taskModel.findByIdAndUpdate({ _id: { $eq: taskId } }, createTaskDTO, {
+    const task = await this.taskModel.findByIdAndUpdate(taskId, createTaskDTO, {
       new: true
     });
 
@@ -84,12 +84,9 @@ export class TaskService {
     const tasks = await this.getTasksByPlantInstanceId(plantInstanceId);
 
     for (const task of tasks) {
-      await this.taskModel.findByIdAndUpdate(
-        { _id: { $eq: task._id } },
-        {
-          text: task.text.replaceAll(oldName, newName)
-        }
-      );
+      await this.taskModel.findByIdAndUpdate(task._id, {
+        text: task.text.replaceAll(oldName, newName)
+      });
     }
   }
 

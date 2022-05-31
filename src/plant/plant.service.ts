@@ -39,7 +39,7 @@ export class PlantService {
       return null;
     }
 
-    const updatedPlant = await this.plantModel.findByIdAndUpdate({ _id: { $eq: plantId } }, createPlantDTO, {
+    const updatedPlant = await this.plantModel.findByIdAndUpdate(plantId, createPlantDTO, {
       new: true
     });
 

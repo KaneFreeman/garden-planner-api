@@ -12,5 +12,7 @@ export const PlantInstanceSchema = new mongoose.Schema({
   pictures: [PictureDataSchema],
   comments: [CommentSchema],
   history: [PlantInstanceHistorySchema],
-  closed: Boolean
+  closed: Boolean,
+  startedFrom: String,
+  plantedCount: Number
 });
