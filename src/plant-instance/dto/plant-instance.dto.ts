@@ -4,7 +4,7 @@ import { ContainerSlotIdentifierDTO } from '../../container/dto/container-slot-i
 import { PlantInstanceHistoryDto } from './plant-instance-history.dto';
 
 export interface PlantInstanceDTO extends ContainerSlotIdentifierDTO {
-  readonly plant?: string | null;
+  readonly plant: string | null;
   readonly created?: string;
   readonly comments?: CommentDto[];
   readonly pictures?: PictureDataDto[];

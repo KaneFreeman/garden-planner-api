@@ -75,14 +75,14 @@ export class PlantInstanceService {
               ...newSlots[`${editedPlantInstance.slotId}`],
               subSlot: {
                 plantInstanceId: editedPlantInstance._id,
-                plannedPlantId: undefined
+                plannedPlantId: null
               }
             };
           }
         } else {
           newSlots[`${editedPlantInstance.slotId}`] = {
             plantInstanceId: editedPlantInstance._id,
-            plannedPlantId: undefined
+            plannedPlantId: null
           };
         }
 
@@ -119,29 +119,25 @@ export class PlantInstanceService {
 
     await this.taskService.createUpdatePlantedTask('spring', container, plantInstance, plant, data, path, slotTitle);
 
-    if (container.type === 'Inside') {
-      await this.taskService.createUpdateTransplantedTask(
-        'spring',
-        container,
-        plantInstance.slotId,
-        plantInstance.subSlot ?? false,
-        plantInstance,
-        plant,
-        data,
-        path,
-        slotTitle
-      );
-    } else {
-      await this.taskService.createUpdateHarvestTask(
-        container,
-        plantInstance.slotId,
-        plantInstance.subSlot ?? false,
-        plantInstance,
-        plant,
-        path,
-        slotTitle
-      );
-    }
+    await this.taskService.createUpdateTransplantedTask(
+      'spring',
+      container,
+      plantInstance,
+      plant,
+      data,
+      path,
+      slotTitle
+    );
+
+    await this.taskService.createUpdateHarvestTask(
+      container,
+      plantInstance.slotId,
+      plantInstance.subSlot ?? false,
+      plantInstance,
+      plant,
+      path,
+      slotTitle
+    );
 
     await this.taskService.createUpdateIndoorFertilzeTasksTask(
       'spring',

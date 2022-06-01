@@ -17,7 +17,7 @@ import {
 } from '../interface';
 import { ContainerService } from '../container/container.service';
 import { PlantDocument } from '../plant/interfaces/plant.interface';
-import { findHistoryFrom, getPlantedDate, getTransplantedDate } from '../plant-instance/util/history.util';
+import { findHistoryByStatus, findHistoryFrom, getPlantedDate, getTransplantedDate } from '../plant-instance/util/history.util';
 import growingZoneData from '../data/growingZoneData';
 import { isNullish } from '../util/null.util';
 import { isValidDate } from '../util/date.util';
@@ -43,24 +43,20 @@ export class TaskService {
     return await this.taskModel.findById(taskId).exec();
   }
 
-  async getTaskByTypeAndPath(type: TaskType, path: string): Promise<TaskDocument | null> {
-    return this.taskModel.findOne({ type: { $eq: type }, path: { $eq: path } }).exec();
+  async getTaskByTypeAndPlantInstanceId(type: TaskType, plantInstanceId: string): Promise<TaskDocument | null> {
+    return this.taskModel.findOne({ type: { $eq: type }, plantInstanceId: { $eq: plantInstanceId } }).exec();
   }
 
-  async getTasksByTypeAndPath(type: TaskType, path: string): Promise<TaskDocument[]> {
-    return this.taskModel.find({ type: { $eq: type }, path: { $eq: path } }).exec();
+  async getTasksByTypeAndPlantInstanceId(type: TaskType, plantInstanceId: string): Promise<TaskDocument[]> {
+    return this.taskModel.find({ type: { $eq: type }, plantInstanceId: { $eq: plantInstanceId } }).exec();
   }
 
   async getTasks(): Promise<TaskDocument[]> {
     return this.taskModel.find().exec();
   }
 
-  async getTasksByPath(path: string): Promise<TaskDocument[]> {
-    return this.taskModel.find({ path: { $eq: path } }).exec();
-  }
-
   async getTasksByPlantInstanceId(plantInstanceId: string): Promise<TaskDocument[]> {
-    return this.taskModel.find({ plantInstanceId }).exec();
+    return this.taskModel.find({ plantInstanceId: { $eq: plantInstanceId } }).exec();
   }
 
   async editTask(
@@ -117,14 +113,14 @@ export class TaskService {
     data: PlantData | undefined
   ): { start: Date; due: Date } | undefined {
     const howToGrowData = data?.howToGrow[season];
-    if (type === 'Inside' && howToGrowData?.indoor) {
+    if (howToGrowData?.indoor) {
       return {
         start: subDays(growingZoneData.lastFrost, howToGrowData.indoor.min),
         due: subDays(growingZoneData.lastFrost, howToGrowData.indoor.max)
       };
     }
 
-    if (type === 'Outside' && howToGrowData?.outdoor) {
+    if (howToGrowData?.outdoor) {
       return {
         start: subDays(growingZoneData.lastFrost, howToGrowData.outdoor.min),
         due: subDays(growingZoneData.lastFrost, howToGrowData.outdoor.max)
@@ -166,11 +162,11 @@ export class TaskService {
     path: string,
     slotTitle: string
   ) {
-    if (!container._id) {
+    if (!instance?._id || !container._id) {
       return;
     }
 
-    const task = await this.getTaskByTypeAndPath('Plant', path);
+    const task = await this.getTaskByTypeAndPlantInstanceId('Plant', instance._id);
     const dates = this.getPlantedStartAndDueDate(season, container.type, data);
     if (!plant || !data || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
       if (task) {
@@ -189,7 +185,7 @@ export class TaskService {
         type: 'Plant',
         start,
         due,
-        containerId: container._id,
+        plantInstanceId: instance._id,
         path,
         completedOn
       });
@@ -201,7 +197,7 @@ export class TaskService {
           type: task.type,
           start,
           due,
-          containerId: container._id,
+          plantInstanceId: instance._id,
           path: task.path,
           completedOn
         },
@@ -213,21 +209,20 @@ export class TaskService {
   async createUpdateTransplantedTask(
     season: 'spring' | 'fall',
     container: ContainerDocument,
-    slotId: number,
-    subSlot: boolean,
     instance: PlantInstanceDocument | null,
     plant: PlantDocument | null,
     data: PlantData | undefined,
     path: string,
     slotTitle: string
   ) {
-    if (!container._id || !instance) {
+    if (!instance?._id || !container._id) {
       return;
     }
 
-    const task = await this.getTaskByTypeAndPath('Transplant', path);
+    const task = await this.getTaskByTypeAndPlantInstanceId('Transplant', instance._id);
+    console.log('createUpdateTransplantedTask task: ', task);
     const dates = this.getTransplantedStartAndDueDate(season, data, getPlantedDate(instance));
-    if (!plant || !data || !instance || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
+    if (!plant || !data || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
       if (task) {
         await this.deleteTask(task._id, true);
       }
@@ -236,19 +231,7 @@ export class TaskService {
 
     const { start, due } = dates;
 
-    let completedOn: Date | null = null;
-    if (container._id !== instance.containerId) {
-      completedOn =
-        findHistoryFrom(
-          instance,
-          {
-            containerId: container._id,
-            slotId,
-            subSlot
-          },
-          TRANSPLANTED
-        )?.date ?? null;
-    }
+    const completedOn = findHistoryByStatus(instance, TRANSPLANTED)?.date ?? null;
 
     if (!task) {
       await this.addTask({
@@ -256,7 +239,7 @@ export class TaskService {
         type: 'Transplant',
         start,
         due,
-        containerId: container._id,
+        plantInstanceId: instance._id,
         path,
         completedOn
       });
@@ -268,7 +251,7 @@ export class TaskService {
           type: task.type,
           start,
           due,
-          containerId: container._id,
+          plantInstanceId: instance._id,
           path: task.path,
           completedOn
         },
@@ -320,11 +303,11 @@ export class TaskService {
     path: string,
     slotTitle: string
   ) {
-    if (!container._id || !instance) {
+    if (!instance?._id || !container._id) {
       return;
     }
 
-    const task = await this.getTaskByTypeAndPath('Harvest', path);
+    const task = await this.getTaskByTypeAndPlantInstanceId('Harvest', instance._id);
 
     const dates = this.getHarvestStartAndDueDate(plant, getPlantedDate(instance));
     if (
@@ -362,7 +345,7 @@ export class TaskService {
         type: 'Harvest',
         start,
         due,
-        containerId: container._id,
+        plantInstanceId: instance._id,
         path,
         completedOn
       });
@@ -374,7 +357,7 @@ export class TaskService {
           type: task.type,
           start,
           due,
-          containerId: container._id,
+          plantInstanceId: instance._id,
           path: task.path,
           completedOn
         },
@@ -425,11 +408,11 @@ export class TaskService {
     path: string,
     slotTitle: string
   ) {
-    if (!container._id || !instance) {
+    if (!instance?._id || !container._id) {
       return;
     }
 
-    const tasks = await this.getTasksByTypeAndPath('Fertilize', path);
+    const tasks = await this.getTasksByTypeAndPlantInstanceId('Fertilize', instance._id);
     const taskTexts: string[] = [];
     const tasksByText = tasks.reduce((byText, task) => {
       byText[task.text] = task;
@@ -486,7 +469,7 @@ export class TaskService {
           type: 'Fertilize',
           start,
           due,
-          containerId: container._id,
+          plantInstanceId: instance._id,
           path,
           completedOn: null
         });
@@ -498,7 +481,7 @@ export class TaskService {
             type: 'Fertilize',
             start,
             due,
-            containerId: container._id,
+            plantInstanceId: instance._id,
             path,
             completedOn: null
           },

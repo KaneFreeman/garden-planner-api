@@ -39,8 +39,10 @@ export class TaskController {
 
   // Fetch all tasks
   @Get('')
-  async getTasks(@Res() res: Response, @Query('path') path: string) {
-    const tasks = path ? await this.taskService.getTasksByPath(path) : await this.taskService.getTasks();
+  async getTasks(@Res() res: Response, @Query('plantInstanceId') plantInstanceId: string) {
+    const tasks = plantInstanceId
+      ? await this.taskService.getTasksByPlantInstanceId(plantInstanceId)
+      : await this.taskService.getTasks();
     return res.status(HttpStatus.OK).json(tasks);
   }
 
