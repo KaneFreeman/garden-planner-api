@@ -18,7 +18,7 @@ export class PlantInstanceService {
     @InjectModel('PlantInstance')
     private readonly plantInstanceModel: Model<PlantInstanceDocument>,
     @Inject(forwardRef(() => PlantService)) private plantService: PlantService,
-    private taskService: TaskService,
+    @Inject(forwardRef(() => TaskService)) private taskService: TaskService,
     @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService
   ) {}
 
@@ -101,13 +101,6 @@ export class PlantInstanceService {
     return deletedPlantInstance;
   }
 
-  // TODO async fertilizePlantInstance(plantInstanceId: string, data: PlantInstanceFertilizeDTO): Promise<number> {
-  //   return this.taskService.bulkEditTasks(
-  //     { plantInstanceId, type: 'Fertilize', completedOn: null, start: { $lt: data.date } },
-  //     { completedOn: data.date }
-  //   );
-  // }
-
   async createUpdateTasks(
     container: ContainerDocument,
     plantInstance: PlantInstanceDocument,
@@ -152,7 +145,11 @@ export class PlantInstanceService {
     );
   }
 
-  async createUpdatePlantInstanceTasks(plantInstance: PlantInstanceDocument) {
+  async createUpdatePlantInstanceTasks(plantInstance: PlantInstanceDocument | null) {
+    if (!plantInstance) {
+      return;
+    }
+
     const container = await this.containerService.getContainer(plantInstance.containerId);
 
     if (container) {

@@ -6,7 +6,7 @@ import { PlantService } from '../plant/plant.service';
 import getSlotTitle from '../util/slot.util';
 import { PlantInstanceService } from '../plant-instance/plant-instance.service';
 import { ContainerDTO } from './dto/container.dto';
-// import { ContainerFertilizeDTO } from './dto/container-fertilize.dto';
+import { ContainerFertilizeDTO } from './dto/container-fertilize.dto';
 import { ContainerDocument } from './interfaces/container.interface';
 import { BaseSlotDocument } from './interfaces/container-slot.interface';
 
@@ -54,17 +54,17 @@ export class ContainerService {
     return this.containerModel.findByIdAndRemove(containerId);
   }
 
-  // async fertilizeContainer(containerId: string, data: ContainerFertilizeDTO): Promise<number> {
-  //   const editedCount = await this.taskService.bulkEditTasks(
-  //     { containerId, type: 'Fertilize', completedOn: null, start: { $lt: data.date } },
-  //     { completedOn: data.date }
-  //   );
+  async fertilizeContainer(containerId: string, data: ContainerFertilizeDTO): Promise<number> {
+    const editedCount = await this.taskService.bulkEditTasks(
+      { containerId, type: 'Fertilize', completedOn: null, start: { $lt: data.date } },
+      { completedOn: data.date }
+    );
 
-  //   const container = await this.getContainer(containerId);
-  //   await this.createUpdatePlantTasks(container);
+    const container = await this.getContainer(containerId);
+    await this.createUpdatePlantTasks(container);
 
-  //   return editedCount;
-  // }
+    return editedCount;
+  }
 
   async createUpdatePlantTasksForSlot(
     container: ContainerDocument,

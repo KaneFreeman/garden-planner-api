@@ -17,7 +17,12 @@ import {
 } from '../interface';
 import { ContainerService } from '../container/container.service';
 import { PlantDocument } from '../plant/interfaces/plant.interface';
-import { findHistoryByStatus, findHistoryFrom, getPlantedDate, getTransplantedDate } from '../plant-instance/util/history.util';
+import {
+  findHistoryByStatus,
+  findHistoryFrom,
+  getPlantedDate,
+  getTransplantedDate
+} from '../plant-instance/util/history.util';
 import growingZoneData from '../data/growingZoneData';
 import { isNullish } from '../util/null.util';
 import { isValidDate } from '../util/date.util';
@@ -26,12 +31,14 @@ import { isEmpty, isNotEmpty } from '../util/string.util';
 import { PlantInstanceDocument } from '../plant-instance/interfaces/plant-instance.interface';
 import { CreateTaskDTO } from './dto/create-task.dto';
 import { TaskDocument } from './interfaces/task.interface';
+import { PlantInstanceService } from '../plant-instance/plant-instance.service';
 
 @Injectable()
 export class TaskService {
   constructor(
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
-    @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService
+    @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService,
+    @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService
   ) {}
 
   async addTask(createTaskDTO: CreateTaskDTO): Promise<TaskDocument> {
@@ -69,8 +76,8 @@ export class TaskService {
     });
 
     if (task?.type === FERTILIZE && updateContainerTasks) {
-      const container = await this.containerService.getContainer(task.containerId);
-      await this.containerService.createUpdatePlantTasks(container);
+      const plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId);
+      await this.plantInstanceService.createUpdatePlantInstanceTasks(plantInstance);
     }
 
     return task;
@@ -90,8 +97,18 @@ export class TaskService {
     filter: FilterQuery<TaskDocument>,
     update: UpdateWithAggregationPipeline | UpdateQuery<TaskDocument>
   ): Promise<number> {
-    const result = await this.taskModel.updateMany(filter, update);
-    return result.modifiedCount;
+    const tasks = await this.taskModel.find(filter).exec();
+
+    for (const task of tasks) {
+      await this.taskModel.findByIdAndUpdate(task._id, update);
+
+      if (task?.type === FERTILIZE) {
+        const plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId);
+        await this.plantInstanceService.createUpdatePlantInstanceTasks(plantInstance);
+      }
+    }
+
+    return tasks.length;
   }
 
   async deleteTask(taskId: string, force = false): Promise<TaskDocument | null> {
@@ -220,7 +237,6 @@ export class TaskService {
     }
 
     const task = await this.getTaskByTypeAndPlantInstanceId('Transplant', instance._id);
-    console.log('createUpdateTransplantedTask task: ', task);
     const dates = this.getTransplantedStartAndDueDate(season, data, getPlantedDate(instance));
     if (!plant || !data || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
       if (task) {
