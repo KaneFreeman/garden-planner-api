@@ -34,7 +34,7 @@ export function findHistoryFrom(
 
 export function findHistoryTo(
   plantInstance: PlantInstanceDocument | undefined | null,
-  from: ContainerSlotIdentifier,
+  to: ContainerSlotIdentifier,
   status?: HistoryStatus
 ) {
   if (!plantInstance) {
@@ -42,16 +42,14 @@ export function findHistoryTo(
   }
 
   return plantInstance.history?.find((entry) => {
-    const fromMatch =
-      entry.from?.containerId === from.containerId &&
-      entry.from?.slotId === from.slotId &&
-      entry.from?.subSlot === from.subSlot;
+    const toMatch =
+      entry.to?.containerId === to.containerId && entry.to?.slotId === to.slotId && entry.to?.subSlot === to.subSlot;
 
     if (status) {
-      return fromMatch && entry.status === status;
+      return toMatch && entry.status === status;
     }
 
-    return fromMatch;
+    return toMatch;
   });
 }
 

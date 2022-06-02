@@ -9,6 +9,7 @@ import { ContainerDTO } from './dto/container.dto';
 import { ContainerFertilizeDTO } from './dto/container-fertilize.dto';
 import { ContainerDocument } from './interfaces/container.interface';
 import { BaseSlotDocument } from './interfaces/container-slot.interface';
+import { FERTILIZE } from '../interface';
 
 @Injectable()
 export class ContainerService {
@@ -39,11 +40,12 @@ export class ContainerService {
 
   async editContainer(
     containerId: string,
-    createContainerDTO: Partial<ContainerDTO>
+    createContainerDTO: Partial<ContainerDTO>,
+    updateTasks: boolean
   ): Promise<ContainerDocument | null> {
     const editedContainer = await this.containerModel.findByIdAndUpdate(containerId, createContainerDTO, { new: true });
 
-    if (editedContainer) {
+    if (editedContainer && updateTasks) {
       await this.createUpdatePlantTasks(editedContainer);
     }
 
@@ -55,15 +57,27 @@ export class ContainerService {
   }
 
   async fertilizeContainer(containerId: string, data: ContainerFertilizeDTO): Promise<number> {
-    const editedCount = await this.taskService.bulkEditTasks(
-      { containerId, type: 'Fertilize', completedOn: null, start: { $lt: data.date } },
-      { completedOn: data.date }
-    );
+    const tasks = await this.taskService.getTasks({ type: 'Fertilize', completedOn: null, start: { $lt: data.date } });
 
-    const container = await this.getContainer(containerId);
-    await this.createUpdatePlantTasks(container);
+    let updatedCount = 0;
 
-    return editedCount;
+    for (const task of tasks) {
+      const plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId);
+      if (plantInstance && plantInstance.containerId === containerId) {
+        const updatedTask = await this.taskService.findByIdAndUpdate(task._id, { completedOn: data.date });
+        updatedCount++;
+
+        if (task?.type === FERTILIZE) {
+          await this.plantInstanceService.fertilizePlantInstance(
+            plantInstance,
+            updatedTask?.completedOn?.toISOString()
+          );
+          await this.plantInstanceService.createUpdatePlantInstanceTasks(plantInstance);
+        }
+      }
+    }
+
+    return updatedCount;
   }
 
   async createUpdatePlantTasksForSlot(

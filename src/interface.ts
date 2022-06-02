@@ -243,12 +243,12 @@ export const PLANT_TYPES: PlantType[] = [
   SUNFLOWER
 ];
 
-export const NOT_PLANTED = 'Not Planted';
 export const PLANTED = 'Planted';
 export const TRANSPLANTED = 'Transplanted';
 export const HARVESTED = 'Harvested';
-export type HistoryStatus = typeof NOT_PLANTED | typeof PLANTED | typeof TRANSPLANTED | typeof HARVESTED;
-export const STATUSES: HistoryStatus[] = [NOT_PLANTED, PLANTED, TRANSPLANTED, HARVESTED];
+export const FERTILIZED = 'Fertilized';
+export type HistoryStatus = typeof PLANTED | typeof TRANSPLANTED | typeof HARVESTED | typeof FERTILIZED;
+export const STATUSES: HistoryStatus[] = [PLANTED, TRANSPLANTED, HARVESTED, FERTILIZED];
 
 export const STARTED_FROM_TYPE_SEED = 'Seed';
 export const STARTED_FROM_TYPE_TRANSPLANT = 'Transplant';

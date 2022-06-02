@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { PlantInstanceDTO } from './dto/plant-instance.dto';
@@ -11,6 +11,7 @@ import { ContainerDocument } from '../container/interfaces/container.interface';
 import { ContainerService } from '../container/container.service';
 import { isNullish } from '../util/null.util';
 import { ContainerSlotDTO } from '../container/dto/container-slot.dto';
+import { FERTILIZE, FERTILIZED } from '../interface';
 
 @Injectable()
 export class PlantInstanceService {
@@ -22,8 +23,13 @@ export class PlantInstanceService {
     @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService
   ) {}
 
-  async addPlantInstance(createPlantInstanceDTO: PlantInstanceDTO): Promise<PlantInstanceDocument> {
+  async addPlantInstance(createPlantInstanceDTO: PlantInstanceDTO, createTasks = true): Promise<PlantInstanceDocument> {
     const newPlantInstance = await this.plantInstanceModel.create(createPlantInstanceDTO);
+
+    if (createTasks) {
+      await this.createUpdatePlantInstanceTasks(newPlantInstance);
+    }
+
     return newPlantInstance.save();
   }
 
@@ -42,10 +48,60 @@ export class PlantInstanceService {
     return this.plantInstanceModel.find({ plant }).exec();
   }
 
+  async fertilizePlantInstanceAndUpdateTask(plantInstanceId: string, date: string | null | undefined) {
+    const plantInstance = await this.getPlantInstance(plantInstanceId);
+    if (!plantInstance || !plantInstance._id) {
+      throw new NotFoundException('PlantInstance does not exist!');
+    }
+
+    if (!date) {
+      throw new BadRequestException('Invalid date!');
+    }
+
+    const updatePlantInstance = await this.fertilizePlantInstance(plantInstance, date);
+
+    const task = await this.taskService.getTaskByTypeAndPlantInstanceId(FERTILIZE, plantInstance._id);
+    if (task && task.completedOn === null) {
+      await this.taskService.findByIdAndUpdate(task._id, {
+        completedOn: new Date(date)
+      });
+    }
+
+    return updatePlantInstance;
+  }
+
+  async fertilizePlantInstance(plantInstance: PlantInstanceDocument | null, date: string | null | undefined) {
+    if (!plantInstance) {
+      return null;
+    }
+
+    if (!date) {
+      return plantInstance;
+    }
+
+    return this.plantInstanceModel
+      .findByIdAndUpdate(plantInstance._id, {
+        history: [
+          ...(plantInstance.history ?? []),
+          {
+            status: FERTILIZED,
+            date: new Date(date),
+            from: {
+              containerId: plantInstance.containerId,
+              slotId: plantInstance.slotId,
+              subSlot: plantInstance.subSlot
+            }
+          }
+        ].sort((a, b) => a.date.getTime() - b.date.getTime())
+      })
+      .exec();
+  }
+
   async editPlantInstance(
     plantInstanceId: string,
     createPlantInstanceDTO: PlantInstanceDTO
   ): Promise<PlantInstanceDocument | null> {
+    createPlantInstanceDTO.history?.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     const editedPlantInstance = await this.plantInstanceModel.findByIdAndUpdate(
       plantInstanceId,
       createPlantInstanceDTO,
@@ -80,9 +136,13 @@ export class PlantInstanceService {
           };
         }
 
-        await this.containerService.editContainer(container._id, {
-          slots: newSlots
-        });
+        await this.containerService.editContainer(
+          container._id,
+          {
+            slots: newSlots
+          },
+          false
+        );
       }
     }
 
@@ -126,7 +186,7 @@ export class PlantInstanceService {
       slotTitle
     );
 
-    await this.taskService.createUpdateIndoorFertilzeTasksTask(
+    await this.taskService.createUpdateFertilzeTasks(
       'spring',
       container,
       plantInstance.slotId,

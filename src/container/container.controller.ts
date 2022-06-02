@@ -40,7 +40,7 @@ export class ContainerController {
     @Param('containerId', new ValidateObjectId()) containerId: string,
     @Body() createContainerDTO: ContainerDTO
   ) {
-    const editedContainer = await this.containerService.editContainer(containerId, createContainerDTO);
+    const editedContainer = await this.containerService.editContainer(containerId, createContainerDTO, true);
     if (!editedContainer) {
       throw new NotFoundException('Container does not exist!');
     }

@@ -1,8 +1,9 @@
 import { Controller, Get, Res, HttpStatus, Param, NotFoundException, Post, Body, Put, Delete } from '@nestjs/common';
+import { Response } from 'express';
+import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
 import { PlantInstanceService } from './plant-instance.service';
 import { PlantInstanceDTO } from './dto/plant-instance.dto';
-import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
-import { Response } from 'express';
+import { PlantInstanceFertilizeDTO } from './dto/plant-instance-fertilize.dto';
 
 @Controller('/api/plant-instance')
 export class PlantInstanceController {
@@ -21,11 +22,11 @@ export class PlantInstanceController {
     @Res() res: Response,
     @Param('plantInstanceId', new ValidateObjectId()) plantInstanceId: string
   ) {
-    const PlantInstance = await this.plantInstanceService.getPlantInstance(plantInstanceId);
-    if (!PlantInstance) {
+    const plantInstance = await this.plantInstanceService.getPlantInstance(plantInstanceId);
+    if (!plantInstance) {
       throw new NotFoundException('PlantInstance does not exist!');
     }
-    return res.status(HttpStatus.OK).json(PlantInstance);
+    return res.status(HttpStatus.OK).json(plantInstance);
   }
 
   // Fetch all PlantInstances
@@ -63,5 +64,20 @@ export class PlantInstanceController {
       throw new NotFoundException('PlantInstance does not exist!');
     }
     return res.status(HttpStatus.OK).json(deletedPlantInstance);
+  }
+
+  // Fertilize a plant instance
+  @Post('/:plantInstanceId/fertilize')
+  async fertilizeContainer(
+    @Res() res: Response,
+    @Param('plantInstanceId', new ValidateObjectId()) plantInstanceId: string,
+    @Body() plantInstanceFertilizeDTO: PlantInstanceFertilizeDTO
+  ) {
+    const updatedPlantInstance = await this.plantInstanceService.fertilizePlantInstanceAndUpdateTask(
+      plantInstanceId,
+      plantInstanceFertilizeDTO.date
+    );
+
+    return res.status(HttpStatus.OK).json(updatedPlantInstance);
   }
 }

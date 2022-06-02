@@ -9,6 +9,7 @@ import { ContainerModule } from './container/container.module';
 import { PictureModule } from './picture/picture.module';
 import { StaticModule } from './static/static.module';
 import { PlantInstanceModule } from './plant-instance/plant-instance.module';
+import { MigrationModule } from './migration/migration.module';
 
 const env = process.env.NODE_ENV || 'production';
 
@@ -25,7 +26,8 @@ const env = process.env.NODE_ENV || 'production';
     TaskModule,
     ContainerModule,
     PictureModule,
-    StaticModule
+    StaticModule,
+    MigrationModule
   ],
   controllers: [AppController],
   providers: [AppService]
