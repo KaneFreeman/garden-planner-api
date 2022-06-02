@@ -66,23 +66,17 @@ export class PlantInstanceService {
         if (editedPlantInstance.subSlot) {
           const subSlot = slot?.subSlot;
 
-          if (
-            !subSlot ||
-            ((subSlot.plannedPlantId === editedPlantInstance.plant || isNullish(subSlot.plannedPlantId)) &&
-              isNullish(subSlot.plantInstanceId))
-          ) {
+          if (!subSlot || isNullish(subSlot.plantInstanceId)) {
             newSlots[`${editedPlantInstance.slotId}`] = {
               ...newSlots[`${editedPlantInstance.slotId}`],
               subSlot: {
-                plantInstanceId: editedPlantInstance._id,
-                plannedPlantId: null
+                plantInstanceId: editedPlantInstance._id
               }
             };
           }
         } else {
           newSlots[`${editedPlantInstance.slotId}`] = {
-            plantInstanceId: editedPlantInstance._id,
-            plannedPlantId: null
+            plantInstanceId: editedPlantInstance._id
           };
         }
 
