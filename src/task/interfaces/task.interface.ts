@@ -6,7 +6,7 @@ export interface TaskDocument extends Document {
   readonly type: TaskType;
   readonly start: Date;
   readonly due: Date;
-  readonly containerId: string | null;
+  readonly plantInstanceId: string;
   readonly path: string | null;
   readonly completedOn: Date | null;
 }

@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-export const TransplantedSchema = new mongoose.Schema({
+export const ContainerSlotIdentifierSchema = new mongoose.Schema({
   containerId: String,
   slotId: Number,
   subSlot: Boolean

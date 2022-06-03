@@ -5,12 +5,14 @@ import { PlantController } from './plant.controller';
 import { PlantSchema } from './schemas/plant.schema';
 import { ContainerModule } from '../container/container.module';
 import { TaskModule } from '../task/task.module';
+import { PlantInstanceModule } from '../plant-instance/plant-instance.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Plant', schema: PlantSchema }]),
     forwardRef(() => ContainerModule),
-    TaskModule
+    TaskModule,
+    forwardRef(() => PlantInstanceModule)
   ],
   providers: [PlantService],
   controllers: [PlantController],

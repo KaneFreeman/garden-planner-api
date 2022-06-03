@@ -1,23 +1,46 @@
-import { CommentDto } from '../../common/dto/comment.dto';
-import { PictureDataDto } from '../../common/dto/picture-data.dto';
-import { StartedFromType } from '../../interface';
-import { ContainerSlotIdentifierDTO } from './container-slot-identifier.dto';
+import { isNotNullish, isNullish } from '../../util/null.util';
 
 export interface BaseContainerSlotDTO {
-  readonly plant?: string | null;
-  readonly status?: string;
-  readonly plantedCount?: number;
-  readonly plantedDate?: string;
-  readonly transplantedDate?: string;
-  readonly transplantedTo: ContainerSlotIdentifierDTO | null;
-  readonly transplantedFromDate?: string;
-  readonly transplantedFrom: ContainerSlotIdentifierDTO | null;
-  readonly firstHarvestDate?: string;
-  readonly startedFrom: StartedFromType;
-  readonly comments?: CommentDto[];
-  readonly pictures?: PictureDataDto[];
+  readonly plantInstanceId?: string;
 }
 
 export interface ContainerSlotDTO extends BaseContainerSlotDTO {
   readonly subSlot?: BaseContainerSlotDTO;
+}
+
+function isContainerSlotDTO(dto: ContainerSlotDTO | BaseContainerSlotDTO): dto is ContainerSlotDTO {
+  return 'subSlot' in dto;
+}
+
+export function sanitizeContainerSlotDTO(raw: ContainerSlotDTO[] | null | undefined): ContainerSlotDTO[];
+export function sanitizeContainerSlotDTO(raw: ContainerSlotDTO | null | undefined): ContainerSlotDTO;
+export function sanitizeContainerSlotDTO(
+  raw: BaseContainerSlotDTO[] | null | undefined
+): BaseContainerSlotDTO[] | undefined;
+export function sanitizeContainerSlotDTO(
+  raw: BaseContainerSlotDTO | null | undefined
+): BaseContainerSlotDTO | undefined;
+export function sanitizeContainerSlotDTO(
+  raw: ContainerSlotDTO | ContainerSlotDTO[] | BaseContainerSlotDTO | BaseContainerSlotDTO[] | null | undefined
+): ContainerSlotDTO | ContainerSlotDTO[] | BaseContainerSlotDTO | BaseContainerSlotDTO[] | undefined {
+  if (isNullish(raw)) {
+    return {};
+  }
+
+  if (!Array.isArray(raw)) {
+    return sanitizeContainerSlotDTO([raw])?.[0];
+  }
+
+  return raw.map((dto) => {
+    if (isContainerSlotDTO(dto)) {
+      return {
+        plantInstanceId: `${dto.plantInstanceId}`,
+        subSlot: isNotNullish(dto.subSlot) ? sanitizeContainerSlotDTO(dto.subSlot) : undefined
+      };
+    }
+
+    return {
+      plantInstanceId: `${dto.plantInstanceId}`
+    };
+  });
 }

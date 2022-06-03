@@ -5,12 +5,14 @@ import { ContainerController } from './container.controller';
 import { ContainerSchema } from './schemas/container.schema';
 import { TaskModule } from '../task/task.module';
 import { PlantModule } from '../plant/plant.module';
+import { PlantInstanceModule } from '../plant-instance/plant-instance.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Container', schema: ContainerSchema }]),
     forwardRef(() => TaskModule),
-    forwardRef(() => PlantModule)
+    forwardRef(() => PlantModule),
+    forwardRef(() => PlantInstanceModule)
   ],
   providers: [ContainerService],
   controllers: [ContainerController],

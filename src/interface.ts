@@ -243,22 +243,77 @@ export const PLANT_TYPES: PlantType[] = [
   SUNFLOWER
 ];
 
-export const NOT_PLANTED = 'Not Planted';
+export function toPlantType(raw: unknown): PlantType | null | undefined {
+  if (typeof raw !== 'string') {
+    return undefined;
+  }
+
+  if (PLANT_TYPES.includes(raw as PlantType)) {
+    return raw as PlantType;
+  }
+
+  return null;
+}
+
 export const PLANTED = 'Planted';
 export const TRANSPLANTED = 'Transplanted';
 export const HARVESTED = 'Harvested';
-export type Status = typeof NOT_PLANTED | typeof PLANTED | typeof TRANSPLANTED | typeof HARVESTED;
-export const STATUSES: Status[] = [NOT_PLANTED, PLANTED, TRANSPLANTED, HARVESTED];
+export const FERTILIZED = 'Fertilized';
+export type HistoryStatus = typeof PLANTED | typeof TRANSPLANTED | typeof HARVESTED | typeof FERTILIZED;
+export const STATUSES: HistoryStatus[] = [PLANTED, TRANSPLANTED, HARVESTED, FERTILIZED];
+
+export function toHistoryStatus(raw: unknown): HistoryStatus {
+  if (typeof raw !== 'string') {
+    return PLANTED;
+  }
+
+  switch (raw) {
+    case TRANSPLANTED:
+      return TRANSPLANTED;
+    case HARVESTED:
+      return HARVESTED;
+    case FERTILIZED:
+      return FERTILIZED;
+    default:
+      return PLANTED;
+  }
+}
 
 export const STARTED_FROM_TYPE_SEED = 'Seed';
 export const STARTED_FROM_TYPE_TRANSPLANT = 'Transplant';
 export type StartedFromType = typeof STARTED_FROM_TYPE_SEED | typeof STARTED_FROM_TYPE_TRANSPLANT;
 export const STARTED_FROM_TYPES: StartedFromType[] = [STARTED_FROM_TYPE_SEED, STARTED_FROM_TYPE_TRANSPLANT];
 
+export function toStartedFromType(raw: unknown): StartedFromType {
+  if (typeof raw !== 'string') {
+    return STARTED_FROM_TYPE_SEED;
+  }
+
+  switch (raw) {
+    case STARTED_FROM_TYPE_TRANSPLANT:
+      return STARTED_FROM_TYPE_TRANSPLANT;
+    default:
+      return STARTED_FROM_TYPE_SEED;
+  }
+}
+
 export const CONTAINER_TYPE_INSIDE = 'Inside';
 export const CONTAINER_TYPE_OUTSIDE = 'Outside';
 export type ContainerType = typeof CONTAINER_TYPE_INSIDE | typeof CONTAINER_TYPE_OUTSIDE;
 export const CONTAINER_TYPES: ContainerType[] = [CONTAINER_TYPE_INSIDE, CONTAINER_TYPE_OUTSIDE];
+
+export function toContainerType(raw: unknown): ContainerType {
+  if (typeof raw !== 'string') {
+    return CONTAINER_TYPE_INSIDE;
+  }
+
+  switch (raw) {
+    case CONTAINER_TYPE_OUTSIDE:
+      return CONTAINER_TYPE_OUTSIDE;
+    default:
+      return CONTAINER_TYPE_INSIDE;
+  }
+}
 
 export const PLANT = 'Plant';
 export const TRANSPLANT = 'Transplant';
@@ -267,6 +322,25 @@ export const FERTILIZE = 'Fertilize';
 export const CUSTOM = 'Custom';
 export type TaskType = typeof PLANT | typeof TRANSPLANT | typeof HARVEST | typeof FERTILIZE | typeof CUSTOM;
 export const TASK_TYPES: TaskType[] = [PLANT, TRANSPLANT, HARVEST, FERTILIZE, CUSTOM];
+
+export function toTaskType(raw: unknown): TaskType {
+  if (typeof raw !== 'string') {
+    return CUSTOM;
+  }
+
+  switch (raw) {
+    case PLANT:
+      return PLANT;
+    case TRANSPLANT:
+      return TRANSPLANT;
+    case HARVEST:
+      return HARVEST;
+    case FERTILIZE:
+      return FERTILIZE;
+    default:
+      return CUSTOM;
+  }
+}
 
 export interface FertilizerApplication {
   relative?: boolean;
@@ -311,47 +385,8 @@ export interface GrowingZoneData {
   firstFrost: Date;
 }
 
-export interface PictureData {
-  date: Date;
-  id: number;
-  pictureId: string;
-  thumbnail: string;
-  deleted?: boolean;
-}
-
-export interface PictureDataDTO {
-  date: string;
-  id: number;
-  pictureId: string;
-  thumbnail: string;
-  deleted?: boolean;
-}
-
 export interface ContainerSlotIdentifier {
   containerId: string;
   slotId: number;
   subSlot?: boolean;
-}
-
-export interface Comment {
-  date: Date;
-  text: string;
-}
-
-export interface BaseSlot {
-  plant?: string | null;
-  status?: Status;
-  plantedCount?: number;
-  plantedDate?: Date;
-  transplantedDate?: Date;
-  transplantedTo: ContainerSlotIdentifier | null;
-  transplantedFromDate?: Date;
-  transplantedFrom: ContainerSlotIdentifier | null;
-  startedFrom: StartedFromType;
-  comments?: Comment[];
-  pictures?: PictureData[];
-}
-
-export interface Slot extends BaseSlot {
-  subSlot?: BaseSlot;
 }

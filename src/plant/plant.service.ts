@@ -1,22 +1,24 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { PlantDTO } from './dto/plant.dto';
-import { PlantDocument } from './interfaces/plant.interface';
 import { isNullish } from '../util/null.util';
 import { ContainerService } from '../container/container.service';
 import { TaskService } from '../task/task.service';
+import { PlantInstanceService } from '../plant-instance/plant-instance.service';
+import { PlantDTO, sanitizePlantDTO } from './dto/plant.dto';
+import { PlantDocument } from './interfaces/plant.interface';
 
 @Injectable()
 export class PlantService {
   constructor(
     @InjectModel('Plant') private readonly plantModel: Model<PlantDocument>,
     @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService,
-    private taskService: TaskService
+    private taskService: TaskService,
+    @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService
   ) {}
 
   async addPlant(createPlantDTO: PlantDTO): Promise<PlantDocument> {
-    const newPlant = await this.plantModel.create(createPlantDTO);
+    const newPlant = await this.plantModel.create(sanitizePlantDTO(createPlantDTO));
     return newPlant.save();
   }
 
@@ -37,7 +39,7 @@ export class PlantService {
       return null;
     }
 
-    const updatedPlant = await this.plantModel.findByIdAndUpdate({ _id: { $eq: plantId } }, createPlantDTO, {
+    const updatedPlant = await this.plantModel.findByIdAndUpdate(plantId, sanitizePlantDTO(createPlantDTO), {
       new: true
     });
 
@@ -45,7 +47,7 @@ export class PlantService {
       await this.updateTasksWithNewPlantName(plantId, oldPlant.name, createPlantDTO.name);
     }
 
-    await this.updateTasks(plantId);
+    await this.updateTasks();
 
     return updatedPlant;
   }
@@ -55,46 +57,20 @@ export class PlantService {
   }
 
   async updateTasksWithNewPlantName(plantId: string, oldName: string, newName: string) {
-    const containers = await this.containerService.getContainers();
+    const plantInstances = await this.plantInstanceService.getPlantInstancesByPlant(plantId);
 
-    for (const container of containers) {
-      if (!container.slots) {
-        continue;
-      }
-
-      for (const [slotIndex, slot] of container.slots) {
-        if (slot.plant === plantId) {
-          const slotPath = `/container/${container._id}/slot/${slotIndex}`;
-          await this.taskService.updatePlantName(slotPath, oldName, newName);
-        }
-
-        if (slot.subSlot?.plant === plantId) {
-          const subSlotPath = `/container/${container._id}/slot/${slotIndex}/sub-slot`;
-          await this.taskService.updatePlantName(subSlotPath, oldName, newName);
-        }
+    for (const plantInstance of plantInstances) {
+      if (plantInstance._id) {
+        await this.taskService.updatePlantName(plantInstance._id, oldName, newName);
       }
     }
   }
 
-  async updateTasks(plantId: string) {
+  async updateTasks() {
     const containers = await this.containerService.getContainers();
 
     for (const container of containers) {
-      if (!container.slots) {
-        continue;
-      }
-
-      for (const [_, slot] of container.slots) {
-        if (slot.plant === plantId) {
-          await this.containerService.createUpdatePlantTasks(container);
-          break;
-        }
-
-        if (slot.subSlot?.plant === plantId) {
-          await this.containerService.createUpdatePlantTasks(container);
-          break;
-        }
-      }
+      await this.containerService.createUpdatePlantTasks(container);
     }
   }
 }
