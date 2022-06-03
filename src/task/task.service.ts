@@ -13,6 +13,7 @@ import {
   HARVESTED,
   PlantData,
   TaskType,
+  toTaskType,
   TRANSPLANTED
 } from '../interface';
 import { ContainerService } from '../container/container.service';
@@ -24,7 +25,7 @@ import {
   getTransplantedDate
 } from '../plant-instance/util/history.util';
 import growingZoneData from '../data/growingZoneData';
-import { isNullish } from '../util/null.util';
+import { isNotNullish, isNullish } from '../util/null.util';
 import { isValidDate } from '../util/date.util';
 import ordinalSuffixOf from '../util/number.util';
 import { isEmpty, isNotEmpty } from '../util/string.util';
@@ -71,9 +72,21 @@ export class TaskService {
     createTaskDTO: CreateTaskDTO,
     updateContainerTasks: boolean
   ): Promise<TaskDocument | null> {
-    const task = await this.taskModel.findByIdAndUpdate(taskId, createTaskDTO, {
-      new: true
-    });
+    const task = await this.taskModel.findByIdAndUpdate(
+      taskId,
+      {
+        text: `${createTaskDTO.text}`,
+        type: toTaskType(createTaskDTO.type),
+        start: new Date(createTaskDTO.start),
+        due: new Date(createTaskDTO.due),
+        plantInstanceId: `${createTaskDTO.plantInstanceId}`,
+        path: isNotNullish(createTaskDTO.path) ? `${createTaskDTO.path}` : null,
+        completedOn: isNotNullish(createTaskDTO.completedOn) ? new Date(createTaskDTO.completedOn) : null
+      },
+      {
+        new: true
+      }
+    );
 
     if (task?.type === FERTILIZE && updateContainerTasks) {
       const plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId);

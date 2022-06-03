@@ -268,6 +268,25 @@ export const CUSTOM = 'Custom';
 export type TaskType = typeof PLANT | typeof TRANSPLANT | typeof HARVEST | typeof FERTILIZE | typeof CUSTOM;
 export const TASK_TYPES: TaskType[] = [PLANT, TRANSPLANT, HARVEST, FERTILIZE, CUSTOM];
 
+export function toTaskType(raw: unknown): TaskType {
+  if (typeof raw !== 'string') {
+    return CUSTOM;
+  }
+
+  switch (raw) {
+    case PLANT:
+      return PLANT;
+    case TRANSPLANT:
+      return TRANSPLANT;
+    case HARVEST:
+      return HARVEST;
+    case FERTILIZE:
+      return FERTILIZE;
+    default:
+      return CUSTOM;
+  }
+}
+
 export interface FertilizerApplication {
   relative?: boolean;
   start: number;
