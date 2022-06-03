@@ -13,7 +13,6 @@ import {
   HARVESTED,
   PlantData,
   TaskType,
-  toTaskType,
   TRANSPLANTED
 } from '../interface';
 import { ContainerService } from '../container/container.service';
@@ -25,14 +24,14 @@ import {
   getTransplantedDate
 } from '../plant-instance/util/history.util';
 import growingZoneData from '../data/growingZoneData';
-import { isNotNullish, isNullish } from '../util/null.util';
-import { isValidDate } from '../util/date.util';
+import { isNullish } from '../util/null.util';
 import ordinalSuffixOf from '../util/number.util';
 import { isEmpty, isNotEmpty } from '../util/string.util';
 import { PlantInstanceDocument } from '../plant-instance/interfaces/plant-instance.interface';
-import { CreateTaskDTO } from './dto/create-task.dto';
-import { TaskDocument } from './interfaces/task.interface';
 import { PlantInstanceService } from '../plant-instance/plant-instance.service';
+import { isValidDate } from '../util/date.util';
+import { CreateTaskDTO, sanitizeCreateTaskDTO } from './dto/create-task.dto';
+import { TaskDocument } from './interfaces/task.interface';
 
 @Injectable()
 export class TaskService {
@@ -43,7 +42,7 @@ export class TaskService {
   ) {}
 
   async addTask(createTaskDTO: CreateTaskDTO): Promise<TaskDocument> {
-    const newTask = await this.taskModel.create(createTaskDTO);
+    const newTask = await this.taskModel.create(sanitizeCreateTaskDTO(createTaskDTO));
     return newTask.save();
   }
 
@@ -72,21 +71,9 @@ export class TaskService {
     createTaskDTO: CreateTaskDTO,
     updateContainerTasks: boolean
   ): Promise<TaskDocument | null> {
-    const task = await this.taskModel.findByIdAndUpdate(
-      taskId,
-      {
-        text: `${createTaskDTO.text}`,
-        type: toTaskType(createTaskDTO.type),
-        start: new Date(createTaskDTO.start),
-        due: new Date(createTaskDTO.due),
-        plantInstanceId: `${createTaskDTO.plantInstanceId}`,
-        path: isNotNullish(createTaskDTO.path) ? `${createTaskDTO.path}` : null,
-        completedOn: isNotNullish(createTaskDTO.completedOn) ? new Date(createTaskDTO.completedOn) : null
-      },
-      {
-        new: true
-      }
-    );
+    const task = await this.taskModel.findByIdAndUpdate(taskId, sanitizeCreateTaskDTO(createTaskDTO), {
+      new: true
+    });
 
     if (task?.type === FERTILIZE && updateContainerTasks) {
       const plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId);

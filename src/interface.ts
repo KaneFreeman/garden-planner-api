@@ -243,6 +243,18 @@ export const PLANT_TYPES: PlantType[] = [
   SUNFLOWER
 ];
 
+export function toPlantType(raw: unknown): PlantType | null | undefined {
+  if (typeof raw !== 'string') {
+    return undefined;
+  }
+
+  if (PLANT_TYPES.includes(raw as PlantType)) {
+    return raw as PlantType;
+  }
+
+  return null;
+}
+
 export const PLANTED = 'Planted';
 export const TRANSPLANTED = 'Transplanted';
 export const HARVESTED = 'Harvested';
@@ -289,6 +301,19 @@ export const CONTAINER_TYPE_INSIDE = 'Inside';
 export const CONTAINER_TYPE_OUTSIDE = 'Outside';
 export type ContainerType = typeof CONTAINER_TYPE_INSIDE | typeof CONTAINER_TYPE_OUTSIDE;
 export const CONTAINER_TYPES: ContainerType[] = [CONTAINER_TYPE_INSIDE, CONTAINER_TYPE_OUTSIDE];
+
+export function toContainerType(raw: unknown): ContainerType {
+  if (typeof raw !== 'string') {
+    return CONTAINER_TYPE_INSIDE;
+  }
+
+  switch (raw) {
+    case CONTAINER_TYPE_OUTSIDE:
+      return CONTAINER_TYPE_OUTSIDE;
+    default:
+      return CONTAINER_TYPE_INSIDE;
+  }
+}
 
 export const PLANT = 'Plant';
 export const TRANSPLANT = 'Transplant';

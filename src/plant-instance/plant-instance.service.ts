@@ -140,6 +140,10 @@ export class PlantInstanceService {
         await this.containerService.editContainer(
           container._id,
           {
+            name: container.name,
+            type: container.type,
+            rows: container.rows,
+            columns: container.columns,
             slots: newSlots
           },
           false

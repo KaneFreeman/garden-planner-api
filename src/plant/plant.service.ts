@@ -5,7 +5,7 @@ import { isNullish } from '../util/null.util';
 import { ContainerService } from '../container/container.service';
 import { TaskService } from '../task/task.service';
 import { PlantInstanceService } from '../plant-instance/plant-instance.service';
-import { PlantDTO } from './dto/plant.dto';
+import { PlantDTO, sanitizePlantDTO } from './dto/plant.dto';
 import { PlantDocument } from './interfaces/plant.interface';
 
 @Injectable()
@@ -18,7 +18,7 @@ export class PlantService {
   ) {}
 
   async addPlant(createPlantDTO: PlantDTO): Promise<PlantDocument> {
-    const newPlant = await this.plantModel.create(createPlantDTO);
+    const newPlant = await this.plantModel.create(sanitizePlantDTO(createPlantDTO));
     return newPlant.save();
   }
 
@@ -39,7 +39,7 @@ export class PlantService {
       return null;
     }
 
-    const updatedPlant = await this.plantModel.findByIdAndUpdate(plantId, createPlantDTO, {
+    const updatedPlant = await this.plantModel.findByIdAndUpdate(plantId, sanitizePlantDTO(createPlantDTO), {
       new: true
     });
 

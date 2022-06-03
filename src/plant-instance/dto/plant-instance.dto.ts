@@ -1,9 +1,8 @@
-import { isNotNullish } from '../../../dist-prod/src/util/null.util';
 import { CommentDto, sanitizeCommentDto } from '../../common/dto/comment.dto';
 import { PictureDataDto, sanitizePictureDataDto } from '../../common/dto/picture-data.dto';
 import { ContainerSlotIdentifierDTO } from '../../container/dto/container-slot-identifier.dto';
 import { toStartedFromType } from '../../interface';
-import { isNullish } from '../../util/null.util';
+import { isNotNullish, isNullish } from '../../util/null.util';
 import { PlantInstanceHistoryDto, sanitizePlantInstanceHistoryDto } from './plant-instance-history.dto';
 
 export interface PlantInstanceDTO extends ContainerSlotIdentifierDTO {

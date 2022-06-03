@@ -5,7 +5,7 @@ import { TaskService } from '../task/task.service';
 import { PlantService } from '../plant/plant.service';
 import getSlotTitle from '../util/slot.util';
 import { PlantInstanceService } from '../plant-instance/plant-instance.service';
-import { ContainerDTO } from './dto/container.dto';
+import { ContainerDTO, sanitizeContainerDTO } from './dto/container.dto';
 import { ContainerFertilizeDTO } from './dto/container-fertilize.dto';
 import { ContainerDocument } from './interfaces/container.interface';
 import { BaseSlotDocument } from './interfaces/container-slot.interface';
@@ -22,7 +22,7 @@ export class ContainerService {
   ) {}
 
   async addContainer(createContainerDTO: ContainerDTO): Promise<ContainerDocument> {
-    const newContainer = await this.containerModel.create(createContainerDTO);
+    const newContainer = await this.containerModel.create(sanitizeContainerDTO(createContainerDTO));
     return newContainer.save();
   }
 
@@ -40,10 +40,14 @@ export class ContainerService {
 
   async editContainer(
     containerId: string,
-    createContainerDTO: Partial<ContainerDTO>,
+    createContainerDTO: ContainerDTO,
     updateTasks: boolean
   ): Promise<ContainerDocument | null> {
-    const editedContainer = await this.containerModel.findByIdAndUpdate(containerId, createContainerDTO, { new: true });
+    const editedContainer = await this.containerModel.findByIdAndUpdate(
+      containerId,
+      sanitizeContainerDTO(createContainerDTO),
+      { new: true }
+    );
 
     if (editedContainer && updateTasks) {
       await this.createUpdatePlantTasks(editedContainer);

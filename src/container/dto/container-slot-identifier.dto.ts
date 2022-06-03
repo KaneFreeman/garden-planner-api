@@ -6,7 +6,7 @@ export interface ContainerSlotIdentifierDTO {
   readonly subSlot?: boolean;
 }
 
-export function sanitizeContainerSlotIdentifier(
+export function sanitizeContainerSlotIdentifierDto(
   raw: ContainerSlotIdentifierDTO | null | undefined
 ): ContainerSlotIdentifierDTO | undefined {
   if (isNullish(raw)) {
