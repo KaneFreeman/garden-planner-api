@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { PlantInstanceDTO } from './dto/plant-instance.dto';
+import { PlantInstanceDTO, sanitizePlantInstanceDTO } from './dto/plant-instance.dto';
 import { PlantInstanceDocument } from './interfaces/plant-instance.interface';
 import { TaskService } from '../task/task.service';
 import { PlantService } from '../plant/plant.service';
@@ -25,7 +25,7 @@ export class PlantInstanceService {
   ) {}
 
   async addPlantInstance(createPlantInstanceDTO: PlantInstanceDTO, createTasks = true): Promise<PlantInstanceDocument> {
-    const newPlantInstance = await this.plantInstanceModel.create(createPlantInstanceDTO);
+    const newPlantInstance = await this.plantInstanceModel.create(sanitizePlantInstanceDTO(createPlantInstanceDTO));
 
     if (createTasks) {
       await this.createUpdatePlantInstanceTasks(newPlantInstance);
@@ -105,7 +105,7 @@ export class PlantInstanceService {
     createPlantInstanceDTO.history?.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     const editedPlantInstance = await this.plantInstanceModel.findByIdAndUpdate(
       plantInstanceId,
-      createPlantInstanceDTO,
+      sanitizePlantInstanceDTO(createPlantInstanceDTO),
       { new: true }
     );
 

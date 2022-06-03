@@ -250,10 +250,40 @@ export const FERTILIZED = 'Fertilized';
 export type HistoryStatus = typeof PLANTED | typeof TRANSPLANTED | typeof HARVESTED | typeof FERTILIZED;
 export const STATUSES: HistoryStatus[] = [PLANTED, TRANSPLANTED, HARVESTED, FERTILIZED];
 
+export function toHistoryStatus(raw: unknown): HistoryStatus {
+  if (typeof raw !== 'string') {
+    return PLANTED;
+  }
+
+  switch (raw) {
+    case TRANSPLANTED:
+      return TRANSPLANTED;
+    case HARVESTED:
+      return HARVESTED;
+    case FERTILIZED:
+      return FERTILIZED;
+    default:
+      return PLANTED;
+  }
+}
+
 export const STARTED_FROM_TYPE_SEED = 'Seed';
 export const STARTED_FROM_TYPE_TRANSPLANT = 'Transplant';
 export type StartedFromType = typeof STARTED_FROM_TYPE_SEED | typeof STARTED_FROM_TYPE_TRANSPLANT;
 export const STARTED_FROM_TYPES: StartedFromType[] = [STARTED_FROM_TYPE_SEED, STARTED_FROM_TYPE_TRANSPLANT];
+
+export function toStartedFromType(raw: unknown): StartedFromType {
+  if (typeof raw !== 'string') {
+    return STARTED_FROM_TYPE_SEED;
+  }
+
+  switch (raw) {
+    case STARTED_FROM_TYPE_TRANSPLANT:
+      return STARTED_FROM_TYPE_TRANSPLANT;
+    default:
+      return STARTED_FROM_TYPE_SEED;
+  }
+}
 
 export const CONTAINER_TYPE_INSIDE = 'Inside';
 export const CONTAINER_TYPE_OUTSIDE = 'Outside';
