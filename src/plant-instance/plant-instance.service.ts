@@ -11,7 +11,8 @@ import { ContainerDocument } from '../container/interfaces/container.interface';
 import { ContainerService } from '../container/container.service';
 import { isNullish } from '../util/null.util';
 import { ContainerSlotDTO } from '../container/dto/container-slot.dto';
-import { FERTILIZE, FERTILIZED } from '../interface';
+import { HistoryStatus, TaskType } from '../interface';
+import { PlantInstanceHistoryDto } from './dto/plant-instance-history.dto';
 
 @Injectable()
 export class PlantInstanceService {
@@ -48,7 +49,12 @@ export class PlantInstanceService {
     return this.plantInstanceModel.find({ plant }).exec();
   }
 
-  async fertilizePlantInstanceAndUpdateTask(plantInstanceId: string, date: string | null | undefined) {
+  async addPlantInstanceHistoryAndUpdateTask(
+    plantInstanceId: string,
+    historyStatus: HistoryStatus,
+    taskType: TaskType,
+    date: string
+  ) {
     const plantInstance = await this.getPlantInstance(plantInstanceId);
     if (!plantInstance || !plantInstance._id) {
       throw new NotFoundException('PlantInstance does not exist!');
@@ -58,9 +64,17 @@ export class PlantInstanceService {
       throw new BadRequestException('Invalid date!');
     }
 
-    const updatePlantInstance = await this.fertilizePlantInstance(plantInstance, date);
+    const updatePlantInstance = await this.addPlantInstanceHistory(plantInstance, {
+      status: historyStatus,
+      date,
+      from: {
+        containerId: plantInstance.containerId,
+        slotId: plantInstance.slotId,
+        subSlot: plantInstance.subSlot
+      }
+    });
 
-    const task = await this.taskService.getTaskByTypeAndPlantInstanceId(FERTILIZE, plantInstance._id);
+    const task = await this.taskService.getTaskByTypeAndPlantInstanceId(taskType, plantInstance._id);
     if (task && task.completedOn === null) {
       await this.taskService.findByIdAndUpdate(task._id, {
         completedOn: new Date(date)
@@ -70,29 +84,16 @@ export class PlantInstanceService {
     return updatePlantInstance;
   }
 
-  async fertilizePlantInstance(plantInstance: PlantInstanceDocument | null, date: string | null | undefined) {
+  async addPlantInstanceHistory(plantInstance: PlantInstanceDocument | null, history: PlantInstanceHistoryDto) {
     if (!plantInstance) {
       return null;
     }
 
-    if (!date) {
-      return plantInstance;
-    }
-
     return this.plantInstanceModel
       .findByIdAndUpdate(plantInstance._id, {
-        history: [
-          ...(plantInstance.history ?? []),
-          {
-            status: FERTILIZED,
-            date: new Date(date),
-            from: {
-              containerId: plantInstance.containerId,
-              slotId: plantInstance.slotId,
-              subSlot: plantInstance.subSlot
-            }
-          }
-        ].sort((a, b) => a.date.getTime() - b.date.getTime())
+        history: [...(plantInstance.history ?? []), history].sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        )
       })
       .exec();
   }

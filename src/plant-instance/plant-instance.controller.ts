@@ -3,7 +3,8 @@ import { Response } from 'express';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
 import { PlantInstanceService } from './plant-instance.service';
 import { PlantInstanceDTO } from './dto/plant-instance.dto';
-import { PlantInstanceFertilizeDTO } from './dto/plant-instance-fertilize.dto';
+import { PlantInstanceAddHistoryAndUpdateTaskDTO } from './dto/plant-instance-add-history-and-update-task.dto';
+import { FERTILIZE, FERTILIZED, HARVEST, HARVESTED } from '../interface';
 
 @Controller('/api/plant-instance')
 export class PlantInstanceController {
@@ -68,14 +69,33 @@ export class PlantInstanceController {
 
   // Fertilize a plant instance
   @Post('/:plantInstanceId/fertilize')
-  async fertilizeContainer(
+  async fertilizePlantInstance(
     @Res() res: Response,
     @Param('plantInstanceId', new ValidateObjectId()) plantInstanceId: string,
-    @Body() plantInstanceFertilizeDTO: PlantInstanceFertilizeDTO
+    @Body() dto: PlantInstanceAddHistoryAndUpdateTaskDTO
   ) {
-    const updatedPlantInstance = await this.plantInstanceService.fertilizePlantInstanceAndUpdateTask(
+    const updatedPlantInstance = await this.plantInstanceService.addPlantInstanceHistoryAndUpdateTask(
       plantInstanceId,
-      plantInstanceFertilizeDTO.date
+      FERTILIZED,
+      FERTILIZE,
+      dto.date
+    );
+
+    return res.status(HttpStatus.OK).json(updatedPlantInstance);
+  }
+
+  // Fertilize a plant instance
+  @Post('/:plantInstanceId/harvest')
+  async harvestPlantInstance(
+    @Res() res: Response,
+    @Param('plantInstanceId', new ValidateObjectId()) plantInstanceId: string,
+    @Body() dto: PlantInstanceAddHistoryAndUpdateTaskDTO
+  ) {
+    const updatedPlantInstance = await this.plantInstanceService.addPlantInstanceHistoryAndUpdateTask(
+      plantInstanceId,
+      HARVESTED,
+      HARVEST,
+      dto.date
     );
 
     return res.status(HttpStatus.OK).json(updatedPlantInstance);

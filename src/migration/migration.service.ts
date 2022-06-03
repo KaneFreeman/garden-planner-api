@@ -358,13 +358,10 @@ export class MigrationService {
     for (const containerId in containersById) {
       const container = containersById[containerId];
       await this.containerService.editContainer(containerId, container, false);
-
-      console.log('containersToCreate', containerId, containersById[containerId].slots);
     }
   }
 
   async onModuleInit() {
-    // console.log('migrating!');
     // await this.migrate();
   }
 }

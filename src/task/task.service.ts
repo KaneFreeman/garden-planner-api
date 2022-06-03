@@ -428,10 +428,6 @@ export class TaskService {
     const howToGrowData = data?.howToGrow[season];
     const fertilizeData = container.type === 'Inside' ? howToGrowData?.indoor?.fertilize : howToGrowData?.fertilize;
 
-    console.log(
-      fertilizeData,
-      !plant || !data || fertilizeData === undefined || instance?.containerId !== container._id.toString()
-    );
     if (!plant || !data || fertilizeData === undefined || instance?.containerId !== container._id.toString()) {
       if (tasks.length > 0) {
         for (const task of tasks) {

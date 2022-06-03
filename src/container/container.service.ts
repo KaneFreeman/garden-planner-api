@@ -9,7 +9,7 @@ import { ContainerDTO } from './dto/container.dto';
 import { ContainerFertilizeDTO } from './dto/container-fertilize.dto';
 import { ContainerDocument } from './interfaces/container.interface';
 import { BaseSlotDocument } from './interfaces/container-slot.interface';
-import { FERTILIZE } from '../interface';
+import { FERTILIZE, FERTILIZED } from '../interface';
 
 @Injectable()
 export class ContainerService {
@@ -67,11 +67,16 @@ export class ContainerService {
         const updatedTask = await this.taskService.findByIdAndUpdate(task._id, { completedOn: data.date });
         updatedCount++;
 
-        if (task?.type === FERTILIZE) {
-          await this.plantInstanceService.fertilizePlantInstance(
-            plantInstance,
-            updatedTask?.completedOn?.toISOString()
-          );
+        if (task?.type === FERTILIZE && updatedTask?.completedOn) {
+          await this.plantInstanceService.addPlantInstanceHistory(plantInstance, {
+            status: FERTILIZED,
+            date: updatedTask.completedOn.toISOString(),
+            from: {
+              containerId: plantInstance.containerId,
+              slotId: plantInstance.slotId,
+              subSlot: plantInstance.subSlot
+            }
+          });
           await this.plantInstanceService.createUpdatePlantInstanceTasks(plantInstance);
         }
       }
