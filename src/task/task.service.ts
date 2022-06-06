@@ -8,6 +8,7 @@ import { ONE_WEEK, TWO_WEEKS } from '../constants';
 import { ContainerDocument } from '../container/interfaces/container.interface';
 import {
   ContainerType,
+  CONTAINER_TYPE_INSIDE,
   FERTILIZE,
   FertilizerApplication,
   HARVESTED,
@@ -184,6 +185,10 @@ export class TaskService {
     const { start, due } = dates;
 
     const completedOn = getPlantedDate(instance);
+    if (task && isNullish(task.completedOn) && instance.closed) {
+      await this.deleteTask(task._id, true);
+      return;
+    }
 
     if (!task) {
       await this.addTask({
@@ -227,7 +232,14 @@ export class TaskService {
 
     const task = await this.getTaskByTypeAndPlantInstanceId('Transplant', instance._id);
     const dates = this.getTransplantedStartAndDueDate(season, data, getPlantedDate(instance));
-    if (!plant || !data || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
+    if (
+      !plant ||
+      !data ||
+      !dates ||
+      !isValidDate(dates.start) ||
+      !isValidDate(dates.due) ||
+      container.type !== CONTAINER_TYPE_INSIDE
+    ) {
       if (task) {
         await this.deleteTask(task._id, true);
       }
@@ -237,6 +249,10 @@ export class TaskService {
     const { start, due } = dates;
 
     const completedOn = findHistoryByStatus(instance, TRANSPLANTED)?.date ?? null;
+    if (task && isNullish(task.completedOn) && instance.closed) {
+      await this.deleteTask(task._id, true);
+      return;
+    }
 
     if (!task) {
       await this.addTask({
@@ -342,6 +358,10 @@ export class TaskService {
           },
           HARVESTED
         )?.date ?? null;
+    }
+    if (task && isNullish(task.completedOn) && instance.closed) {
+      await this.deleteTask(task._id, true);
+      return;
     }
 
     if (!task) {
@@ -468,6 +488,11 @@ export class TaskService {
       }
 
       const task = tasksByText[text];
+      if (task && isNullish(task.completedOn) && instance.closed) {
+        await this.deleteTask(task._id, true);
+        return;
+      }
+
       taskTexts.push(text);
       if (!task) {
         previousTask = await this.addTask({
