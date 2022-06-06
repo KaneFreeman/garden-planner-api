@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 
 export const BaseContainerSlotSchema = {
-  plantInstanceId: String
+  plantInstanceId: String,
+  plantInstanceHistory: [String]
 };
 
 export const ContainerSlotSchema = new mongoose.Schema({

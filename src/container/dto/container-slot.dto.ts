@@ -2,6 +2,7 @@ import { isNotNullish, isNullish } from '../../util/null.util';
 
 export interface BaseContainerSlotDTO {
   readonly plantInstanceId?: string;
+  readonly plantInstanceHistory?: string[];
 }
 
 export interface ContainerSlotDTO extends BaseContainerSlotDTO {

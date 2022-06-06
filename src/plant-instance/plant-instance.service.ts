@@ -9,7 +9,7 @@ import plantData from '../data/plantData';
 import getSlotTitle from '../util/slot.util';
 import { ContainerDocument } from '../container/interfaces/container.interface';
 import { ContainerService } from '../container/container.service';
-import { isNullish } from '../util/null.util';
+import { isNotNullish, isNullish } from '../util/null.util';
 import { ContainerSlotDTO } from '../container/dto/container-slot.dto';
 import { HistoryStatus, TaskType } from '../interface';
 import { PlantInstanceHistoryDto } from './dto/plant-instance-history.dto';
@@ -26,6 +26,8 @@ export class PlantInstanceService {
 
   async addPlantInstance(createPlantInstanceDTO: PlantInstanceDTO, createTasks = true): Promise<PlantInstanceDocument> {
     const newPlantInstance = await this.plantInstanceModel.create(sanitizePlantInstanceDTO(createPlantInstanceDTO));
+
+    await this.updateContainerAfterPlantInstanceUpdate(newPlantInstance);
 
     if (createTasks) {
       await this.createUpdatePlantInstanceTasks(newPlantInstance);
@@ -109,31 +111,49 @@ export class PlantInstanceService {
       { new: true }
     );
 
-    if (editedPlantInstance) {
-      await this.createUpdatePlantInstanceTasks(editedPlantInstance);
+    await this.createUpdatePlantInstanceTasks(editedPlantInstance);
+    await this.updateContainerAfterPlantInstanceUpdate(editedPlantInstance);
 
-      const container = await this.containerService.getContainer(editedPlantInstance.containerId);
+    return editedPlantInstance;
+  }
+
+  async updateContainerAfterPlantInstanceUpdate(plantInstance: PlantInstanceDocument | null) {
+    if (plantInstance && !plantInstance.closed) {
+      const container = await this.containerService.getContainer(plantInstance.containerId);
       if (container && container._id) {
-        const slot = container.slots?.get(`${editedPlantInstance.slotId}`);
+        const slot = container.slots?.get(`${plantInstance.slotId}`);
         const newSlots: Record<string, ContainerSlotDTO> = {};
         container.slots?.forEach((slot, key) => {
           newSlots[key] = slot.toObject<ContainerSlotDTO>();
         });
 
-        if (editedPlantInstance.subSlot) {
+        if (plantInstance.subSlot) {
           const subSlot = slot?.subSlot;
 
+          const plantInstanceHistory = subSlot?.plantInstanceHistory ?? [];
+          if (subSlot && isNotNullish(subSlot.plantInstanceId)) {
+            plantInstanceHistory.push(subSlot.plantInstanceId);
+          }
+
           if (!subSlot || isNullish(subSlot.plantInstanceId)) {
-            newSlots[`${editedPlantInstance.slotId}`] = {
-              ...newSlots[`${editedPlantInstance.slotId}`],
+            newSlots[`${plantInstance.slotId}`] = {
+              ...newSlots[`${plantInstance.slotId}`],
               subSlot: {
-                plantInstanceId: editedPlantInstance._id
+                plantInstanceId: plantInstance._id,
+                plantInstanceHistory
               }
             };
           }
         } else {
-          newSlots[`${editedPlantInstance.slotId}`] = {
-            plantInstanceId: editedPlantInstance._id
+          const plantInstanceHistory = slot?.plantInstanceHistory ?? [];
+          if (slot && isNotNullish(slot.plantInstanceId)) {
+            plantInstanceHistory.push(slot.plantInstanceId);
+          }
+
+          newSlots[`${plantInstance.slotId}`] = {
+            plantInstanceId: plantInstance._id,
+            plantInstanceHistory,
+            subSlot: slot?.subSlot
           };
         }
 
@@ -150,8 +170,6 @@ export class PlantInstanceService {
         );
       }
     }
-
-    return editedPlantInstance;
   }
 
   async deletePlantInstance(plantInstanceId: string): Promise<PlantInstanceDocument | null> {
