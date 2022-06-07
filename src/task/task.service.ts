@@ -51,8 +51,16 @@ export class TaskService {
     return await this.taskModel.findById(taskId).exec();
   }
 
-  async getTaskByTypeAndPlantInstanceId(type: TaskType, plantInstanceId: string): Promise<TaskDocument | null> {
-    return this.taskModel.findOne({ type: { $eq: type }, plantInstanceId: { $eq: plantInstanceId } }).exec();
+  async getOpenTaskByTypeAndPlantInstanceId(type: TaskType, plantInstanceId: string): Promise<TaskDocument | null> {
+    return this.taskModel
+      .findOne({ type: { $eq: type }, plantInstanceId: { $eq: plantInstanceId }, completedOn: null })
+      .exec();
+  }
+
+  async getOpenTasksByTypeAndPlantInstanceId(type: TaskType, plantInstanceId: string): Promise<TaskDocument[]> {
+    return this.taskModel
+      .find({ type: { $eq: type }, plantInstanceId: { $eq: plantInstanceId }, completedOn: null })
+      .exec();
   }
 
   async getTasksByTypeAndPlantInstanceId(type: TaskType, plantInstanceId: string): Promise<TaskDocument[]> {
@@ -173,7 +181,19 @@ export class TaskService {
       return;
     }
 
-    const task = await this.getTaskByTypeAndPlantInstanceId('Plant', instance._id);
+    let tasks = await this.getTasksByTypeAndPlantInstanceId('Plant', instance._id);
+    if (tasks.length > 1) {
+      for (const task of tasks) {
+        await this.deleteTask(task._id, true);
+      }
+      tasks = [];
+    }
+
+    let task: TaskDocument | undefined = undefined;
+    if (tasks.length > 0) {
+      task = tasks[0];
+    }
+
     const dates = this.getPlantedStartAndDueDate(season, container.type, data);
     if (!plant || !data || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
       if (task) {
@@ -230,7 +250,19 @@ export class TaskService {
       return;
     }
 
-    const task = await this.getTaskByTypeAndPlantInstanceId('Transplant', instance._id);
+    let tasks = await this.getOpenTasksByTypeAndPlantInstanceId('Transplant', instance._id);
+    if (tasks.length > 1) {
+      for (const task of tasks) {
+        await this.deleteTask(task._id, true);
+      }
+      tasks = [];
+    }
+
+    let task: TaskDocument | undefined = undefined;
+    if (tasks.length > 0) {
+      task = tasks[0];
+    }
+
     const dates = this.getTransplantedStartAndDueDate(season, data, getPlantedDate(instance));
     if (
       !plant ||
@@ -328,7 +360,18 @@ export class TaskService {
       return;
     }
 
-    const task = await this.getTaskByTypeAndPlantInstanceId('Harvest', instance._id);
+    let tasks = await this.getTasksByTypeAndPlantInstanceId('Harvest', instance._id);
+    if (tasks.length > 1) {
+      for (const task of tasks) {
+        await this.deleteTask(task._id, true);
+      }
+      tasks = [];
+    }
+
+    let task: TaskDocument | undefined = undefined;
+    if (tasks.length > 0) {
+      task = tasks[0];
+    }
 
     const dates = this.getHarvestStartAndDueDate(plant, getPlantedDate(instance));
     if (
@@ -440,10 +483,20 @@ export class TaskService {
     const tasks = await this.getTasksByTypeAndPlantInstanceId('Fertilize', instance._id);
 
     const taskTexts: string[] = [];
+    const tasksToDelete: TaskDocument[] = [];
     const tasksByText = tasks.reduce((byText, task) => {
-      byText[task.text.replace(/( in [a-zA-Z0-9 ]+ at Row [0-9]+, Column [0-9]+)/g, '')] = task;
+      const key = task.text.replace(/( in [a-zA-Z0-9 ]+ at Row [0-9]+, Column [0-9]+)/g, '');
+      if (key in byText) {
+        tasksToDelete.push(task);
+        return byText;
+      }
+      byText[key] = task;
       return byText;
     }, {} as Record<string, TaskDocument>);
+
+    for (const task of tasksToDelete) {
+      await this.deleteTask(task._id, true);
+    }
 
     const howToGrowData = data?.howToGrow[season];
     const fertilizeData = container.type === 'Inside' ? howToGrowData?.indoor?.fertilize : howToGrowData?.fertilize;
@@ -473,6 +526,7 @@ export class TaskService {
         previousTask
       );
       if (!dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
+        previousTask = null;
         continue;
       }
 
@@ -489,8 +543,9 @@ export class TaskService {
 
       const task = tasksByText[text];
       if (task && isNullish(task.completedOn) && instance.closed) {
+        previousTask = null;
         await this.deleteTask(task._id, true);
-        return;
+        continue;
       }
 
       taskTexts.push(text);

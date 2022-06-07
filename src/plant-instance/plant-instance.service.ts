@@ -76,8 +76,8 @@ export class PlantInstanceService {
       }
     });
 
-    const task = await this.taskService.getTaskByTypeAndPlantInstanceId(taskType, plantInstance._id);
-    if (task && task.completedOn === null) {
+    const task = await this.taskService.getOpenTaskByTypeAndPlantInstanceId(taskType, plantInstance._id);
+    if (task) {
       await this.taskService.findByIdAndUpdate(task._id, {
         completedOn: new Date(date)
       });
