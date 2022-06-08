@@ -41,7 +41,7 @@ export function sanitizeContainerSlotDTO(
     }
 
     return {
-      plantInstanceId: `${dto.plantInstanceId}`
+      plantInstanceId: isNotNullish(dto.plantInstanceId) ? `${dto.plantInstanceId}` : undefined
     };
   });
 }
