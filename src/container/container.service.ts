@@ -61,15 +61,12 @@ export class ContainerService {
     if (oldSlots) {
       const slots = sanitizedContainerDTO?.slots ?? {};
 
-      console.log(slots, typeof slots, slots instanceof Map);
-
       newContainerDTO = {
         ...sanitizedContainerDTO,
         slots: Object.keys(slots).reduce((accumlatedSlots, slotIndex) => {
           const oldSlot = oldSlots.get(slotIndex);
           const slot = slots[slotIndex];
           const slot2 = containerDTO?.slots?.[slotIndex];
-          console.log(slotIndex, typeof slotIndex, oldSlot, slot, slot2);
           if (isNotNullish(oldSlot)) {
             if (
               isNotNullish(slot) &&

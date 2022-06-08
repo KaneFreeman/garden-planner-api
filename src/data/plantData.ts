@@ -1740,7 +1740,7 @@ const plantData: Record<PlantType, PlantData> = {
         plant: { min: -14, max: -28 },
         fertilize: [
           { start: 0, from: 'Transplanted', description: 'At transplant' },
-          { start: 21, end: 49, from: 'Transplanted', description: 'At fruit set' }
+          { start: 21, end: 49, from: 'Transplanted', description: 'at fruit set' }
         ]
       }
     },
