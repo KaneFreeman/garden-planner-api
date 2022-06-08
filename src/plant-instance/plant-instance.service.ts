@@ -36,8 +36,8 @@ export class PlantInstanceService {
     return newPlantInstance.save();
   }
 
-  async getPlantInstance(plantInstanceId: string | undefined): Promise<PlantInstanceDocument | null> {
-    if (!plantInstanceId) {
+  async getPlantInstance(plantInstanceId: string | undefined | null): Promise<PlantInstanceDocument | null> {
+    if (isNullish(plantInstanceId)) {
       return null;
     }
     return this.plantInstanceModel.findById(plantInstanceId).exec();

@@ -15,6 +15,7 @@ import { Response } from 'express';
 import { TaskService } from './task.service';
 import { CreateTaskDTO } from './dto/create-task.dto';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
+import { BulkCompleteTaskDTO } from './dto/bulk-complete-task.dto';
 
 @Controller('/api/task')
 export class TaskController {
@@ -44,6 +45,13 @@ export class TaskController {
       ? await this.taskService.getTasksByPlantInstanceId(plantInstanceId)
       : await this.taskService.getTasks();
     return res.status(HttpStatus.OK).json(tasks);
+  }
+
+  // Bulk complete tasks
+  @Put('/bulk-complete')
+  async bulkCompleteTask(@Res() res: Response, @Body() dto: BulkCompleteTaskDTO) {
+    const tasksCompleted = await this.taskService.buildCompleteTasks(dto);
+    return res.status(HttpStatus.OK).json(tasksCompleted);
   }
 
   // Edit a particular task using ID

@@ -1,7 +1,7 @@
 import { isNotNullish, isNullish } from '../../util/null.util';
 
 export interface BaseContainerSlotDTO {
-  readonly plantInstanceId?: string;
+  readonly plantInstanceId?: string | null;
   readonly plantInstanceHistory?: string[];
 }
 
@@ -41,7 +41,7 @@ export function sanitizeContainerSlotDTO(
     }
 
     return {
-      plantInstanceId: isNotNullish(dto.plantInstanceId) ? `${dto.plantInstanceId}` : undefined
+      plantInstanceId: isNotNullish(dto.plantInstanceId) ? `${dto.plantInstanceId}` : null
     };
   });
 }

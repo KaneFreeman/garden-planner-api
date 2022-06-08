@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, BadRequestException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, UpdateWithAggregationPipeline, UpdateQuery } from 'mongoose';
@@ -11,6 +11,7 @@ import {
   CONTAINER_TYPE_INSIDE,
   FERTILIZE,
   FertilizerApplication,
+  HARVEST,
   HARVESTED,
   PlantData,
   TaskType,
@@ -33,6 +34,8 @@ import { PlantInstanceService } from '../plant-instance/plant-instance.service';
 import { isValidDate } from '../util/date.util';
 import { CreateTaskDTO, sanitizeCreateTaskDTO } from './dto/create-task.dto';
 import { TaskDocument } from './interfaces/task.interface';
+import { BulkCompleteTaskDTO, sanitizeBulkCompleteTaskDTO } from './dto/bulk-complete-task.dto';
+import { fromTaskTypeToHistoryStatus } from '../util/history.util';
 
 @Injectable()
 export class TaskService {
@@ -90,6 +93,49 @@ export class TaskService {
     }
 
     return task;
+  }
+
+  async buildCompleteTasks(dto: BulkCompleteTaskDTO): Promise<number> {
+    const sanitizedDto = sanitizeBulkCompleteTaskDTO(dto);
+    if (!sanitizedDto) {
+      return 0;
+    }
+
+    const { type, date, taskIds } = sanitizedDto;
+    if (type !== FERTILIZE && type !== HARVEST) {
+      throw new BadRequestException('Unsupported task type');
+    }
+
+    let tasksUpdated = 0;
+    for (const taskId of taskIds) {
+      const task = await this.getTaskById(taskId);
+      if (!task) {
+        continue;
+      }
+
+      const plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId);
+      if (!plantInstance) {
+        continue;
+      }
+
+      await this.plantInstanceService.addPlantInstanceHistory(plantInstance, {
+        status: fromTaskTypeToHistoryStatus(type),
+        date,
+        from: {
+          containerId: plantInstance.containerId,
+          slotId: plantInstance.slotId,
+          subSlot: plantInstance.subSlot
+        }
+      });
+
+      await this.findByIdAndUpdate(task._id, {
+        completedOn: new Date(date)
+      });
+
+      tasksUpdated++;
+    }
+
+    return tasksUpdated;
   }
 
   async updatePlantName(plantInstanceId: string, oldName: string, newName: string) {

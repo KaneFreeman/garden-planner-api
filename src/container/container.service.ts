@@ -10,6 +10,8 @@ import { ContainerFertilizeDTO } from './dto/container-fertilize.dto';
 import { ContainerDocument } from './interfaces/container.interface';
 import { BaseSlotDocument } from './interfaces/container-slot.interface';
 import { FERTILIZE, FERTILIZED } from '../interface';
+import { ContainerSlotDTO } from './dto/container-slot.dto';
+import { isNotNullish } from '../util/null.util';
 
 @Injectable()
 export class ContainerService {
@@ -21,8 +23,8 @@ export class ContainerService {
     @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService
   ) {}
 
-  async addContainer(createContainerDTO: ContainerDTO): Promise<ContainerDocument> {
-    const newContainer = await this.containerModel.create(sanitizeContainerDTO(createContainerDTO));
+  async addContainer(containerDTO: ContainerDTO): Promise<ContainerDocument> {
+    const newContainer = await this.containerModel.create(sanitizeContainerDTO(containerDTO));
     return newContainer.save();
   }
 
@@ -40,14 +42,55 @@ export class ContainerService {
 
   async editContainer(
     containerId: string,
-    createContainerDTO: ContainerDTO,
+    containerDTO: ContainerDTO,
     updateTasks: boolean
   ): Promise<ContainerDocument | null> {
-    const editedContainer = await this.containerModel.findByIdAndUpdate(
-      containerId,
-      sanitizeContainerDTO(createContainerDTO),
-      { new: true }
-    );
+    const sanitizedContainerDTO = sanitizeContainerDTO(containerDTO);
+    if (!sanitizedContainerDTO) {
+      return null;
+    }
+
+    const oldContainer = await this.getContainer(containerId);
+    if (!oldContainer) {
+      return null;
+    }
+
+    let newContainerDTO = sanitizedContainerDTO;
+
+    const oldSlots = oldContainer?.slots;
+    if (oldSlots) {
+      const slots = sanitizedContainerDTO?.slots ?? {};
+
+      console.log(slots, typeof slots, slots instanceof Map);
+
+      newContainerDTO = {
+        ...sanitizedContainerDTO,
+        slots: Object.keys(slots).reduce((accumlatedSlots, slotIndex) => {
+          const oldSlot = oldSlots.get(slotIndex);
+          const slot = slots[slotIndex];
+          const slot2 = containerDTO?.slots?.[slotIndex];
+          console.log(slotIndex, typeof slotIndex, oldSlot, slot, slot2);
+          if (isNotNullish(oldSlot)) {
+            if (
+              isNotNullish(slot) &&
+              isNotNullish(oldSlot.plantInstanceId) &&
+              oldSlot.plantInstanceId !== slot.plantInstanceId
+            ) {
+              accumlatedSlots[slotIndex] = {
+                ...slot,
+                plantInstanceHistory: [...(slot.plantInstanceHistory ?? []), oldSlot.plantInstanceId]
+              };
+            }
+          } else {
+            accumlatedSlots[slotIndex] = slot;
+          }
+
+          return slots;
+        }, {} as Record<string, ContainerSlotDTO>)
+      };
+    }
+
+    const editedContainer = await this.containerModel.findByIdAndUpdate(containerId, newContainerDTO, { new: true });
 
     if (editedContainer && updateTasks) {
       await this.createUpdatePlantTasks(editedContainer);

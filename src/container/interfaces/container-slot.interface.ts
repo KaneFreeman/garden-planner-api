@@ -1,7 +1,7 @@
 import { Document } from 'mongoose';
 
 export interface BaseSlotDocument extends Document {
-  readonly plantInstanceId?: string;
+  readonly plantInstanceId?: string | null;
   readonly plantInstanceHistory?: string[];
 }
 
