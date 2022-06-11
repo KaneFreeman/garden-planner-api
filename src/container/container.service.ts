@@ -64,18 +64,18 @@ export class ContainerService {
       newContainerDTO = {
         ...sanitizedContainerDTO,
         slots: Object.keys(slots).reduce((accumlatedSlots, slotIndex) => {
+          // TODO FIX THIS
           const oldSlot = oldSlots.get(slotIndex);
           const slot = slots[slotIndex];
-          const slot2 = containerDTO?.slots?.[slotIndex];
           if (isNotNullish(oldSlot)) {
             if (
               isNotNullish(slot) &&
               isNotNullish(oldSlot.plantInstanceId) &&
-              oldSlot.plantInstanceId !== slot.plantInstanceId
+              `${oldSlot.plantInstanceId}` !== slot.plantInstanceId
             ) {
               accumlatedSlots[slotIndex] = {
                 ...slot,
-                plantInstanceHistory: [...(slot.plantInstanceHistory ?? []), oldSlot.plantInstanceId]
+                plantInstanceHistory: [...(slot.plantInstanceHistory ?? []), `${oldSlot.plantInstanceId}`]
               };
             }
           } else {

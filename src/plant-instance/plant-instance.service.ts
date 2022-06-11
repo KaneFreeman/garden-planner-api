@@ -130,38 +130,21 @@ export class PlantInstanceService {
         if (plantInstance.subSlot) {
           const subSlot = slot?.subSlot;
 
-          const plantInstanceHistory = subSlot?.plantInstanceHistory ?? [];
-          if (
-            subSlot &&
-            isNotNullish(subSlot.plantInstanceId) &&
-            subSlot.plantInstanceId !== plantInstance._id?.toString()
-          ) {
-            plantInstanceHistory.push(subSlot.plantInstanceId);
-          }
-
           if (!subSlot || isNullish(subSlot.plantInstanceId)) {
             newSlots[`${plantInstance.slotId}`] = {
               ...newSlots[`${plantInstance.slotId}`],
               subSlot: {
                 plantInstanceId: plantInstance._id?.toString(),
-                plantInstanceHistory
+                plantInstanceHistory: subSlot?.plantInstanceHistory
               }
             };
           }
         } else {
-          console.log('history', slot?.plantInstanceHistory);
-          const plantInstanceHistory = slot?.plantInstanceHistory ?? [];
-          if (slot && isNotNullish(slot.plantInstanceId) && slot.plantInstanceId !== plantInstance._id?.toString()) {
-            plantInstanceHistory.push(slot.plantInstanceId);
-          }
-          console.log('new history', plantInstanceHistory);
-
           newSlots[`${plantInstance.slotId}`] = {
             plantInstanceId: plantInstance._id?.toString(),
-            plantInstanceHistory,
+            plantInstanceHistory: slot?.plantInstanceHistory,
             subSlot: slot?.subSlot
           };
-          console.log('new slot', newSlots[`${plantInstance.slotId}`]);
         }
 
         await this.containerService.editContainer(
