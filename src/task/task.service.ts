@@ -452,7 +452,7 @@ export class TaskService {
           HARVESTED
         )?.date ?? null;
     }
-    console.log('completedOn', completedOn, instance.history);
+
     if (task && isNullish(task.completedOn) && instance.closed) {
       await this.deleteTask(task._id, true);
       return;

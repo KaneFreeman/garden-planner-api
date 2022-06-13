@@ -77,11 +77,7 @@ export class PlantInstanceService {
     });
 
     const task = await this.taskService.getOpenTaskByTypeAndPlantInstanceId(taskType, plantInstance._id);
-    console.log('task', task);
     if (task) {
-      console.log('updating task', task._id, {
-        completedOn: new Date(date)
-      });
       await this.taskService.findByIdAndUpdate(task._id, {
         completedOn: new Date(date)
       });
