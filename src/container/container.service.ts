@@ -133,15 +133,16 @@ export class ContainerService {
     container: ContainerDocument,
     slot: BaseSlotDocument,
     path: string,
-    slotTitle: string
+    slotTitle: string,
+    plantId?: string
   ) {
     const plantInstance = await this.plantInstanceService.getPlantInstance(slot.plantInstanceId);
-    if (plantInstance) {
+    if (plantInstance && (!plantId || plantInstance.plant === plantId)) {
       this.plantInstanceService.createUpdateTasks(container, plantInstance, path, slotTitle);
     }
   }
 
-  async createUpdatePlantTasks(container: ContainerDocument | null | undefined) {
+  async createUpdatePlantTasks(container: ContainerDocument | null | undefined, plantId?: string) {
     if (!container?.slots) {
       return;
     }
@@ -152,10 +153,10 @@ export class ContainerService {
       const path = `/container/${container._id}/slot/${slotIndex}`;
       const slotTitle = getSlotTitle(+slotIndex, container.rows);
 
-      await this.createUpdatePlantTasksForSlot(container, slot, path, slotTitle);
+      await this.createUpdatePlantTasksForSlot(container, slot, path, slotTitle, plantId);
 
       if (slot.subSlot) {
-        await this.createUpdatePlantTasksForSlot(container, slot.subSlot, `${path}/sub-slot`, slotTitle);
+        await this.createUpdatePlantTasksForSlot(container, slot.subSlot, `${path}/sub-slot`, slotTitle, plantId);
       }
     }
   }

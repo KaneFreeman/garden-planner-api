@@ -9,7 +9,7 @@ import plantData from '../data/plantData';
 import getSlotTitle from '../util/slot.util';
 import { ContainerDocument } from '../container/interfaces/container.interface';
 import { ContainerService } from '../container/container.service';
-import { isNotNullish, isNullish } from '../util/null.util';
+import { isNullish } from '../util/null.util';
 import { ContainerSlotDTO } from '../container/dto/container-slot.dto';
 import { HistoryStatus, TaskType } from '../interface';
 import { PlantInstanceHistoryDto } from './dto/plant-instance-history.dto';
@@ -81,6 +81,8 @@ export class PlantInstanceService {
       await this.taskService.findByIdAndUpdate(task._id, {
         completedOn: new Date(date)
       });
+
+      await this.createUpdatePlantInstanceTasks(plantInstance);
     }
 
     return updatePlantInstance;
