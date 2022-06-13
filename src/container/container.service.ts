@@ -10,6 +10,8 @@ import { ContainerFertilizeDTO } from './dto/container-fertilize.dto';
 import { ContainerDocument } from './interfaces/container.interface';
 import { BaseSlotDocument } from './interfaces/container-slot.interface';
 import { FERTILIZE, FERTILIZED } from '../interface';
+import { ContainerSlotDTO } from './dto/container-slot.dto';
+import { isNotNullish } from '../util/null.util';
 
 @Injectable()
 export class ContainerService {
@@ -21,8 +23,8 @@ export class ContainerService {
     @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService
   ) {}
 
-  async addContainer(createContainerDTO: ContainerDTO): Promise<ContainerDocument> {
-    const newContainer = await this.containerModel.create(sanitizeContainerDTO(createContainerDTO));
+  async addContainer(containerDTO: ContainerDTO): Promise<ContainerDocument> {
+    const newContainer = await this.containerModel.create(sanitizeContainerDTO(containerDTO));
     return newContainer.save();
   }
 
@@ -40,14 +42,52 @@ export class ContainerService {
 
   async editContainer(
     containerId: string,
-    createContainerDTO: ContainerDTO,
+    containerDTO: ContainerDTO,
     updateTasks: boolean
   ): Promise<ContainerDocument | null> {
-    const editedContainer = await this.containerModel.findByIdAndUpdate(
-      containerId,
-      sanitizeContainerDTO(createContainerDTO),
-      { new: true }
-    );
+    const sanitizedContainerDTO = sanitizeContainerDTO(containerDTO);
+    if (!sanitizedContainerDTO) {
+      return null;
+    }
+
+    const oldContainer = await this.getContainer(containerId);
+    if (!oldContainer) {
+      return null;
+    }
+
+    let newContainerDTO = sanitizedContainerDTO;
+
+    const oldSlots = oldContainer?.slots;
+    if (oldSlots) {
+      const slots = sanitizedContainerDTO?.slots ?? {};
+
+      newContainerDTO = {
+        ...sanitizedContainerDTO,
+        slots: Object.keys(slots).reduce((accumlatedSlots, slotIndex) => {
+          // TODO FIX THIS
+          const oldSlot = oldSlots.get(slotIndex);
+          const slot = slots[slotIndex];
+          if (isNotNullish(oldSlot)) {
+            if (
+              isNotNullish(slot) &&
+              isNotNullish(oldSlot.plantInstanceId) &&
+              `${oldSlot.plantInstanceId}` !== slot.plantInstanceId
+            ) {
+              accumlatedSlots[slotIndex] = {
+                ...slot,
+                plantInstanceHistory: [...(slot.plantInstanceHistory ?? []), `${oldSlot.plantInstanceId}`]
+              };
+            }
+          } else {
+            accumlatedSlots[slotIndex] = slot;
+          }
+
+          return slots;
+        }, {} as Record<string, ContainerSlotDTO>)
+      };
+    }
+
+    const editedContainer = await this.containerModel.findByIdAndUpdate(containerId, newContainerDTO, { new: true });
 
     if (editedContainer && updateTasks) {
       await this.createUpdatePlantTasks(editedContainer);
@@ -93,15 +133,16 @@ export class ContainerService {
     container: ContainerDocument,
     slot: BaseSlotDocument,
     path: string,
-    slotTitle: string
+    slotTitle: string,
+    plantId?: string
   ) {
     const plantInstance = await this.plantInstanceService.getPlantInstance(slot.plantInstanceId);
-    if (plantInstance) {
+    if (plantInstance && (!plantId || plantInstance.plant === plantId)) {
       this.plantInstanceService.createUpdateTasks(container, plantInstance, path, slotTitle);
     }
   }
 
-  async createUpdatePlantTasks(container: ContainerDocument | null | undefined) {
+  async createUpdatePlantTasks(container: ContainerDocument | null | undefined, plantId?: string) {
     if (!container?.slots) {
       return;
     }
@@ -112,10 +153,10 @@ export class ContainerService {
       const path = `/container/${container._id}/slot/${slotIndex}`;
       const slotTitle = getSlotTitle(+slotIndex, container.rows);
 
-      await this.createUpdatePlantTasksForSlot(container, slot, path, slotTitle);
+      await this.createUpdatePlantTasksForSlot(container, slot, path, slotTitle, plantId);
 
       if (slot.subSlot) {
-        await this.createUpdatePlantTasksForSlot(container, slot.subSlot, `${path}/sub-slot`, slotTitle);
+        await this.createUpdatePlantTasksForSlot(container, slot.subSlot, `${path}/sub-slot`, slotTitle, plantId);
       }
     }
   }

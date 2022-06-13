@@ -47,7 +47,7 @@ export class PlantService {
       await this.updateTasksWithNewPlantName(plantId, oldPlant.name, createPlantDTO.name);
     }
 
-    await this.updateTasks();
+    await this.updateTasks(plantId);
 
     return updatedPlant;
   }
@@ -66,11 +66,11 @@ export class PlantService {
     }
   }
 
-  async updateTasks() {
+  async updateTasks(plantId: string) {
     const containers = await this.containerService.getContainers();
 
     for (const container of containers) {
-      await this.containerService.createUpdatePlantTasks(container);
+      await this.containerService.createUpdatePlantTasks(container, plantId);
     }
   }
 }

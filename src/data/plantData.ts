@@ -1409,13 +1409,13 @@ const plantData: Record<PlantType, PlantData> = {
         outdoor: { min: -14, max: -28 },
         fertilize: [
           { start: 21, from: 'Planted', description: 'nitrogen heavy' },
-          { start: 35, from: 'Planted', description: 'nitrogen heavy' },
-          { start: 49, from: 'Planted', description: 'nitrogen heavy' },
-          { start: 56, end: 21, from: 'Planted', description: 'after flowers form, phosphorus heavy' },
-          { start: 88, from: 'Planted', description: 'after flowers form, phosphorus heavy' },
-          { start: 90, end: 15, from: 'Planted', description: 'after pumpkins form, potassium heavy' },
-          { start: 116, from: 'Planted', description: 'after pumpkins form, potassium heavy' },
-          { start: 127, from: 'Planted', description: 'after pumpkins form, potassium heavy' }
+          { relative: true, start: 14, from: 'Planted', description: 'nitrogen heavy' },
+          { relative: true, start: 14, from: 'Planted', description: 'nitrogen heavy' },
+          { relative: true, start: 7, end: 21, from: 'Planted', description: 'after flowers form, phosphorus heavy' },
+          { relative: true, start: 21, from: 'Planted', description: 'after flowers form, phosphorus heavy' },
+          { relative: true, start: 15, end: 14, from: 'Planted', description: 'after pumpkins form, potassium heavy' },
+          { relative: true, start: 15, from: 'Planted', description: 'after pumpkins form, potassium heavy' },
+          { relative: true, start: 15, from: 'Planted', description: 'after pumpkins form, potassium heavy' }
         ]
       }
     },
@@ -1740,7 +1740,7 @@ const plantData: Record<PlantType, PlantData> = {
         plant: { min: -14, max: -28 },
         fertilize: [
           { start: 0, from: 'Transplanted', description: 'At transplant' },
-          { start: 21, end: 49, from: 'Transplanted', description: 'At fruit set' }
+          { start: 21, end: 49, from: 'Transplanted', description: 'at fruit set' }
         ]
       }
     },
