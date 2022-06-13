@@ -77,12 +77,16 @@ export class PlantInstanceService {
     });
 
     const task = await this.taskService.getOpenTaskByTypeAndPlantInstanceId(taskType, plantInstance._id);
+    console.log('task', task);
     if (task) {
+      console.log('updating task', task._id, {
+        completedOn: new Date(date)
+      });
       await this.taskService.findByIdAndUpdate(task._id, {
         completedOn: new Date(date)
       });
 
-      await this.createUpdatePlantInstanceTasks(plantInstance);
+      await this.createUpdatePlantInstanceTasks(updatePlantInstance);
     }
 
     return updatePlantInstance;
@@ -94,11 +98,15 @@ export class PlantInstanceService {
     }
 
     return this.plantInstanceModel
-      .findByIdAndUpdate(plantInstance._id, {
-        history: [...(plantInstance.history ?? []), history].sort(
-          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-        )
-      })
+      .findByIdAndUpdate(
+        plantInstance._id,
+        {
+          history: [...(plantInstance.history ?? []), history].sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+          )
+        },
+        { new: true }
+      )
       .exec();
   }
 

@@ -142,9 +142,13 @@ export class TaskService {
     const tasks = await this.getTasksByPlantInstanceId(plantInstanceId);
 
     for (const task of tasks) {
-      await this.taskModel.findByIdAndUpdate(task._id, {
-        text: task.text.replaceAll(oldName, newName)
-      });
+      await this.taskModel.findByIdAndUpdate(
+        task._id,
+        {
+          text: task.text.replaceAll(oldName, newName)
+        },
+        { new: true }
+      );
     }
   }
 
@@ -152,7 +156,7 @@ export class TaskService {
     taskId: string,
     update: UpdateWithAggregationPipeline | UpdateQuery<TaskDocument>
   ): Promise<TaskDocument | null> {
-    return this.taskModel.findByIdAndUpdate(taskId, update);
+    return this.taskModel.findByIdAndUpdate(taskId, update, { new: true });
   }
 
   async deleteTask(taskId: string, force = false): Promise<TaskDocument | null> {
@@ -448,6 +452,7 @@ export class TaskService {
           HARVESTED
         )?.date ?? null;
     }
+    console.log('completedOn', completedOn, instance.history);
     if (task && isNullish(task.completedOn) && instance.closed) {
       await this.deleteTask(task._id, true);
       return;
@@ -547,7 +552,13 @@ export class TaskService {
     const howToGrowData = data?.howToGrow[season];
     const fertilizeData = container.type === 'Inside' ? howToGrowData?.indoor?.fertilize : howToGrowData?.fertilize;
     const openTasks = await this.getOpenTasksByTypeAndPlantInstanceId('Fertilize', instance._id);
-    if (!plant || !data || fertilizeData === undefined || instance?.containerId !== container._id.toString()) {
+    if (
+      !plant ||
+      !data ||
+      fertilizeData === undefined ||
+      instance.closed ||
+      instance?.containerId !== container._id.toString()
+    ) {
       if (openTasks.length > 0) {
         for (const task of openTasks) {
           await this.deleteTask(task._id, true);
