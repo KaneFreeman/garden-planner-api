@@ -245,7 +245,15 @@ export class TaskService {
     }
 
     const dates = this.getPlantedStartAndDueDate(season, container.type, data);
-    if (!plant || !data || !dates || !isValidDate(dates.start) || !isValidDate(dates.due)) {
+    if (
+      !plant ||
+      !data ||
+      !dates ||
+      instance.closed ||
+      container.archived ||
+      !isValidDate(dates.start) ||
+      !isValidDate(dates.due)
+    ) {
       if (task) {
         await this.deleteTask(task._id, true);
       }
@@ -318,6 +326,8 @@ export class TaskService {
       !plant ||
       !data ||
       !dates ||
+      instance.closed ||
+      container.archived ||
       !isValidDate(dates.start) ||
       !isValidDate(dates.due) ||
       container.type !== CONTAINER_TYPE_INSIDE
@@ -426,8 +436,10 @@ export class TaskService {
     const dates = this.getHarvestStartAndDueDate(plant, getPlantedDate(instance));
     if (
       !plant ||
-      instance?.containerId !== container._id.toString() ||
       !dates ||
+      instance.closed ||
+      container.archived ||
+      instance?.containerId !== container._id.toString() ||
       !isValidDate(dates.start) ||
       !isValidDate(dates.due)
     ) {
@@ -557,6 +569,7 @@ export class TaskService {
       !data ||
       fertilizeData === undefined ||
       instance.closed ||
+      container.archived ||
       instance?.containerId !== container._id.toString()
     ) {
       if (openTasks.length > 0) {
