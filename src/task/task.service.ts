@@ -132,6 +132,8 @@ export class TaskService {
         completedOn: new Date(date)
       });
 
+      await this.plantInstanceService.createUpdatePlantInstanceTasks(plantInstance);
+
       tasksUpdated++;
     }
 
