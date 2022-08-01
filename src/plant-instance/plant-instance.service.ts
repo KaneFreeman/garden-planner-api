@@ -11,7 +11,7 @@ import { ContainerDocument } from '../container/interfaces/container.interface';
 import { ContainerService } from '../container/container.service';
 import { isNullish } from '../util/null.util';
 import { ContainerSlotDTO } from '../container/dto/container-slot.dto';
-import { HistoryStatus, TaskType } from '../interface';
+import { HistoryStatus, SPRING, TaskType } from '../interface';
 import { PlantInstanceHistoryDto } from './dto/plant-instance-history.dto';
 
 @Injectable()
@@ -183,17 +183,11 @@ export class PlantInstanceService {
     const plant = await this.plantService.getPlant(plantInstance.plant);
     const data = plant?.type ? plantData[plant.type] : undefined;
 
-    await this.taskService.createUpdatePlantedTask('spring', container, plantInstance, plant, data, path, slotTitle);
+    const season = plantInstance.season ?? SPRING;
 
-    await this.taskService.createUpdateTransplantedTask(
-      'spring',
-      container,
-      plantInstance,
-      plant,
-      data,
-      path,
-      slotTitle
-    );
+    await this.taskService.createUpdatePlantedTask(season, container, plantInstance, plant, data, path, slotTitle);
+
+    await this.taskService.createUpdateTransplantedTask(season, container, plantInstance, plant, data, path, slotTitle);
 
     await this.taskService.createUpdateHarvestTask(
       container,
@@ -206,7 +200,7 @@ export class PlantInstanceService {
     );
 
     await this.taskService.createUpdateFertilzeTasks(
-      'spring',
+      season,
       container,
       plantInstance.slotId,
       plantInstance.subSlot ?? false,

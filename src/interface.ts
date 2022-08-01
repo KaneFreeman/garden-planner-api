@@ -297,6 +297,24 @@ export function toStartedFromType(raw: unknown): StartedFromType {
   }
 }
 
+export const SPRING = 'spring';
+export const FALL = 'fall';
+export type Season = typeof SPRING | typeof FALL;
+export const SEASONS: Season[] = [SPRING, FALL];
+
+export function toSeason(raw: unknown): Season {
+  if (typeof raw !== 'string') {
+    return SPRING;
+  }
+
+  switch (raw) {
+    case FALL:
+      return FALL;
+    default:
+      return SPRING;
+  }
+}
+
 export const CONTAINER_TYPE_INSIDE = 'Inside';
 export const CONTAINER_TYPE_OUTSIDE = 'Outside';
 export type ContainerType = typeof CONTAINER_TYPE_INSIDE | typeof CONTAINER_TYPE_OUTSIDE;

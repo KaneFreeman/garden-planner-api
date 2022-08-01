@@ -9,11 +9,14 @@ import { ContainerDocument } from '../container/interfaces/container.interface';
 import {
   ContainerType,
   CONTAINER_TYPE_INSIDE,
+  CONTAINER_TYPE_OUTSIDE,
   FERTILIZE,
   FertilizerApplication,
   HARVEST,
   HARVESTED,
   PlantData,
+  Season,
+  SPRING,
   TaskType,
   TRANSPLANTED
 } from '../interface';
@@ -175,22 +178,23 @@ export class TaskService {
   }
 
   getPlantedStartAndDueDate(
-    season: 'spring' | 'fall',
+    season: Season,
     type: ContainerType,
     data: PlantData | undefined
   ): { start: Date; due: Date } | undefined {
     const howToGrowData = data?.howToGrow[season];
-    if (howToGrowData?.indoor) {
+    const startDate = season === SPRING ? growingZoneData.lastFrost : growingZoneData.firstFrost;
+    if (type === CONTAINER_TYPE_INSIDE && howToGrowData?.indoor) {
       return {
-        start: subDays(growingZoneData.lastFrost, howToGrowData.indoor.min),
-        due: subDays(growingZoneData.lastFrost, howToGrowData.indoor.max)
+        start: subDays(startDate, howToGrowData.indoor.min),
+        due: subDays(startDate, howToGrowData.indoor.max)
       };
     }
 
-    if (howToGrowData?.outdoor) {
+    if (type === CONTAINER_TYPE_OUTSIDE && howToGrowData?.outdoor) {
       return {
-        start: subDays(growingZoneData.lastFrost, howToGrowData.outdoor.min),
-        due: subDays(growingZoneData.lastFrost, howToGrowData.outdoor.max)
+        start: subDays(startDate, howToGrowData.outdoor.min),
+        due: subDays(startDate, howToGrowData.outdoor.max)
       };
     }
 
@@ -198,7 +202,7 @@ export class TaskService {
   }
 
   getTransplantedStartAndDueDate(
-    season: 'spring' | 'fall',
+    season: Season,
     data: PlantData | undefined,
     plantedDate: Date | null
   ): { start: Date; due: Date } | undefined {
@@ -211,9 +215,10 @@ export class TaskService {
         };
       }
 
+      const startDate = season === SPRING ? growingZoneData.lastFrost : growingZoneData.firstFrost;
       return {
-        start: subDays(growingZoneData.lastFrost, howToGrowData.indoor.min - howToGrowData.indoor.transplant_min),
-        due: subDays(growingZoneData.lastFrost, howToGrowData.indoor.max - howToGrowData.indoor.transplant_max)
+        start: subDays(startDate, howToGrowData.indoor.min - howToGrowData.indoor.transplant_min),
+        due: subDays(startDate, howToGrowData.indoor.max - howToGrowData.indoor.transplant_max)
       };
     }
 
@@ -221,7 +226,7 @@ export class TaskService {
   }
 
   async createUpdatePlantedTask(
-    season: 'spring' | 'fall',
+    season: Season,
     container: ContainerDocument,
     instance: PlantInstanceDocument | null,
     plant: PlantDocument | null,
@@ -298,7 +303,7 @@ export class TaskService {
   }
 
   async createUpdateTransplantedTask(
-    season: 'spring' | 'fall',
+    season: Season,
     container: ContainerDocument,
     instance: PlantInstanceDocument | null,
     plant: PlantDocument | null,
@@ -531,7 +536,7 @@ export class TaskService {
   }
 
   async createUpdateFertilzeTasks(
-    season: 'spring' | 'fall',
+    season: Season,
     container: ContainerDocument,
     slotId: number,
     subSlot: boolean,
