@@ -2113,6 +2113,13 @@ const plantData: Record<PlantType, PlantData> = {
           { relative: true, start: 14, from: 'Transplanted' },
           { relative: true, start: 14, from: 'Transplanted' }
         ]
+      },
+      fall: {
+        outdoor: { min: 60, max: 75 },
+        fertilize: [
+          { start: 14, from: 'Planted' },
+          { relative: true, start: 14, from: 'Planted' }
+        ]
       }
     },
     faq: {
