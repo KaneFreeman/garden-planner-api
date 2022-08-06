@@ -2115,7 +2115,7 @@ const plantData: Record<PlantType, PlantData> = {
         ]
       },
       fall: {
-        outdoor: { min: 60, max: 75 },
+        outdoor: { min: 70, max: 55 },
         fertilize: [
           { start: 14, from: 'Planted' },
           { relative: true, start: 14, from: 'Planted' }
