@@ -10,6 +10,7 @@ export interface PlantDTO {
   readonly daysToMaturity?: [number | undefined, number | undefined];
   readonly pictures?: PictureDataDto[];
   readonly comments?: CommentDto[];
+  readonly retired?: boolean;
 }
 
 export function sanitizePlantDTO(raw: PlantDTO[] | null | undefined): PlantDTO[] | undefined;
@@ -35,6 +36,7 @@ export function sanitizePlantDTO(raw: PlantDTO | PlantDTO[] | null | undefined):
           ]
         : undefined,
     pictures: sanitizePictureDataDto(dto.pictures),
-    comments: sanitizeCommentDto(dto.comments)
+    comments: sanitizeCommentDto(dto.comments),
+    retired: isNotNullish(dto.retired) ? Boolean(dto.retired) : false
   }));
 }

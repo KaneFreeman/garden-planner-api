@@ -10,4 +10,5 @@ export interface PlantDocument extends Document {
   readonly daysToMaturity?: [number | undefined, number | undefined];
   readonly pictures?: PictureDataDocument[];
   readonly comments?: CommentDocument[];
+  readonly retired?: boolean;
 }
