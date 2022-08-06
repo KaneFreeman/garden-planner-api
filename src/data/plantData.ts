@@ -131,6 +131,10 @@ const plantData: Record<PlantType, PlantData> = {
       spring: {
         outdoor: { min: -14, max: -42 },
         fertilize: [{ start: 28, end: 14, from: 'Planted', description: 'slow release, once plant is established' }]
+      },
+      fall: {
+        outdoor: { min: 75, max: 60 },
+        fertilize: [{ start: 28, end: 14, from: 'Planted', description: 'slow release, once plant is established' }]
       }
     },
     faq: {
@@ -161,7 +165,7 @@ const plantData: Record<PlantType, PlantData> = {
   Beet: {
     howToGrow: {
       spring: { outdoor: { min: 21, max: -14 } },
-      fall: { outdoor: { min: 42, max: 28 } }
+      fall: { outdoor: { min: 60, max: 40 } }
     },
     faq: {
       how_to_grow: [
@@ -1475,7 +1479,7 @@ const plantData: Record<PlantType, PlantData> = {
     }
   },
   Radish: {
-    howToGrow: { spring: { outdoor: { min: 21, max: -7 } } },
+    howToGrow: { spring: { outdoor: { min: 21, max: -7 } }, fall: { outdoor: { min: 48, max: 24 } } },
     faq: {
       how_to_grow: [
         [
