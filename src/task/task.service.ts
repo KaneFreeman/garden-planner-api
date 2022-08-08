@@ -12,6 +12,7 @@ import {
   CONTAINER_TYPE_OUTSIDE,
   FERTILIZE,
   FertilizerApplication,
+  GrowingZoneData,
   HARVEST,
   HARVESTED,
   PlantData,
@@ -177,13 +178,33 @@ export class TaskService {
     await this.taskModel.deleteMany({ plantInstanceId, completedOn: null }).exec();
   }
 
+  getTaskStartDate(season: Season, growingZoneData: GrowingZoneData): Date {
+    const today = new Date();
+
+    if (season === SPRING) {
+      let year: number = today.getFullYear();
+      if (today.getMonth() >= 6) {
+        year++;
+      }
+
+      return new Date(year, growingZoneData.lastFrost.getMonth(), growingZoneData.lastFrost.getDate());
+    }
+
+    let year: number = today.getFullYear();
+    if (today.getMonth() > growingZoneData.firstFrost.getMonth()) {
+      year++;
+    }
+
+    return new Date(year, growingZoneData.firstFrost.getMonth(), growingZoneData.firstFrost.getDate());
+  }
+
   getPlantedStartAndDueDate(
     season: Season,
     type: ContainerType,
     data: PlantData | undefined
   ): { start: Date; due: Date } | undefined {
     const howToGrowData = data?.howToGrow[season];
-    const startDate = season === SPRING ? growingZoneData.lastFrost : growingZoneData.firstFrost;
+    const startDate = this.getTaskStartDate(season, growingZoneData);
     if (type === CONTAINER_TYPE_INSIDE && howToGrowData?.indoor) {
       return {
         start: subDays(startDate, howToGrowData.indoor.min),
@@ -215,7 +236,7 @@ export class TaskService {
         };
       }
 
-      const startDate = season === SPRING ? growingZoneData.lastFrost : growingZoneData.firstFrost;
+      const startDate = this.getTaskStartDate(season, growingZoneData);
       return {
         start: subDays(startDate, howToGrowData.indoor.min - howToGrowData.indoor.transplant_min),
         due: subDays(startDate, howToGrowData.indoor.max - howToGrowData.indoor.transplant_max)
