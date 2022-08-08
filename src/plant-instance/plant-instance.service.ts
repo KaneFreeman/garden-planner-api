@@ -88,7 +88,10 @@ export class PlantInstanceService {
     return updatePlantInstance;
   }
 
-  async addPlantInstanceHistory(plantInstance: PlantInstanceDocument | null, history: PlantInstanceHistoryDto) {
+  async addPlantInstanceHistory(
+    plantInstance: PlantInstanceDocument | null,
+    history: PlantInstanceHistoryDto
+  ): Promise<PlantInstanceDocument | null> {
     if (!plantInstance) {
       return null;
     }

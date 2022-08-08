@@ -828,7 +828,7 @@ const plantData: Record<PlantType, PlantData> = {
     }
   },
   Garlic: {
-    howToGrow: { fall: { outdoor: { min: 28, max: 14 } } },
+    howToGrow: { fall: { outdoor: { min: 35, max: 21 } } },
     faq: {
       how_to_grow: [
         [
@@ -2609,6 +2609,36 @@ const plantData: Record<PlantType, PlantData> = {
         [
           'FAQs',
           '<p><strong>Can I grow sage indoors? </strong>Yes, sage may be grown indoors in a sunny location for winter use. <br>\n <strong><br>\n How can I use sage as a companion plant?</strong> Sage can benefit members of the cabbage family by deterring insects. Sage also helps control carrot fly and so can help carrots. Plant with strawberries and tomatoes to improve their flavor. <br>\n <strong><br>\n How can I keep my sage from getting leggy?</strong> Sage will grow leggy if it does not have enough sun, it requires at least 6 hours of sun per day. To encourage a bushier plant pinch sage as it grows in spring. <br>\n <strong><br>\n When should I add sage to my cooking?</strong> Sage is not a delicate herb and should be added dry twenty minutes before the cooking is finished. <br>\n <strong><br>\n My sage is getting woody, what can I do to rejuvenate it?</strong> Sage will grow woody in age and may be rejuvenated by dividing the plant in spring and using the newer part of the plant, discarding the old crown. You can also take cuttings in early summer and root them. </p>'
+        ]
+      ]
+    }
+  },
+  Savory: {
+    howToGrow: {
+      spring: {
+        indoor: {
+          min: -14,
+          max: -42,
+          transplant_min: 42,
+          transplant_max: 42,
+          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+        },
+        outdoor: { min: 0, max: 14 }
+      }
+    },
+    faq: {
+      how_to_grow: [
+        [
+          'How to Sow and Plant',
+          '<ul>\r\n<li>Plant seeds outdoors right after the last frost has passed.</li>\r\n<li>Plant seeds 3 to 5 inches (8-13 cm.) apart and about an 1/8 of an inch (3 mm.) down in the soil.</li>\r\n</ul>'
+        ],
+        [
+          'How to Grow',
+          '<ul>\r\n<li>Allow plants to grow to a height of 6 inches (15 cm.) before you start to harvest leaves for cooking.</li>\r\n<li>While savory plant is growing and when you are using fresh savory for cooking, use only the tender growth on the plant.</li>\r\n<li>At the end of the season, harvest the entire plant, both woody and tender growth, and dry the leaves of the plant for so that you can use the herb over the winter as well.</li>\r\n</ul>'
+        ],
+        [
+          'Tips',
+          '<ul>\r\n<li>Seeds of the winter savory plant can be planted indoors or outdoors. If planting outdoors, plant the seeds right after the last frost. If planting indoors, start the savory seeds two to six weeks before the last frost.</li>\r\n<li>Plant seeds or transplanted seedlings into your garden 1 to 2 feet (31-61 cm.) apart and an 1/8 inch (3 mm.) down in the soil.</li>\r\n<li>The plants will get large. Use the tender leaves and stems for fresh herb cooking and harvest the leaves from woody stems for drying and use later.</li>\r\n</ul>'
         ]
       ]
     }

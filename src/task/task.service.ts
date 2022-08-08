@@ -15,6 +15,7 @@ import {
   GrowingZoneData,
   HARVEST,
   HARVESTED,
+  PLANT,
   PlantData,
   Season,
   SPRING,
@@ -106,7 +107,7 @@ export class TaskService {
     }
 
     const { type, date, taskIds } = sanitizedDto;
-    if (type !== FERTILIZE && type !== HARVEST) {
+    if (type !== FERTILIZE && type !== HARVEST && type !== PLANT) {
       throw new BadRequestException('Unsupported task type');
     }
 
@@ -117,12 +118,12 @@ export class TaskService {
         continue;
       }
 
-      const plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId);
+      let plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId);
       if (!plantInstance) {
         continue;
       }
 
-      await this.plantInstanceService.addPlantInstanceHistory(plantInstance, {
+      plantInstance = await this.plantInstanceService.addPlantInstanceHistory(plantInstance, {
         status: fromTaskTypeToHistoryStatus(type),
         date,
         from: {
@@ -130,10 +131,6 @@ export class TaskService {
           slotId: plantInstance.slotId,
           subSlot: plantInstance.subSlot
         }
-      });
-
-      await this.findByIdAndUpdate(task._id, {
-        completedOn: new Date(date)
       });
 
       await this.plantInstanceService.createUpdatePlantInstanceTasks(plantInstance);
@@ -259,7 +256,7 @@ export class TaskService {
       return;
     }
 
-    let tasks = await this.getTasksByTypeAndPlantInstanceId('Plant', instance._id);
+    let tasks = await this.getTasksByTypeAndPlantInstanceId(PLANT, instance._id);
     if (tasks.length > 1) {
       for (const task of tasks) {
         await this.deleteTask(task._id, true);
