@@ -19,6 +19,7 @@ import {
   PlantData,
   Season,
   SPRING,
+  StartedFromType,
   TaskType,
   TRANSPLANTED
 } from '../interface';
@@ -28,6 +29,7 @@ import {
   findHistoryByStatus,
   findHistoryFrom,
   getPlantedDate,
+  getPlantedEvent,
   getTransplantedDate
 } from '../plant-instance/util/history.util';
 import growingZoneData from '../data/growingZoneData';
@@ -41,6 +43,7 @@ import { CreateTaskDTO, sanitizeCreateTaskDTO } from './dto/create-task.dto';
 import { TaskDocument } from './interfaces/task.interface';
 import { BulkCompleteTaskDTO, sanitizeBulkCompleteTaskDTO } from './dto/bulk-complete-task.dto';
 import { fromTaskTypeToHistoryStatus } from '../util/history.util';
+import { PlantInstanceHistoryDocument } from '../plant-instance/interfaces/plant-instance-history.interface';
 
 @Injectable()
 export class TaskService {
@@ -523,12 +526,17 @@ export class TaskService {
   }
 
   getFertilizeStartAndDueDate(
-    plantedDate: Date | null,
+    plantedEvent: PlantInstanceHistoryDocument | undefined | null,
+    plantedContainer: ContainerDocument | null,
     transplantedDate: Date | null,
     fertilizerApplication: FertilizerApplication,
     previousTask: TaskDocument | null | undefined
   ): { start: Date; due: Date } | undefined {
-    const fromDate = fertilizerApplication.from === 'Transplanted' ? transplantedDate : plantedDate;
+    let fromDate = plantedEvent?.date ?? null;
+    if (fertilizerApplication.from === TRANSPLANTED && plantedContainer?.type === CONTAINER_TYPE_INSIDE) {
+      fromDate = transplantedDate;
+    }
+
     if (fromDate) {
       const startDays = fertilizerApplication.start;
       const endDays = fertilizerApplication.end ?? ONE_WEEK;
@@ -607,11 +615,14 @@ export class TaskService {
 
     let previousTask: TaskDocument | null | undefined;
 
+    const plantedEvent = getPlantedEvent(instance);
+
     let i = 0;
     for (const fertilizerApplication of fertilizeData) {
       i += 1;
       const dates = this.getFertilizeStartAndDueDate(
-        getPlantedDate(instance),
+        plantedEvent,
+        container,
         getTransplantedDate(instance, {
           containerId: container._id.toString(),
           slotId,
