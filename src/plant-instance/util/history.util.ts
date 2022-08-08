@@ -2,6 +2,14 @@ import { ContainerSlotIdentifier, HistoryStatus, TRANSPLANTED, PLANTED } from '.
 import { PlantInstanceDocument } from '../interfaces/plant-instance.interface';
 import { PlantInstanceHistoryDocument } from '../interfaces/plant-instance-history.interface';
 
+export function findHistoryByStatus(plantInstance: PlantInstanceDocument | undefined | null, status: HistoryStatus) {
+  if (!plantInstance) {
+    return undefined;
+  }
+
+  return plantInstance.history?.find((entry) => entry.status === status);
+}
+
 export function findHistoryFromIndex(
   plantInstance: PlantInstanceDocument | undefined | null,
   from: ContainerSlotIdentifier | undefined | null,

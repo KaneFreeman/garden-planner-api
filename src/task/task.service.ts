@@ -19,7 +19,6 @@ import {
   PlantData,
   Season,
   SPRING,
-  StartedFromType,
   TaskType,
   TRANSPLANTED
 } from '../interface';
