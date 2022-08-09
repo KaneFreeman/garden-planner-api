@@ -135,6 +135,10 @@ export class TaskService {
         }
       });
 
+      await this.findByIdAndUpdate(task._id, {
+        completedOn: new Date(date)
+      });
+
       await this.plantInstanceService.createUpdatePlantInstanceTasks(plantInstance);
 
       tasksUpdated++;
