@@ -7,6 +7,7 @@ export interface PlantDocument extends Document {
   readonly name: string;
   readonly type?: PlantType | null;
   readonly url?: string;
+  readonly daysToGerminate?: [number | undefined, number | undefined];
   readonly daysToMaturity?: [number | undefined, number | undefined];
   readonly pictures?: PictureDataDocument[];
   readonly comments?: CommentDocument[];

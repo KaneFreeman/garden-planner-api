@@ -404,34 +404,49 @@ export class TaskService {
     }
   }
 
+  getDaysRange(range?: [number | undefined, number | undefined]): [number, number] {
+    if (range === undefined) {
+      return [0, 0];
+    }
+
+    let min = 0;
+    if (range.length > 0) {
+      min = range[0] ?? 0;
+    }
+
+    let max = 0;
+    if (range.length > 1) {
+      max = range[1] ?? 0;
+    }
+
+    if (max === 0) {
+      return [min, min];
+    }
+
+    return [min, max];
+  }
+
   getHarvestStartAndDueDate(
     plant: PlantDocument | null,
     plantedDate: Date | null
   ): { start: Date; due: Date } | undefined {
-    if (
-      plantedDate &&
-      plant?.daysToMaturity !== undefined &&
-      plant?.daysToMaturity.length > 0 &&
-      plant?.daysToMaturity[0] !== undefined &&
-      plant?.daysToMaturity[0] !== null &&
-      plant?.daysToMaturity[0] !== 0
-    ) {
-      if (
-        plant.daysToMaturity.length > 1 &&
-        plant.daysToMaturity[1] !== undefined &&
-        plant.daysToMaturity[1] !== null &&
-        plant.daysToMaturity[1] !== 0 &&
-        plant.daysToMaturity[0] !== plant.daysToMaturity[1]
-      ) {
+    if (plantedDate !== null) {
+      const [minDaysToGerminate, maxDaysToGerminate] = this.getDaysRange(plant?.daysToGerminate);
+      const [minDaysToMaturity, maxDaysToMaturity] = this.getDaysRange(plant?.daysToMaturity);
+
+      const min = minDaysToGerminate + minDaysToMaturity;
+      const max = maxDaysToGerminate + maxDaysToMaturity;
+
+      if (min !== max) {
         return {
-          start: addDays(plantedDate, plant.daysToMaturity[0]),
-          due: addDays(plantedDate, plant.daysToMaturity[1])
+          start: addDays(plantedDate, min),
+          due: addDays(plantedDate, max)
         };
       }
 
       return {
-        start: addDays(plantedDate, plant.daysToMaturity[0]),
-        due: addDays(addDays(plantedDate, plant.daysToMaturity[0]), TWO_WEEKS)
+        start: addDays(plantedDate, min),
+        due: addDays(plantedDate, max + TWO_WEEKS)
       };
     }
 

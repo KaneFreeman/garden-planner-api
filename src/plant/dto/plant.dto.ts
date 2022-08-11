@@ -7,6 +7,7 @@ export interface PlantDTO {
   readonly name: string;
   readonly type?: string | null;
   readonly url?: string;
+  readonly daysToGerminate?: [number | undefined, number | undefined];
   readonly daysToMaturity?: [number | undefined, number | undefined];
   readonly pictures?: PictureDataDto[];
   readonly comments?: CommentDto[];
@@ -28,6 +29,13 @@ export function sanitizePlantDTO(raw: PlantDTO | PlantDTO[] | null | undefined):
     name: `${dto.name}`,
     type: toPlantType(dto.type),
     url: isNotNullish(dto.url) ? `${dto.url}` : undefined,
+    daysToGerminate:
+      isNotNullish(dto.daysToGerminate) && Array.isArray(dto.daysToGerminate)
+        ? [
+            isNotNullish(dto.daysToGerminate[0]) ? Number(dto.daysToGerminate[0]) : undefined,
+            isNotNullish(dto.daysToGerminate[1]) ? Number(dto.daysToGerminate[1]) : undefined
+          ]
+        : undefined,
     daysToMaturity:
       isNotNullish(dto.daysToMaturity) && Array.isArray(dto.daysToMaturity)
         ? [

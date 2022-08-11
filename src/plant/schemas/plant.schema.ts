@@ -6,6 +6,7 @@ export const PlantSchema = new mongoose.Schema({
   name: String,
   type: String,
   url: String,
+  daysToGerminate: [Number],
   daysToMaturity: [Number],
   pictures: [PictureDataSchema],
   comments: [CommentSchema],
