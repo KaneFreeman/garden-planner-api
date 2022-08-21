@@ -6,12 +6,12 @@ import { PlantService } from '../plant/plant.service';
 import getSlotTitle from '../util/slot.util';
 import { PlantInstanceService } from '../plant-instance/plant-instance.service';
 import { ContainerDTO, sanitizeContainerDTO } from './dto/container.dto';
-import { ContainerFertilizeDTO } from './dto/container-fertilize.dto';
 import { ContainerDocument } from './interfaces/container.interface';
 import { BaseSlotDocument } from './interfaces/container-slot.interface';
-import { FERTILIZE, FERTILIZED } from '../interface';
+import { TaskType } from '../interface';
 import { ContainerSlotDTO } from './dto/container-slot.dto';
 import { isNotNullish } from '../util/null.util';
+import { fromTaskTypeToHistoryStatus } from '../util/history.util';
 
 @Injectable()
 export class ContainerService {
@@ -100,20 +100,21 @@ export class ContainerService {
     return this.containerModel.findByIdAndRemove(containerId);
   }
 
-  async fertilizeContainer(containerId: string, data: ContainerFertilizeDTO): Promise<number> {
-    const tasks = await this.taskService.getTasks({ type: 'Fertilize', completedOn: null, start: { $lt: data.date } });
+  async updateContainerTasksByType(containerId: string, date: string, type: TaskType): Promise<number> {
+    const tasks = await this.taskService.getTasks({ type, completedOn: null, start: { $lte: date } });
 
     let updatedCount = 0;
 
     for (const task of tasks) {
       const plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId);
+      console.log('TASK', task, plantInstance, containerId);
       if (plantInstance && plantInstance.containerId === containerId) {
-        const updatedTask = await this.taskService.findByIdAndUpdate(task._id, { completedOn: data.date });
+        const updatedTask = await this.taskService.findByIdAndUpdate(task._id, { completedOn: date });
         updatedCount++;
 
-        if (task?.type === FERTILIZE && updatedTask?.completedOn) {
+        if (task?.type === type && updatedTask?.completedOn) {
           await this.plantInstanceService.addPlantInstanceHistory(plantInstance, {
-            status: FERTILIZED,
+            status: fromTaskTypeToHistoryStatus(type),
             date: updatedTask.completedOn.toISOString(),
             from: {
               containerId: plantInstance.containerId,

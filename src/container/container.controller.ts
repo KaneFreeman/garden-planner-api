@@ -3,7 +3,8 @@ import { ContainerService } from './container.service';
 import { ContainerDTO } from './dto/container.dto';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
 import { Response } from 'express';
-import { ContainerFertilizeDTO } from './dto/container-fertilize.dto';
+import { ContainerTaskUpdateDTO } from './dto/container-task-update.dto';
+import { toTaskType } from '../interface';
 
 @Controller('/api/container')
 export class ContainerController {
@@ -57,14 +58,24 @@ export class ContainerController {
     return res.status(HttpStatus.OK).json(deletedContainer);
   }
 
-  // Fertilize a container
-  @Post('/:containerId/fertilize')
+  // Update tasks in a container
+  @Post('/:containerId/:taskType')
   async fertilizeContainer(
     @Res() res: Response,
     @Param('containerId', new ValidateObjectId()) containerId: string,
-    @Body() containerFertilizeDTO: ContainerFertilizeDTO
+    @Param('taskType') rawTaskType: string,
+    @Body() containerFertilizeDTO: ContainerTaskUpdateDTO
   ) {
-    const updatedTasksCount = await this.containerService.fertilizeContainer(containerId, containerFertilizeDTO);
+    const taskType = toTaskType(rawTaskType);
+    if (!taskType) {
+      return res.status(HttpStatus.BAD_REQUEST).json({ error: 'Task type does not exist!' });
+    }
+
+    const updatedTasksCount = await this.containerService.updateContainerTasksByType(
+      containerId,
+      containerFertilizeDTO.date,
+      taskType
+    );
     return res.status(HttpStatus.OK).json(updatedTasksCount);
   }
 }
