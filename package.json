@@ -29,7 +29,7 @@
     "@nestjs/swagger": "5.2.1",
     "date-fns": "2.29.3",
     "dotenv": "16.0.3",
-    "express-oauth2-jwt-bearer": "1.1.0",
+    "express-oauth2-jwt-bearer": "1.2.0",
     "mongoose": "6.7.2",
     "reflect-metadata": "0.1.13",
     "rimraf": "3.0.2",
