@@ -54,7 +54,7 @@
     "node-windows": "1.0.0-beta.8",
     "prettier": "2.7.1",
     "source-map-support": "0.5.21",
-    "supertest": "6.2.4",
+    "supertest": "6.3.1",
     "ts-jest": "28.0.8",
     "ts-loader": "9.3.1",
     "ts-node": "10.9.1",
