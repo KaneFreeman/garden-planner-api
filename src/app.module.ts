@@ -15,8 +15,9 @@ const env = process.env.NODE_ENV || 'production';
     ConfigModule.forRoot({
       envFilePath: [env === 'production' ? '.env.production' : '.env.development']
     }),
-    MongooseModule.forRoot(process.env.MONGO_URL ?? 'mongodb://localhost:27017/garden-planner-development', {
-      useNewUrlParser: true
+    MongooseModule.forRoot(process.env.MONGO_URL ?? 'mongodb://127.0.0.1:27017/', {
+      useNewUrlParser: true,
+      retryAttempts: 0
     }),
     PlantModule,
     PlantInstanceModule,

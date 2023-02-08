@@ -100,15 +100,23 @@ export class ContainerService {
     return this.containerModel.findByIdAndRemove(containerId);
   }
 
-  async updateContainerTasksByType(containerId: string, date: string, type: TaskType): Promise<number> {
+  async updateContainerTasksByType(
+    containerId: string,
+    date: string,
+    type: TaskType,
+    plantInstanceIds?: string[]
+  ): Promise<number> {
     const tasks = await this.taskService.getTasks({ type, completedOn: null, start: { $lte: date } });
 
     let updatedCount = 0;
 
     for (const task of tasks) {
       const plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId);
-      console.log('TASK', task, plantInstance, containerId);
-      if (plantInstance && plantInstance.containerId === containerId) {
+      if (
+        plantInstance &&
+        plantInstance.containerId === containerId &&
+        (!plantInstanceIds || plantInstanceIds.includes(plantInstance.id))
+      ) {
         const updatedTask = await this.taskService.findByIdAndUpdate(task._id, { completedOn: date });
         updatedCount++;
 

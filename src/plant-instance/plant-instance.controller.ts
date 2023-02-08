@@ -1,10 +1,11 @@
-import { Controller, Get, Res, HttpStatus, Param, NotFoundException, Post, Body, Put, Delete } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, NotFoundException, Param, Post, Put, Res } from '@nestjs/common';
 import { Response } from 'express';
-import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
-import { PlantInstanceService } from './plant-instance.service';
-import { PlantInstanceDTO } from './dto/plant-instance.dto';
-import { PlantInstanceAddHistoryAndUpdateTaskDTO } from './dto/plant-instance-add-history-and-update-task.dto';
 import { FERTILIZE, FERTILIZED, HARVEST, HARVESTED } from '../interface';
+import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
+import { BulkReopenClosePlantInstanceDTO } from './dto/bulk-reopen-close-plant-instance.dto';
+import { PlantInstanceAddHistoryAndUpdateTaskDTO } from './dto/plant-instance-add-history-and-update-task.dto';
+import { PlantInstanceDTO } from './dto/plant-instance.dto';
+import { PlantInstanceService } from './plant-instance.service';
 
 @Controller('/api/plant-instance')
 export class PlantInstanceController {
@@ -99,5 +100,13 @@ export class PlantInstanceController {
     );
 
     return res.status(HttpStatus.OK).json(updatedPlantInstance);
+  }
+
+  // Fertilize a plant instance
+  @Post('/bulk-reopen-close')
+  async bulkReopenClose(@Res() res: Response, @Body() dto: BulkReopenClosePlantInstanceDTO) {
+    const updatedPlantInstances = await this.plantInstanceService.bulkReopenClosePlantInstances(dto);
+
+    return res.status(HttpStatus.OK).json(updatedPlantInstances);
   }
 }

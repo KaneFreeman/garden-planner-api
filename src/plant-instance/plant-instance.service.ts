@@ -13,6 +13,10 @@ import { isNullish } from '../util/null.util';
 import { ContainerSlotDTO } from '../container/dto/container-slot.dto';
 import { HistoryStatus, SPRING, TaskType } from '../interface';
 import { PlantInstanceHistoryDto } from './dto/plant-instance-history.dto';
+import {
+  BulkReopenClosePlantInstanceDTO,
+  sanitizeBulkReopenClosePlantInstanceDTO
+} from './dto/bulk-reopen-close-plant-instance.dto';
 
 @Injectable()
 export class PlantInstanceService {
@@ -228,5 +232,29 @@ export class PlantInstanceService {
 
       await this.createUpdateTasks(container, plantInstance, path, slotTitle);
     }
+  }
+
+  async bulkReopenClosePlantInstances(dto: BulkReopenClosePlantInstanceDTO): Promise<PlantInstanceDocument[]> {
+    const { action, plantInstanceIds } = sanitizeBulkReopenClosePlantInstanceDTO(dto) ?? {};
+    if (!action || !plantInstanceIds || plantInstanceIds.length == 0) {
+      return [];
+    }
+
+    const plantInstances: PlantInstanceDocument[] = [];
+    for (const plantInstanceId of plantInstanceIds) {
+      const plantInstance = await this.plantInstanceModel.findByIdAndUpdate(
+        plantInstanceId,
+        { closed: action === 'close' },
+        { new: true }
+      );
+
+      await this.createUpdatePlantInstanceTasks(plantInstance);
+
+      if (plantInstance) {
+        plantInstances.push(plantInstance);
+      }
+    }
+
+    return plantInstances;
   }
 }

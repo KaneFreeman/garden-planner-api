@@ -74,7 +74,8 @@ export class ContainerController {
     const updatedTasksCount = await this.containerService.updateContainerTasksByType(
       containerId,
       containerFertilizeDTO.date,
-      taskType
+      taskType,
+      containerFertilizeDTO.plantInstanceIds
     );
     return res.status(HttpStatus.OK).json(updatedTasksCount);
   }
