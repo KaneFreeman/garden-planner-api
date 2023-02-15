@@ -1,6 +1,7 @@
 import { isNotNullish, isNullish } from '../../util/null.util';
 
 export interface BaseContainerSlotDTO {
+  readonly plant?: string | null;
   readonly plantInstanceId?: string | null;
   readonly plantInstanceHistory?: string[];
 }
@@ -33,17 +34,23 @@ export function sanitizeContainerSlotDTO(
   }
 
   return raw.map((dto) => {
+    const plant = isNotNullish(dto.plant) ? `${dto.plant}` : null;
+    const plantInstanceId = isNotNullish(dto.plantInstanceId) ? `${dto.plantInstanceId}` : null;
+    const plantInstanceHistory = dto.plantInstanceHistory?.map((id) => `${id}`);
+
     if (isContainerSlotDTO(dto)) {
       return {
-        plantInstanceId: `${dto.plantInstanceId}`,
-        plantInstanceHistory: dto.plantInstanceHistory?.map((id) => `${id}`),
+        plant,
+        plantInstanceId,
+        plantInstanceHistory,
         subSlot: isNotNullish(dto.subSlot) ? sanitizeContainerSlotDTO(dto.subSlot) : undefined
       };
     }
 
     return {
-      plantInstanceId: isNotNullish(dto.plantInstanceId) ? `${dto.plantInstanceId}` : null,
-      plantInstanceHistory: dto.plantInstanceHistory?.map((id) => `${id}`)
+      plant,
+      plantInstanceId,
+      plantInstanceHistory
     };
   });
 }

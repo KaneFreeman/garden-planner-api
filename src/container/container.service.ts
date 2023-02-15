@@ -10,7 +10,7 @@ import { ContainerDocument } from './interfaces/container.interface';
 import { BaseSlotDocument } from './interfaces/container-slot.interface';
 import { TaskType } from '../interface';
 import { ContainerSlotDTO } from './dto/container-slot.dto';
-import { isNotNullish } from '../util/null.util';
+import { isNotNullish, isNullish } from '../util/null.util';
 import { fromTaskTypeToHistoryStatus } from '../util/history.util';
 
 @Injectable()
@@ -67,23 +67,33 @@ export class ContainerService {
           // TODO FIX THIS
           const oldSlot = oldSlots.get(slotIndex);
           const slot = slots[slotIndex];
+
+          const newSlot: ContainerSlotDTO | null = isNotNullish(slot)
+            ? {
+                ...slot,
+                plant: slot.plantInstanceId ? null : slot.plant
+              }
+            : null;
+
           if (isNotNullish(oldSlot)) {
             if (
-              isNotNullish(slot) &&
+              isNotNullish(newSlot) &&
               isNotNullish(oldSlot.plantInstanceId) &&
-              `${oldSlot.plantInstanceId}` !== slot.plantInstanceId
+              `${oldSlot.plantInstanceId}` !== newSlot.plantInstanceId
             ) {
               accumlatedSlots[slotIndex] = {
-                ...slot,
-                plantInstanceHistory: [...(slot.plantInstanceHistory ?? []), `${oldSlot.plantInstanceId}`]
+                ...newSlot,
+                plantInstanceHistory: [...(newSlot.plantInstanceHistory ?? []), `${oldSlot.plantInstanceId}`]
               };
+            } else {
+              accumlatedSlots[slotIndex] = newSlot;
             }
           } else {
-            accumlatedSlots[slotIndex] = slot;
+            accumlatedSlots[slotIndex] = newSlot;
           }
 
           return slots;
-        }, {} as Record<string, ContainerSlotDTO>)
+        }, {} as Record<string, ContainerSlotDTO | null>)
       };
     }
 
