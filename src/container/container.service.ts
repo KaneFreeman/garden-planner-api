@@ -1,17 +1,17 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { TaskService } from '../task/task.service';
-import { PlantService } from '../plant/plant.service';
-import getSlotTitle from '../util/slot.util';
-import { PlantInstanceService } from '../plant-instance/plant-instance.service';
-import { ContainerDTO, sanitizeContainerDTO } from './dto/container.dto';
-import { ContainerDocument } from './interfaces/container.interface';
-import { BaseSlotDocument } from './interfaces/container-slot.interface';
+import { Model } from 'mongoose';
 import { TaskType } from '../interface';
-import { ContainerSlotDTO } from './dto/container-slot.dto';
-import { isNotNullish } from '../util/null.util';
+import { PlantInstanceService } from '../plant-instance/plant-instance.service';
+import { PlantService } from '../plant/plant.service';
+import { TaskService } from '../task/task.service';
 import { fromTaskTypeToHistoryStatus } from '../util/history.util';
+import { isNotNullish } from '../util/null.util';
+import getSlotTitle from '../util/slot.util';
+import { ContainerSlotDTO } from './dto/container-slot.dto';
+import { ContainerDTO, sanitizeContainerDTO } from './dto/container.dto';
+import { BaseSlotDocument } from './interfaces/container-slot.interface';
+import { ContainerDocument } from './interfaces/container.interface';
 
 @Injectable()
 export class ContainerService {
@@ -67,19 +67,29 @@ export class ContainerService {
           // TODO FIX THIS
           const oldSlot = oldSlots.get(slotIndex);
           const slot = slots[slotIndex];
+
+          const newSlot: ContainerSlotDTO = isNotNullish(slot)
+            ? {
+                ...slot,
+                plant: slot.plantInstanceId ? null : slot.plant
+              }
+            : {};
+
           if (isNotNullish(oldSlot)) {
             if (
-              isNotNullish(slot) &&
+              isNotNullish(newSlot) &&
               isNotNullish(oldSlot.plantInstanceId) &&
-              `${oldSlot.plantInstanceId}` !== slot.plantInstanceId
+              `${oldSlot.plantInstanceId}` !== newSlot.plantInstanceId
             ) {
               accumlatedSlots[slotIndex] = {
-                ...slot,
-                plantInstanceHistory: [...(slot.plantInstanceHistory ?? []), `${oldSlot.plantInstanceId}`]
+                ...newSlot,
+                plantInstanceHistory: [...(newSlot.plantInstanceHistory ?? []), `${oldSlot.plantInstanceId}`]
               };
+            } else {
+              accumlatedSlots[slotIndex] = newSlot;
             }
           } else {
-            accumlatedSlots[slotIndex] = slot;
+            accumlatedSlots[slotIndex] = newSlot;
           }
 
           return slots;
