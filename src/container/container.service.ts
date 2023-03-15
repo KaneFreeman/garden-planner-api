@@ -107,7 +107,14 @@ export class ContainerService {
   }
 
   async deleteContainer(containerId: string): Promise<ContainerDocument | null> {
-    return this.containerModel.findByIdAndRemove(containerId);
+    const result = this.containerModel.findByIdAndRemove(containerId);
+
+    const plantInstances = await this.plantInstanceService.getPlantInstancesByContainer(containerId);
+    for (const plantInstance of plantInstances) {
+      await this.plantInstanceService.closePlantInstance(plantInstance.id);
+    }
+
+    return result;
   }
 
   async updateContainerTasksByType(

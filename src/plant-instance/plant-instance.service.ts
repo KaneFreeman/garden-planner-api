@@ -55,6 +55,10 @@ export class PlantInstanceService {
     return this.plantInstanceModel.find({ plant }).exec();
   }
 
+  async getPlantInstancesByContainer(containerId: string): Promise<PlantInstanceDocument[]> {
+    return this.plantInstanceModel.find({ containerId }).exec();
+  }
+
   async addPlantInstanceHistoryAndUpdateTask(
     plantInstanceId: string,
     historyStatus: HistoryStatus,
@@ -126,6 +130,18 @@ export class PlantInstanceService {
 
     await this.createUpdatePlantInstanceTasks(editedPlantInstance);
     await this.updateContainerAfterPlantInstanceUpdate(editedPlantInstance);
+
+    return editedPlantInstance;
+  }
+
+  async closePlantInstance(plantInstanceId: string): Promise<PlantInstanceDocument | null> {
+    const editedPlantInstance = await this.plantInstanceModel.findByIdAndUpdate(
+      plantInstanceId,
+      { closed: true },
+      { new: true }
+    );
+
+    await this.createUpdatePlantInstanceTasks(editedPlantInstance);
 
     return editedPlantInstance;
   }
