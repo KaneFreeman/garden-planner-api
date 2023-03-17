@@ -24,7 +24,7 @@
     "@nestjs/common": "9.3.9",
     "@nestjs/config": "2.3.1",
     "@nestjs/core": "9.3.9",
-    "@nestjs/mongoose": "9.2.1",
+    "@nestjs/mongoose": "9.2.2",
     "@nestjs/platform-express": "9.3.9",
     "@nestjs/swagger": "6.2.1",
     "date-fns": "2.29.3",
