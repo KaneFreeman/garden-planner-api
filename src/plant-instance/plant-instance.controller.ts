@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpStatus, NotFoundException, Param, Post, Put, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  NotFoundException,
+  Param,
+  Post,
+  Put,
+  Query,
+  Res
+} from '@nestjs/common';
 import { Response } from 'express';
 import { FERTILIZE, FERTILIZED, HARVEST, HARVESTED } from '../interface';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
@@ -13,8 +25,12 @@ export class PlantInstanceController {
 
   // Submit a PlantInstance
   @Post('')
-  async addPlantInstance(@Res() res: Response, @Body() createPlantInstanceDTO: PlantInstanceDTO) {
-    const newPlantInstance = await this.plantInstanceService.addPlantInstance(createPlantInstanceDTO);
+  async addPlantInstance(
+    @Res() res: Response,
+    @Query('copiedFromId') copiedFromId: string,
+    @Body() createPlantInstanceDTO: PlantInstanceDTO
+  ) {
+    const newPlantInstance = await this.plantInstanceService.addPlantInstance(createPlantInstanceDTO, { copiedFromId });
     return res.status(HttpStatus.OK).json(newPlantInstance);
   }
 

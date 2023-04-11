@@ -85,6 +85,22 @@ export class TaskService {
     return this.taskModel.find({ plantInstanceId: { $eq: plantInstanceId } }).exec();
   }
 
+  async copyTasks(originPlantInstanceId: string, targetPlantInstanceId: string) {
+    const oldTasks = await this.getTasksByPlantInstanceId(originPlantInstanceId);
+
+    for (const task of oldTasks) {
+      await this.addTask({
+        text: task.text,
+        type: task.type,
+        start: task.start,
+        due: task.due,
+        plantInstanceId: targetPlantInstanceId,
+        path: task.path,
+        completedOn: task.completedOn
+      });
+    }
+  }
+
   async editTask(
     taskId: string,
     createTaskDTO: CreateTaskDTO,
@@ -599,7 +615,7 @@ export class TaskService {
     const taskTexts: string[] = [];
     const tasksToDelete: TaskDocument[] = [];
     const tasksByText = tasks.reduce((byText, task) => {
-      const key = task.text.replace(/( in [a-zA-Z0-9 ]+ at Row [0-9]+, Column [0-9]+)/g, '');
+      const key = task.text.replace(/( in [\w\W]+? at Row [0-9]+, Column [0-9]+)/g, '');
       if (key in byText) {
         tasksToDelete.push(task);
         return byText;
@@ -702,12 +718,14 @@ export class TaskService {
       }
     }
 
-    for (const task of tasks) {
-      if (taskTexts.includes(task.text.replace(/( in [a-zA-Z0-9 ]+ at Row [0-9]+, Column [0-9]+)/g, ''))) {
-        continue;
-      }
+    if (!instance.closed) {
+      for (const task of tasks) {
+        if (taskTexts.includes(task.text.replace(/( in [\w\W]+? at Row [0-9]+, Column [0-9]+)/g, ''))) {
+          continue;
+        }
 
-      await this.deleteTask(task._id, true);
+        await this.deleteTask(task._id, true);
+      }
     }
   }
 }

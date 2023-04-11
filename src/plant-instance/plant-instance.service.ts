@@ -18,6 +18,11 @@ import {
   sanitizeBulkReopenClosePlantInstanceDTO
 } from './dto/bulk-reopen-close-plant-instance.dto';
 
+interface AddPlantInstanceOptions {
+  createTasks?: boolean;
+  copiedFromId?: string;
+}
+
 @Injectable()
 export class PlantInstanceService {
   constructor(
@@ -28,8 +33,17 @@ export class PlantInstanceService {
     @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService
   ) {}
 
-  async addPlantInstance(createPlantInstanceDTO: PlantInstanceDTO, createTasks = true): Promise<PlantInstanceDocument> {
+  async addPlantInstance(
+    createPlantInstanceDTO: PlantInstanceDTO,
+    options?: AddPlantInstanceOptions
+  ): Promise<PlantInstanceDocument> {
+    const { createTasks = true, copiedFromId } = options ?? {};
+
     const newPlantInstance = await this.plantInstanceModel.create(sanitizePlantInstanceDTO(createPlantInstanceDTO));
+
+    if (copiedFromId) {
+      await this.taskService.copyTasks(copiedFromId, newPlantInstance._id.toString());
+    }
 
     await this.updateContainerAfterPlantInstanceUpdate(newPlantInstance);
 
@@ -134,7 +148,11 @@ export class PlantInstanceService {
     return editedPlantInstance;
   }
 
-  async closePlantInstance(plantInstanceId: string): Promise<PlantInstanceDocument | null> {
+  async closePlantInstance(plantInstanceId?: string): Promise<PlantInstanceDocument | null> {
+    if (!plantInstanceId) {
+      return Promise.resolve(null);
+    }
+
     const editedPlantInstance = await this.plantInstanceModel.findByIdAndUpdate(
       plantInstanceId,
       { closed: true },

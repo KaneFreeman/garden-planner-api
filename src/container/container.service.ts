@@ -111,7 +111,7 @@ export class ContainerService {
 
     const plantInstances = await this.plantInstanceService.getPlantInstancesByContainer(containerId);
     for (const plantInstance of plantInstances) {
-      await this.plantInstanceService.closePlantInstance(plantInstance.id);
+      await this.plantInstanceService.closePlantInstance(plantInstance._id);
     }
 
     return result;
@@ -132,7 +132,7 @@ export class ContainerService {
       if (
         plantInstance &&
         plantInstance.containerId === containerId &&
-        (!plantInstanceIds || plantInstanceIds.includes(plantInstance.id))
+        (!plantInstanceIds || (plantInstance._id && plantInstanceIds.includes(plantInstance._id)))
       ) {
         const updatedTask = await this.taskService.findByIdAndUpdate(task._id, { completedOn: date });
         updatedCount++;
