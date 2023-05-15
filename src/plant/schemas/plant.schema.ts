@@ -8,6 +8,7 @@ export const PlantSchema = new mongoose.Schema({
   url: String,
   daysToGerminate: [Number],
   daysToMaturity: [Number],
+  maturityFrom: String,
   pictures: [PictureDataSchema],
   comments: [CommentSchema],
   retired: Boolean

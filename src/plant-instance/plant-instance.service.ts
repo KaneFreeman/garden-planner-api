@@ -1,22 +1,23 @@
-import { forwardRef, Inject, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { BadRequestException, Inject, Injectable, NotFoundException, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { PlantInstanceDTO, sanitizePlantInstanceDTO } from './dto/plant-instance.dto';
-import { PlantInstanceDocument } from './interfaces/plant-instance.interface';
-import { TaskService } from '../task/task.service';
-import { PlantService } from '../plant/plant.service';
-import plantData from '../data/plantData';
-import getSlotTitle from '../util/slot.util';
-import { ContainerDocument } from '../container/interfaces/container.interface';
+import { Model } from 'mongoose';
 import { ContainerService } from '../container/container.service';
-import { isNullish } from '../util/null.util';
 import { ContainerSlotDTO } from '../container/dto/container-slot.dto';
-import { HistoryStatus, SPRING, TaskType } from '../interface';
-import { PlantInstanceHistoryDto } from './dto/plant-instance-history.dto';
+import { ContainerDocument } from '../container/interfaces/container.interface';
+import plantData from '../data/plantData';
+import { CONTAINER_TYPE_OUTSIDE, HistoryStatus, SPRING, TRANSPLANTED, TaskType } from '../interface';
+import { PlantService } from '../plant/plant.service';
+import { TaskService } from '../task/task.service';
+import { isNullish } from '../util/null.util';
+import getSlotTitle from '../util/slot.util';
 import {
   BulkReopenClosePlantInstanceDTO,
   sanitizeBulkReopenClosePlantInstanceDTO
 } from './dto/bulk-reopen-close-plant-instance.dto';
+import { PlantInstanceHistoryDto } from './dto/plant-instance-history.dto';
+import { PlantInstanceDTO, sanitizePlantInstanceDTO } from './dto/plant-instance.dto';
+import { PlantInstanceHistoryDocument } from './interfaces/plant-instance-history.interface';
+import { PlantInstanceDocument } from './interfaces/plant-instance.interface';
 
 interface AddPlantInstanceOptions {
   createTasks?: boolean;
@@ -231,11 +232,13 @@ export class PlantInstanceService {
     await this.taskService.createUpdateTransplantedTask(season, container, plantInstance, plant, data, path, slotTitle);
 
     await this.taskService.createUpdateHarvestTask(
+      season,
       container,
       plantInstance.slotId,
       plantInstance.subSlot ?? false,
       plantInstance,
       plant,
+      data,
       path,
       slotTitle
     );
@@ -290,5 +293,28 @@ export class PlantInstanceService {
     }
 
     return plantInstances;
+  }
+
+  async findTransplantedOutsideHistoryByStatus(
+    plantInstance: PlantInstanceDocument | undefined | null
+  ): Promise<PlantInstanceHistoryDocument | null> {
+    if (!plantInstance?.history) {
+      return null;
+    }
+
+    for (const entry of plantInstance.history) {
+      if (entry.status !== TRANSPLANTED) {
+        continue;
+      }
+
+      const container = await this.containerService.getContainer(entry.to?.containerId);
+      if (container?.type !== CONTAINER_TYPE_OUTSIDE) {
+        continue;
+      }
+
+      return entry;
+    }
+
+    return null;
   }
 }

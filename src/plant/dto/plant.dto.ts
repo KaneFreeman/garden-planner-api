@@ -1,6 +1,6 @@
 import { CommentDto, sanitizeCommentDto } from '../../common/dto/comment.dto';
 import { PictureDataDto, sanitizePictureDataDto } from '../../common/dto/picture-data.dto';
-import { toPlantType } from '../../interface';
+import { MaturityFromType, toMaturityFromType, toPlantType } from '../../interface';
 import { isNotNullish, isNullish } from '../../util/null.util';
 
 export interface PlantDTO {
@@ -9,6 +9,7 @@ export interface PlantDTO {
   readonly url?: string;
   readonly daysToGerminate?: [number | undefined, number | undefined];
   readonly daysToMaturity?: [number | undefined, number | undefined];
+  readonly maturityFrom?: MaturityFromType;
   readonly pictures?: PictureDataDto[];
   readonly comments?: CommentDto[];
   readonly retired?: boolean;
@@ -43,6 +44,7 @@ export function sanitizePlantDTO(raw: PlantDTO | PlantDTO[] | null | undefined):
             isNotNullish(dto.daysToMaturity[1]) ? Number(dto.daysToMaturity[1]) : undefined
           ]
         : undefined,
+    maturityFrom: toMaturityFromType(dto.maturityFrom),
     pictures: sanitizePictureDataDto(dto.pictures),
     comments: sanitizeCommentDto(dto.comments),
     retired: isNotNullish(dto.retired) ? Boolean(dto.retired) : false

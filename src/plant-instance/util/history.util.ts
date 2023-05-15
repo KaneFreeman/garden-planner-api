@@ -74,7 +74,9 @@ export function findHistoryTo(
   return index !== undefined ? plantInstance?.history?.[index] : undefined;
 }
 
-export function getPlantedEvent(plantInstance: PlantInstanceDocument | undefined | null) {
+export function getPlantedEvent(
+  plantInstance: PlantInstanceDocument | undefined | null
+): PlantInstanceHistoryDocument | undefined {
   return plantInstance?.history?.find((entry) => entry.status === PLANTED);
 }
 

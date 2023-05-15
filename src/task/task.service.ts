@@ -1,48 +1,47 @@
-import { forwardRef, Inject, Injectable, BadRequestException } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { BadRequestException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, UpdateWithAggregationPipeline, UpdateQuery } from 'mongoose';
-import subDays from 'date-fns/subDays';
 import addDays from 'date-fns/addDays';
+import subDays from 'date-fns/subDays';
+import { FilterQuery, Model, UpdateQuery, UpdateWithAggregationPipeline } from 'mongoose';
 import { ONE_WEEK, TWO_WEEKS } from '../constants';
+import { ContainerService } from '../container/container.service';
 import { ContainerDocument } from '../container/interfaces/container.interface';
+import growingZoneData from '../data/growingZoneData';
 import {
-  ContainerType,
   CONTAINER_TYPE_INSIDE,
   CONTAINER_TYPE_OUTSIDE,
+  ContainerType,
   FERTILIZE,
   FertilizerApplication,
   GrowingZoneData,
   HARVEST,
   HARVESTED,
+  MATURITY_FROM_TRANSPLANT,
   PLANT,
   PlantData,
-  Season,
   SPRING,
-  TaskType,
-  TRANSPLANTED
+  Season,
+  TRANSPLANTED,
+  TaskType
 } from '../interface';
-import { ContainerService } from '../container/container.service';
-import { PlantDocument } from '../plant/interfaces/plant.interface';
+import { PlantInstanceHistoryDocument } from '../plant-instance/interfaces/plant-instance-history.interface';
+import { PlantInstanceDocument } from '../plant-instance/interfaces/plant-instance.interface';
+import { PlantInstanceService } from '../plant-instance/plant-instance.service';
 import {
-  findHistoryByStatus,
   findHistoryFrom,
   getPlantedDate,
   getPlantedEvent,
   getTransplantedDate
 } from '../plant-instance/util/history.util';
-import growingZoneData from '../data/growingZoneData';
-import { isNullish } from '../util/null.util';
+import { PlantDocument } from '../plant/interfaces/plant.interface';
+import { isValidDate } from '../util/date.util';
+import { fromTaskTypeToHistoryStatus } from '../util/history.util';
+import { isNotNullish, isNullish } from '../util/null.util';
 import ordinalSuffixOf from '../util/number.util';
 import { isEmpty, isNotEmpty } from '../util/string.util';
-import { PlantInstanceDocument } from '../plant-instance/interfaces/plant-instance.interface';
-import { PlantInstanceService } from '../plant-instance/plant-instance.service';
-import { isValidDate } from '../util/date.util';
+import { BulkCompleteTaskDTO, sanitizeBulkCompleteTaskDTO } from './dto/bulk-complete-task.dto';
 import { CreateTaskDTO, sanitizeCreateTaskDTO } from './dto/create-task.dto';
 import { TaskDocument } from './interfaces/task.interface';
-import { BulkCompleteTaskDTO, sanitizeBulkCompleteTaskDTO } from './dto/bulk-complete-task.dto';
-import { fromTaskTypeToHistoryStatus } from '../util/history.util';
-import { PlantInstanceHistoryDocument } from '../plant-instance/interfaces/plant-instance-history.interface';
 
 @Injectable()
 export class TaskService {
@@ -241,6 +240,29 @@ export class TaskService {
     return undefined;
   }
 
+  getTransplantedDays(
+    season: Season,
+    data: PlantData | undefined,
+    plantedDate: Date | null
+  ): { start: number; due: number } | undefined {
+    const howToGrowData = data?.howToGrow[season];
+    if (howToGrowData?.indoor) {
+      if (plantedDate) {
+        return {
+          start: howToGrowData.indoor.transplant_min,
+          due: howToGrowData.indoor.transplant_max
+        };
+      }
+
+      return {
+        start: howToGrowData.indoor.min - howToGrowData.indoor.transplant_min,
+        due: howToGrowData.indoor.max - howToGrowData.indoor.transplant_max
+      };
+    }
+
+    return undefined;
+  }
+
   getTransplantedStartAndDueDate(
     season: Season,
     data: PlantData | undefined,
@@ -387,7 +409,9 @@ export class TaskService {
 
     const { start, due } = dates;
 
-    const completedOn = findHistoryByStatus(instance, TRANSPLANTED)?.date ?? null;
+    const completedOn =
+      (await this.plantInstanceService.findTransplantedOutsideHistoryByStatus(instance))?.date ?? null;
+
     if (task && isNullish(task.completedOn) && instance.closed) {
       await this.deleteTask(task._id, true);
       return;
@@ -442,39 +466,68 @@ export class TaskService {
     return [min, max];
   }
 
-  getHarvestStartAndDueDate(
+  async getHarvestStartAndDueDate(
     plant: PlantDocument | null,
-    plantedDate: Date | null
-  ): { start: Date; due: Date } | undefined {
-    if (plantedDate !== null) {
-      const [minDaysToGerminate, maxDaysToGerminate] = this.getDaysRange(plant?.daysToGerminate);
-      const [minDaysToMaturity, maxDaysToMaturity] = this.getDaysRange(plant?.daysToMaturity);
+    plantedEvent: PlantInstanceHistoryDocument | undefined,
+    season: Season,
+    instance: PlantInstanceDocument | null,
+    data: PlantData | undefined,
+    transplantedOn?: Date | null
+  ): Promise<{ start: Date; due: Date } | undefined> {
+    if (isNullish(plantedEvent)) {
+      return undefined;
+    }
 
-      const min = minDaysToGerminate + minDaysToMaturity;
-      const max = maxDaysToGerminate + maxDaysToMaturity;
+    const plantedContainer = await this.containerService.getContainer(plantedEvent.from?.containerId);
 
-      if (min !== max) {
+    const [minDaysToGerminate, maxDaysToGerminate] = this.getDaysRange(plant?.daysToGerminate);
+    const [minDaysToMaturity, maxDaysToMaturity] = this.getDaysRange(plant?.daysToMaturity);
+
+    let min = minDaysToGerminate + minDaysToMaturity;
+    let max = maxDaysToGerminate + maxDaysToMaturity;
+    if (plantedContainer?.type !== CONTAINER_TYPE_OUTSIDE && plant?.maturityFrom === MATURITY_FROM_TRANSPLANT) {
+      if (isNotNullish(transplantedOn)) {
+        if (minDaysToMaturity !== maxDaysToMaturity) {
+          return {
+            start: addDays(transplantedOn, minDaysToMaturity),
+            due: addDays(transplantedOn, maxDaysToMaturity)
+          };
+        }
+
         return {
-          start: addDays(plantedDate, min),
-          due: addDays(plantedDate, max)
+          start: addDays(transplantedOn, minDaysToMaturity),
+          due: addDays(transplantedOn, maxDaysToMaturity + TWO_WEEKS)
         };
       }
 
+      const dates = this.getTransplantedDays(season, data, getPlantedDate(instance));
+      if (dates) {
+        min = dates.start + minDaysToMaturity;
+        max = dates.due + maxDaysToMaturity;
+      }
+    }
+
+    if (min !== max) {
       return {
-        start: addDays(plantedDate, min),
-        due: addDays(plantedDate, max + TWO_WEEKS)
+        start: addDays(plantedEvent.date, min),
+        due: addDays(plantedEvent.date, max)
       };
     }
 
-    return undefined;
+    return {
+      start: addDays(plantedEvent.date, min),
+      due: addDays(plantedEvent.date, max + TWO_WEEKS)
+    };
   }
 
   async createUpdateHarvestTask(
+    season: Season,
     container: ContainerDocument,
     slotId: number,
     subSlot: boolean,
     instance: PlantInstanceDocument | null,
     plant: PlantDocument | null,
+    data: PlantData | undefined,
     path: string,
     slotTitle: string
   ) {
@@ -495,7 +548,17 @@ export class TaskService {
       task = tasks[0];
     }
 
-    const dates = this.getHarvestStartAndDueDate(plant, getPlantedDate(instance));
+    const transplantedOn =
+      (await this.plantInstanceService.findTransplantedOutsideHistoryByStatus(instance))?.date ?? null;
+
+    const dates = await this.getHarvestStartAndDueDate(
+      plant,
+      getPlantedEvent(instance),
+      season,
+      instance,
+      data,
+      transplantedOn
+    );
     if (
       !plant ||
       !dates ||
