@@ -466,56 +466,58 @@ export class TaskService {
     return [min, max];
   }
 
-  getHarvestStartAndDueDate(
+  async getHarvestStartAndDueDate(
     plant: PlantDocument | null,
-    plantedDate: Date | null,
+    plantedEvent: PlantInstanceHistoryDocument | undefined,
     season: Season,
     instance: PlantInstanceDocument | null,
     data: PlantData | undefined,
     transplantedOn?: Date | null
-  ): { start: Date; due: Date } | undefined {
-    if (plantedDate !== null) {
-      const [minDaysToGerminate, maxDaysToGerminate] = this.getDaysRange(plant?.daysToGerminate);
-      const [minDaysToMaturity, maxDaysToMaturity] = this.getDaysRange(plant?.daysToMaturity);
+  ): Promise<{ start: Date; due: Date } | undefined> {
+    if (isNullish(plantedEvent)) {
+      return undefined;
+    }
 
-      let min = minDaysToGerminate + minDaysToMaturity;
-      let max = maxDaysToGerminate + maxDaysToMaturity;
-      if (plant?.maturityFrom === MATURITY_FROM_TRANSPLANT) {
-        if (isNotNullish(transplantedOn)) {
-          if (minDaysToMaturity !== maxDaysToMaturity) {
-            return {
-              start: addDays(transplantedOn, minDaysToMaturity),
-              due: addDays(transplantedOn, maxDaysToMaturity)
-            };
-          }
+    const plantedContainer = await this.containerService.getContainer(plantedEvent.from?.containerId);
 
+    const [minDaysToGerminate, maxDaysToGerminate] = this.getDaysRange(plant?.daysToGerminate);
+    const [minDaysToMaturity, maxDaysToMaturity] = this.getDaysRange(plant?.daysToMaturity);
+
+    let min = minDaysToGerminate + minDaysToMaturity;
+    let max = maxDaysToGerminate + maxDaysToMaturity;
+    if (plantedContainer?.type !== CONTAINER_TYPE_OUTSIDE && plant?.maturityFrom === MATURITY_FROM_TRANSPLANT) {
+      if (isNotNullish(transplantedOn)) {
+        if (minDaysToMaturity !== maxDaysToMaturity) {
           return {
             start: addDays(transplantedOn, minDaysToMaturity),
-            due: addDays(transplantedOn, maxDaysToMaturity + TWO_WEEKS)
+            due: addDays(transplantedOn, maxDaysToMaturity)
           };
         }
 
-        const dates = this.getTransplantedDays(season, data, getPlantedDate(instance));
-        if (dates) {
-          min = dates.start + minDaysToMaturity;
-          max = dates.due + maxDaysToMaturity;
-        }
-      }
-
-      if (min !== max) {
         return {
-          start: addDays(plantedDate, min),
-          due: addDays(plantedDate, max)
+          start: addDays(transplantedOn, minDaysToMaturity),
+          due: addDays(transplantedOn, maxDaysToMaturity + TWO_WEEKS)
         };
       }
 
+      const dates = this.getTransplantedDays(season, data, getPlantedDate(instance));
+      if (dates) {
+        min = dates.start + minDaysToMaturity;
+        max = dates.due + maxDaysToMaturity;
+      }
+    }
+
+    if (min !== max) {
       return {
-        start: addDays(plantedDate, min),
-        due: addDays(plantedDate, max + TWO_WEEKS)
+        start: addDays(plantedEvent.date, min),
+        due: addDays(plantedEvent.date, max)
       };
     }
 
-    return undefined;
+    return {
+      start: addDays(plantedEvent.date, min),
+      due: addDays(plantedEvent.date, max + TWO_WEEKS)
+    };
   }
 
   async createUpdateHarvestTask(
@@ -549,9 +551,9 @@ export class TaskService {
     const transplantedOn =
       (await this.plantInstanceService.findTransplantedOutsideHistoryByStatus(instance))?.date ?? null;
 
-    const dates = this.getHarvestStartAndDueDate(
+    const dates = await this.getHarvestStartAndDueDate(
       plant,
-      getPlantedDate(instance),
+      getPlantedEvent(instance),
       season,
       instance,
       data,
