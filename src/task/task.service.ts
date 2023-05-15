@@ -497,8 +497,8 @@ export class TaskService {
 
         const dates = this.getTransplantedDays(season, data, getPlantedDate(instance));
         if (dates) {
-          min = dates.start;
-          max = dates.due;
+          min = dates.start + minDaysToMaturity;
+          max = dates.due + maxDaysToMaturity;
         }
       }
 
