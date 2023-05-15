@@ -258,6 +258,24 @@ export function toPlantType(raw: unknown): PlantType | null | undefined {
   return null;
 }
 
+export const MATURITY_FROM_SEED = 'Seed';
+export const MATURITY_FROM_TRANSPLANT = 'Transplant';
+export type MaturityFromType = typeof MATURITY_FROM_SEED | typeof MATURITY_FROM_TRANSPLANT;
+export const MATURITY_FROM_TYPES: MaturityFromType[] = [MATURITY_FROM_SEED, MATURITY_FROM_TRANSPLANT];
+
+export function toMaturityFromType(raw: unknown): MaturityFromType {
+  if (typeof raw !== 'string') {
+    return MATURITY_FROM_SEED;
+  }
+
+  switch (raw) {
+    case MATURITY_FROM_TRANSPLANT:
+      return MATURITY_FROM_TRANSPLANT;
+    default:
+      return MATURITY_FROM_SEED;
+  }
+}
+
 export const PLANTED = 'Planted';
 export const TRANSPLANTED = 'Transplanted';
 export const HARVESTED = 'Harvested';
