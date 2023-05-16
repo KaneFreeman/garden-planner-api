@@ -2472,6 +2472,7 @@ const plantData: Record<PlantType, PlantData> = {
           fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
         },
         plant: { min: 0, max: -28 },
+        outdoor: { min: -7, max: -28 },
         fertilize: [{ start: 14, from: 'Transplanted' }]
       }
     },
