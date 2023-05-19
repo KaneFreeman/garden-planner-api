@@ -132,13 +132,13 @@ export class ContainerService {
       if (
         plantInstance &&
         plantInstance.containerId === containerId &&
-        (!plantInstanceIds || (plantInstance._id && plantInstanceIds.includes(plantInstance._id)))
+        (!plantInstanceIds || (plantInstance._id && plantInstanceIds.includes(plantInstance._id.toString())))
       ) {
         const updatedTask = await this.taskService.findByIdAndUpdate(task._id, { completedOn: date });
         updatedCount++;
 
         if (task?.type === type && updatedTask?.completedOn) {
-          await this.plantInstanceService.addPlantInstanceHistory(plantInstance, {
+          const updatedPlantInstance = await this.plantInstanceService.addPlantInstanceHistory(plantInstance, {
             status: fromTaskTypeToHistoryStatus(type),
             date: updatedTask.completedOn.toISOString(),
             from: {
@@ -147,7 +147,7 @@ export class ContainerService {
               subSlot: plantInstance.subSlot
             }
           });
-          await this.plantInstanceService.createUpdatePlantInstanceTasks(plantInstance);
+          await this.plantInstanceService.createUpdatePlantInstanceTasks(updatedPlantInstance);
         }
       }
     }
