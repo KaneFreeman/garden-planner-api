@@ -3065,10 +3065,10 @@ expect@^29.0.0, expect@^29.5.0:
     jest-message-util "^29.5.0"
     jest-util "^29.5.0"
 
-express-oauth2-jwt-bearer@1.4.1:
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/express-oauth2-jwt-bearer/-/express-oauth2-jwt-bearer-1.4.1.tgz#c91079ebbebe7e54d54b7071e21b958fcc13d12a"
-  integrity sha512-EtAJbTotIXpN2xcUJLPOoO/WC2HRCjZCOeD0XI6Kyzeelb4/dh43HSJ37C2Z17HarEiAd0xO9Mz8/9OaTM5oHw==
+express-oauth2-jwt-bearer@1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/express-oauth2-jwt-bearer/-/express-oauth2-jwt-bearer-1.5.0.tgz#80ab2255308d25a36b09031a05c2a6b41f90e50a"
+  integrity sha512-C8avk1VfopX3zjqfTLg9EuYFjNRdmXdYncBoZGmjxQzGx7cQRiupeWV5r3G2SYGzx0gDw1uyu1cdJrmILOvd3g==
   dependencies:
     jose "^4.13.1"
 
