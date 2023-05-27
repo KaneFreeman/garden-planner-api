@@ -53,9 +53,9 @@ export function findHistoryToIndex(
 
   return plantInstance.history?.findIndex((entry) => {
     const fromMatch =
-      entry.from?.containerId === to.containerId &&
-      entry.from?.slotId === to.slotId &&
-      entry.from?.subSlot === to.subSlot;
+      entry.to?.containerId.toString() === to.containerId.toString() &&
+      entry.to?.slotId === to.slotId &&
+      entry.to?.subSlot === to.subSlot;
 
     if (status) {
       return fromMatch && entry.status === status;
@@ -86,7 +86,7 @@ export function getPlantedDate(plantInstance: PlantInstanceDocument | undefined 
 
 export function getTransplantedDate(
   plantInstance: PlantInstanceDocument | undefined | null,
-  from: ContainerSlotIdentifier
+  to: ContainerSlotIdentifier
 ) {
-  return findHistoryTo(plantInstance, from, TRANSPLANTED)?.date ?? null;
+  return findHistoryTo(plantInstance, to, TRANSPLANTED)?.date ?? null;
 }

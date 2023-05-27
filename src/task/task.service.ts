@@ -713,13 +713,14 @@ export class TaskService {
     let previousTask: TaskDocument | null | undefined;
 
     const plantedEvent = getPlantedEvent(instance);
+    const plantedContainer = await this.containerService.getContainer(plantedEvent?.to?.containerId);
 
     let i = 0;
     for (const fertilizerApplication of fertilizeData) {
       i += 1;
       const dates = this.getFertilizeStartAndDueDate(
         plantedEvent,
-        container,
+        plantedContainer,
         getTransplantedDate(instance, {
           containerId: container._id.toString(),
           slotId,
