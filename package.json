@@ -30,7 +30,7 @@
     "date-fns": "2.30.0",
     "dotenv": "16.3.1",
     "express-oauth2-jwt-bearer": "1.5.0",
-    "mongoose": "6.11.4",
+    "mongoose": "6.11.5",
     "reflect-metadata": "0.1.13",
     "rimraf": "4.4.1",
     "rxjs": "7.8.1",
