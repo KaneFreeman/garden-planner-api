@@ -1592,10 +1592,10 @@
   resolved "https://registry.yarnpkg.com/@nestjs/mapped-types/-/mapped-types-1.2.2.tgz#d9ddb143776e309dbc1a518ac1607fddac1e140e"
   integrity sha512-3dHxLXs3M0GPiriAcCFFJQHoDFUuzTD5w6JDhE7TyfT89YKpe6tcCCIqOZWdXmt9AZjjK30RkHRSFF+QEnWFQg==
 
-"@nestjs/mongoose@9.2.2":
-  version "9.2.2"
-  resolved "https://registry.yarnpkg.com/@nestjs/mongoose/-/mongoose-9.2.2.tgz#104f9eb57f5f5841a96f6e4ae08a6e1904ef0b93"
-  integrity sha512-szNuSUCwwbQSSeiTh8+tZ9fHV4nuzHwBDROb0hX0s7crwY15TunCfwyKbB2XjqkEQWUAasDeCBuKOJSL9N6tTg==
+"@nestjs/mongoose@10.0.4":
+  version "10.0.4"
+  resolved "https://registry.yarnpkg.com/@nestjs/mongoose/-/mongoose-10.0.4.tgz#7f993f7da47189d8dc918113996bba5d5ad95a48"
+  integrity sha512-OXcguhrv+ahXmpPD3FJgnCLU3eUSBcbE7OwClJL+3inpPAyvMbhLrYvk3Zi7/34aMCzBOILdCBh95AQ7ghd1sg==
 
 "@nestjs/platform-express@9.4.3":
   version "9.4.3"
