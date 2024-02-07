@@ -26,7 +26,7 @@
     "@nestjs/core": "9.4.3",
     "@nestjs/mongoose": "9.2.2",
     "@nestjs/platform-express": "9.4.3",
-    "@nestjs/swagger": "6.3.0",
+    "@nestjs/swagger": "7.3.0",
     "date-fns": "2.30.0",
     "dotenv": "16.3.1",
     "express-oauth2-jwt-bearer": "1.6.0",
