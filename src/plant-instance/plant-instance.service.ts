@@ -211,9 +211,45 @@ export class PlantInstanceService {
   }
 
   async deletePlantInstance(plantInstanceId: string): Promise<PlantInstanceDocument | null> {
-    const deletedPlantInstance = await this.plantInstanceModel.findByIdAndRemove(plantInstanceId);
+    const plantInstance = await this.plantInstanceModel.findById(plantInstanceId);
+    if (!plantInstance || !plantInstance._id) {
+      throw new NotFoundException('PlantInstance does not exist!');
+    }
+
+    if ((plantInstance.history ?? []).length > 0) {
+      throw new BadRequestException('PlantInstance has history and cannot be deleted!');
+    }
+
+    const container = await this.containerService.getContainer(plantInstance.containerId);
+    if (container && container._id) {
+      const slot = container.slots?.get(`${plantInstance.slotId}`);
+      const newSlots: Record<string, ContainerSlotDTO> = {};
+      container.slots?.forEach((slot, key) => {
+        newSlots[key] = slot.toObject<ContainerSlotDTO>();
+      });
+
+      newSlots[`${plantInstance.slotId}`] = {
+        plantInstanceId: null,
+        plantInstanceHistory: slot?.plantInstanceHistory,
+        subSlot: slot?.subSlot
+      };
+
+      await this.containerService.editContainer(
+        container._id,
+        {
+          name: container.name,
+          type: container.type,
+          rows: container.rows,
+          columns: container.columns,
+          slots: newSlots
+        },
+        false
+      );
+    }
+
+    await this.plantInstanceModel.deleteOne({ _id: plantInstanceId });
     await this.taskService.deleteOpenTasksByPlantInstance(plantInstanceId);
-    return deletedPlantInstance;
+    return plantInstance;
   }
 
   async createUpdateTasks(

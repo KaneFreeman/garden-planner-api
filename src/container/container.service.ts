@@ -64,7 +64,6 @@ export class ContainerService {
       newContainerDTO = {
         ...sanitizedContainerDTO,
         slots: Object.keys(slots).reduce((accumlatedSlots, slotIndex) => {
-          // TODO FIX THIS
           const oldSlot = oldSlots.get(slotIndex);
           const slot = slots[slotIndex];
 
