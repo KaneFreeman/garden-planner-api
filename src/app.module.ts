@@ -7,6 +7,8 @@ import { ContainerModule } from './container/container.module';
 import { PictureModule } from './picture/picture.module';
 import { StaticModule } from './static/static.module';
 import { PlantInstanceModule } from './plant-instance/plant-instance.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { MailModule } from './mail/mail.module';
 
 const env = process.env.NODE_ENV || 'production';
 
@@ -19,12 +21,14 @@ const env = process.env.NODE_ENV || 'production';
       useNewUrlParser: true,
       retryAttempts: 0
     }),
+    ScheduleModule.forRoot(),
     PlantModule,
     PlantInstanceModule,
     TaskModule,
     ContainerModule,
     PictureModule,
-    StaticModule
+    StaticModule,
+    MailModule
   ],
   controllers: [],
   providers: []

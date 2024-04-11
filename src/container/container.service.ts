@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { TaskType } from '../interface';
 import { PlantInstanceService } from '../plant-instance/plant-instance.service';
 import { PlantService } from '../plant/plant.service';
@@ -36,8 +36,8 @@ export class ContainerService {
     return this.containerModel.findById(containerId).exec();
   }
 
-  async getContainers(): Promise<ContainerDocument[]> {
-    return this.containerModel.find().exec();
+  async getContainers(filter: FilterQuery<ContainerDocument> = {}): Promise<ContainerDocument[]> {
+    return this.containerModel.find(filter).exec();
   }
 
   async editContainer(
