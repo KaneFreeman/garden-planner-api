@@ -1,11 +1,11 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { TaskService } from '../../task/task.service';
-import { TaskDocument } from '../../task/interfaces/task.interface';
-import { ContainerService } from '../../container/container.service';
-import { isNotEmpty } from '../../util/string.util';
-import { PlantInstanceService } from '../../plant-instance/plant-instance.service';
 import { endOfDay, format, formatDistance, startOfDay } from 'date-fns';
+import { ContainerService } from '../../container/container.service';
+import { PlantInstanceService } from '../../plant-instance/plant-instance.service';
+import { TaskDocument } from '../../task/interfaces/task.interface';
+import { TaskService } from '../../task/task.service';
+import { isNotEmpty } from '../../util/string.util';
 
 function formatRelativeDate(date: Date, prefix: string, today: number): string {
   let text = `${prefix} ${format(date, 'MMMM d')}`;
@@ -54,9 +54,8 @@ function taskToData(task: TaskDocument, today: number): TaskData {
 
 @Injectable()
 export class MailService {
-  private readonly logger = new Logger(MailService.name);
-
   constructor(
+    private readonly logger: Logger,
     private mailerService: MailerService,
     @Inject(forwardRef(() => TaskService)) private taskService: TaskService,
     @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService,

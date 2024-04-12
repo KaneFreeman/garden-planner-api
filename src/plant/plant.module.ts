@@ -11,7 +11,7 @@ import { PlantInstanceModule } from '../plant-instance/plant-instance.module';
   imports: [
     MongooseModule.forFeature([{ name: 'Plant', schema: PlantSchema }]),
     forwardRef(() => ContainerModule),
-    TaskModule,
+    forwardRef(() => TaskModule),
     forwardRef(() => PlantInstanceModule)
   ],
   providers: [PlantService],

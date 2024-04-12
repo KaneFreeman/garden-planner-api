@@ -1,14 +1,14 @@
-import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { PlantModule } from './plant/plant.module';
-import { TaskModule } from './task/task.module';
-import { ContainerModule } from './container/container.module';
-import { PictureModule } from './picture/picture.module';
-import { StaticModule } from './static/static.module';
-import { PlantInstanceModule } from './plant-instance/plant-instance.module';
+import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ContainerModule } from './container/container.module';
 import { MailModule } from './mail/mail.module';
+import { PictureModule } from './picture/picture.module';
+import { PlantInstanceModule } from './plant-instance/plant-instance.module';
+import { PlantModule } from './plant/plant.module';
+import { StaticModule } from './static/static.module';
+import { TaskModule } from './task/task.module';
 
 const env = process.env.NODE_ENV || 'production';
 
@@ -31,6 +31,6 @@ const env = process.env.NODE_ENV || 'production';
     MailModule
   ],
   controllers: [],
-  providers: []
+  providers: [Logger]
 })
 export class AppModule {}

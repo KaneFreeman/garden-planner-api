@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "rimraf dist-prod && nest build -p tsconfig.prod.json",
+    "build": "rimraf dist-prod && nest build -p tsconfig.prod.json --config nest-cli-prod.json",
     "deploy": "npm run build && node service.js",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -34,11 +34,13 @@
     "express-oauth2-jwt-bearer": "1.6.0",
     "handlebars": "4.7.8",
     "mongoose": "6.12.2",
+    "nest-winston": "1.9.4",
     "nodemailer": "6.9.13",
     "reflect-metadata": "0.1.13",
     "rimraf": "4.4.1",
     "rxjs": "7.8.1",
-    "swagger-ui-express": "4.6.3"
+    "swagger-ui-express": "4.6.3",
+    "winston": "3.13.0"
   },
   "devDependencies": {
     "@nestjs/cli": "10.2.1",
