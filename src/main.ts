@@ -33,7 +33,7 @@ async function bootstrap() {
             winston.format.timestamp(),
             winston.format.ms(),
             nestWinstonModuleUtilities.format.nestLike('GardenPlannerAPI', {
-              colors: true,
+              colors: false,
               prettyPrint: true
             })
           )
