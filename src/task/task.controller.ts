@@ -1,27 +1,30 @@
 import {
-  Controller,
-  Get,
-  Res,
-  HttpStatus,
-  Param,
-  NotFoundException,
-  Post,
   Body,
-  Put,
+  Controller,
   Delete,
-  Query
+  Get,
+  HttpStatus,
+  NotFoundException,
+  Param,
+  Post,
+  Put,
+  Query,
+  Res,
+  UseGuards
 } from '@nestjs/common';
 import { Response } from 'express';
-import { TaskService } from './task.service';
-import { CreateTaskDTO } from './dto/create-task.dto';
+import { AuthGuard } from '../auth/auth.guard';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
 import { BulkCompleteTaskDTO } from './dto/bulk-complete-task.dto';
+import { CreateTaskDTO } from './dto/create-task.dto';
+import { TaskService } from './task.service';
 
 @Controller('/api/task')
 export class TaskController {
   constructor(private taskService: TaskService) {}
 
   // Submit a task
+  @UseGuards(AuthGuard)
   @Post('')
   async addTask(@Res() res: Response, @Body() createTaskDTO: CreateTaskDTO) {
     const newTask = await this.taskService.addTask(createTaskDTO);
@@ -29,6 +32,7 @@ export class TaskController {
   }
 
   // Fetch a particular task using ID
+  @UseGuards(AuthGuard)
   @Get('/:taskId')
   async getTask(@Res() res: Response, @Param('taskId', new ValidateObjectId()) taskId: string) {
     const task = await this.taskService.getTaskById(taskId);
@@ -39,6 +43,7 @@ export class TaskController {
   }
 
   // Fetch all tasks
+  @UseGuards(AuthGuard)
   @Get('')
   async getTasks(@Res() res: Response, @Query('plantInstanceId') plantInstanceId: string) {
     const tasks = plantInstanceId
@@ -48,6 +53,7 @@ export class TaskController {
   }
 
   // Bulk complete tasks
+  @UseGuards(AuthGuard)
   @Put('/bulk-complete')
   async bulkCompleteTask(@Res() res: Response, @Body() dto: BulkCompleteTaskDTO) {
     const tasksCompleted = await this.taskService.buildCompleteTasks(dto);
@@ -55,6 +61,7 @@ export class TaskController {
   }
 
   // Edit a particular task using ID
+  @UseGuards(AuthGuard)
   @Put('/:taskId')
   async editTask(
     @Res() res: Response,
@@ -69,6 +76,7 @@ export class TaskController {
   }
 
   // Delete a task using ID
+  @UseGuards(AuthGuard)
   @Delete('/:taskId')
   async deleteTask(@Res() res: Response, @Param('taskId', new ValidateObjectId()) taskId: string) {
     const deletedTask = await this.taskService.deleteTask(taskId);

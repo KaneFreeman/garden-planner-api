@@ -9,9 +9,11 @@ import {
   Post,
   Put,
   Query,
-  Res
+  Res,
+  UseGuards
 } from '@nestjs/common';
 import { Response } from 'express';
+import { AuthGuard } from '../auth/auth.guard';
 import { FERTILIZE, FERTILIZED, HARVEST, HARVESTED } from '../interface';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
 import { BulkReopenClosePlantInstanceDTO } from './dto/bulk-reopen-close-plant-instance.dto';
@@ -24,6 +26,7 @@ export class PlantInstanceController {
   constructor(private plantInstanceService: PlantInstanceService) {}
 
   // Submit a PlantInstance
+  @UseGuards(AuthGuard)
   @Post('')
   async addPlantInstance(
     @Res() res: Response,
@@ -35,6 +38,7 @@ export class PlantInstanceController {
   }
 
   // Fetch a particular PlantInstance using ID
+  @UseGuards(AuthGuard)
   @Get('/:plantInstanceId')
   async getPlantInstance(
     @Res() res: Response,
@@ -48,6 +52,7 @@ export class PlantInstanceController {
   }
 
   // Fetch all PlantInstances
+  @UseGuards(AuthGuard)
   @Get('')
   async getPlantInstances(@Res() res: Response) {
     const PlantInstances = await this.plantInstanceService.getPlantInstances();
@@ -55,6 +60,7 @@ export class PlantInstanceController {
   }
 
   // Edit a particular PlantInstance using ID
+  @UseGuards(AuthGuard)
   @Put('/:plantInstanceId')
   async editPlantInstance(
     @Res() res: Response,
@@ -72,6 +78,7 @@ export class PlantInstanceController {
   }
 
   // Delete a PlantInstance using ID
+  @UseGuards(AuthGuard)
   @Delete('/:plantInstanceId')
   async deletePlantInstance(
     @Res() res: Response,
@@ -85,6 +92,7 @@ export class PlantInstanceController {
   }
 
   // Fertilize a plant instance
+  @UseGuards(AuthGuard)
   @Post('/:plantInstanceId/fertilize')
   async fertilizePlantInstance(
     @Res() res: Response,
@@ -102,6 +110,7 @@ export class PlantInstanceController {
   }
 
   // Fertilize a plant instance
+  @UseGuards(AuthGuard)
   @Post('/:plantInstanceId/harvest')
   async harvestPlantInstance(
     @Res() res: Response,
@@ -119,6 +128,7 @@ export class PlantInstanceController {
   }
 
   // Fertilize a plant instance
+  @UseGuards(AuthGuard)
   @Post('/bulk-reopen-close')
   async bulkReopenClose(@Res() res: Response, @Body() dto: BulkReopenClosePlantInstanceDTO) {
     const updatedPlantInstances = await this.plantInstanceService.bulkReopenClosePlantInstances(dto);

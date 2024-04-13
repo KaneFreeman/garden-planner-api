@@ -1,14 +1,27 @@
-import { Controller, Get, Res, HttpStatus, Param, NotFoundException, Post, Body, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  NotFoundException,
+  Param,
+  Post,
+  Res,
+  UseGuards
+} from '@nestjs/common';
 import { Response } from 'express';
-import { PictureService } from './picture.service';
-import { PictureDTO } from './dto/picture.dto';
+import { AuthGuard } from '../auth/auth.guard';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
+import { PictureDTO } from './dto/picture.dto';
+import { PictureService } from './picture.service';
 
 @Controller('api/picture')
 export class PictureController {
   constructor(private pictureService: PictureService) {}
 
   // Submit a picture
+  @UseGuards(AuthGuard)
   @Post('')
   async addPicture(@Res() res: Response, @Body() createPictureDTO: PictureDTO) {
     const newPicture = await this.pictureService.addPicture(createPictureDTO);
@@ -16,6 +29,7 @@ export class PictureController {
   }
 
   // Fetch a particular picture using ID
+  @UseGuards(AuthGuard)
   @Get('/:pictureId')
   async getPicture(@Res() res: Response, @Param('pictureId', new ValidateObjectId()) pictureId: string) {
     const picture = await this.pictureService.getPicture(pictureId);
@@ -26,6 +40,7 @@ export class PictureController {
   }
 
   // Delete a picture using ID
+  @UseGuards(AuthGuard)
   @Delete('/:pictureId')
   async deletePicture(@Res() res: Response, @Param('pictureId', new ValidateObjectId()) pictureId: string) {
     const deletedPicture = await this.pictureService.deletePicture(pictureId);

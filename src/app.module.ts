@@ -2,6 +2,7 @@ import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AuthModule } from './auth/auth.module';
 import { ContainerModule } from './container/container.module';
 import { MailModule } from './mail/mail.module';
 import { PictureModule } from './picture/picture.module';
@@ -9,6 +10,7 @@ import { PlantInstanceModule } from './plant-instance/plant-instance.module';
 import { PlantModule } from './plant/plant.module';
 import { StaticModule } from './static/static.module';
 import { TaskModule } from './task/task.module';
+import { UserModule } from './users/user.module';
 
 const env = process.env.NODE_ENV || 'production';
 
@@ -22,6 +24,8 @@ const env = process.env.NODE_ENV || 'production';
       retryAttempts: 0
     }),
     ScheduleModule.forRoot(),
+    AuthModule,
+    UserModule,
     PlantModule,
     PlantInstanceModule,
     TaskModule,
