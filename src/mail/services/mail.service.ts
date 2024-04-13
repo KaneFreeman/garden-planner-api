@@ -66,8 +66,13 @@ export class MailService {
     try {
       const today = startOfDay(new Date()).getTime();
 
-      const containers = await this.containerService.getContainers({ archived: false });
       const tasks = await this.taskService.getTasks({ completedOn: null, start: { $lt: endOfDay(new Date()) } });
+      if (tasks.length === 0) {
+        this.logger.log('No active tasks. Will not send summary email');
+        return;
+      }
+
+      const containers = await this.containerService.getContainers({ archived: false });
 
       const containerTitleById = containers.reduce((acc, container) => {
         if (container._id) {
