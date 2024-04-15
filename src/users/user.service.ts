@@ -33,6 +33,11 @@ export class UserService {
       throw new BadRequestException('No password provided');
     }
 
+    const existingUser = await this.getUserByEmail(sanitizedCreateUserDTO.email);
+    if (existingUser) {
+      throw new BadRequestException('Account already exists for email');
+    }
+
     const salt = await bcrypt.genSalt();
     const hashPassword = await bcrypt.hash(sanitizedCreateUserDTO.password, salt);
 
@@ -66,5 +71,9 @@ export class UserService {
     }
 
     return this.userModel.findOne({ email }).select('+password').exec();
+  }
+
+  async getUsers(): Promise<UserDocument[]> {
+    return this.userModel.find().exec();
   }
 }

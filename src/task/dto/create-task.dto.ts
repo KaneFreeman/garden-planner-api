@@ -9,6 +9,7 @@ export interface CreateTaskDTO {
   readonly plantInstanceId: string | null;
   readonly path: string | null;
   readonly completedOn: Date | null;
+  readonly gardenId?: string;
 }
 
 export function sanitizeCreateTaskDTO(raw: CreateTaskDTO[] | null | undefined): CreateTaskDTO[] | undefined;

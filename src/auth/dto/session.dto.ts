@@ -3,7 +3,7 @@ import { isNullish } from '../../util/null.util';
 export interface SessionDTO {
   readonly userId: string;
   readonly email: string;
-  readonly access_token: string;
+  readonly accessToken: string;
 }
 
 export function sanitizeSessionDTO(raw: SessionDTO | null | undefined): SessionDTO | undefined {
@@ -14,6 +14,6 @@ export function sanitizeSessionDTO(raw: SessionDTO | null | undefined): SessionD
   return {
     userId: `${raw.userId}`,
     email: `${raw.email}`,
-    access_token: `${raw.access_token}`
+    accessToken: `${raw.accessToken}`
   };
 }

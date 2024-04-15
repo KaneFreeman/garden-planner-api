@@ -1,11 +1,11 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import { LoginDTO } from './dto/login.dto';
-import { SessionDTO } from './dto/session.dto';
 import { RequestWithUser } from './dto/requestWithUser';
+import { SessionDTO } from './dto/session.dto';
 
-@Controller('auth')
+@Controller('/api/auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
@@ -17,7 +17,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Get('profile')
-  getProfile(@Request() req: RequestWithUser) {
+  getProfile(@Req() req: RequestWithUser): Omit<SessionDTO, 'accessToken'> {
     return req.user;
   }
 }

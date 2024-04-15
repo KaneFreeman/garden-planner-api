@@ -11,6 +11,7 @@ import { PlantModule } from './plant/plant.module';
 import { StaticModule } from './static/static.module';
 import { TaskModule } from './task/task.module';
 import { UserModule } from './users/user.module';
+import { GardenModule } from './garden/garden.module';
 
 const env = process.env.NODE_ENV || 'production';
 
@@ -32,7 +33,8 @@ const env = process.env.NODE_ENV || 'production';
     ContainerModule,
     PictureModule,
     StaticModule,
-    MailModule
+    MailModule,
+    GardenModule
   ],
   controllers: [],
   providers: [Logger]

@@ -12,5 +12,6 @@ export interface PlantDocument extends Document {
   readonly maturityFrom?: string;
   readonly pictures?: PictureDataDocument[];
   readonly comments?: CommentDocument[];
+  readonly userId?: string;
   readonly retired?: boolean;
 }

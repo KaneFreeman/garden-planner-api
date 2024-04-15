@@ -1,8 +1,9 @@
-import mongoose from 'mongoose';
+import mongoose, { SchemaTypes } from 'mongoose';
 import { ContainerSlotSchema } from './container-slot.schema';
 
 export const ContainerSchema = new mongoose.Schema({
   name: String,
+  gardenId: SchemaTypes.ObjectId,
   type: String,
   rows: Number,
   columns: Number,

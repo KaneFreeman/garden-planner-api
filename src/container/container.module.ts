@@ -1,18 +1,20 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ContainerService } from './container.service';
-import { ContainerController } from './container.controller';
-import { ContainerSchema } from './schemas/container.schema';
-import { TaskModule } from '../task/task.module';
-import { PlantModule } from '../plant/plant.module';
+import { GardenModule } from '../garden/garden.module';
 import { PlantInstanceModule } from '../plant-instance/plant-instance.module';
+import { PlantModule } from '../plant/plant.module';
+import { TaskModule } from '../task/task.module';
+import { ContainerController } from './container.controller';
+import { ContainerService } from './container.service';
+import { ContainerSchema } from './schemas/container.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Container', schema: ContainerSchema }]),
-    forwardRef(() => TaskModule),
+    forwardRef(() => GardenModule),
+    forwardRef(() => PlantInstanceModule),
     forwardRef(() => PlantModule),
-    forwardRef(() => PlantInstanceModule)
+    forwardRef(() => TaskModule)
   ],
   providers: [ContainerService],
   controllers: [ContainerController],

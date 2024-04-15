@@ -4,6 +4,7 @@ import { SlotDocument } from './container-slot.interface';
 
 export interface ContainerDocument extends Document<string> {
   readonly name: string;
+  readonly gardenId: string;
   readonly type: ContainerType;
   readonly rows: number;
   readonly columns: number;
