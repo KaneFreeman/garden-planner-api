@@ -2,9 +2,11 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { endOfDay, format, formatDistance, startOfDay } from 'date-fns';
 import { ContainerService } from '../../container/container.service';
+import { GardenService } from '../../garden/garden.service';
 import { PlantInstanceService } from '../../plant-instance/plant-instance.service';
 import { TaskDocument } from '../../task/interfaces/task.interface';
 import { TaskService } from '../../task/task.service';
+import { UserService } from '../../users/user.service';
 import { isNotEmpty } from '../../util/string.util';
 
 function formatRelativeDate(date: Date, prefix: string, today: number): string {
@@ -59,77 +61,102 @@ export class MailService {
     private mailerService: MailerService,
     @Inject(forwardRef(() => TaskService)) private taskService: TaskService,
     @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService,
-    @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService
+    @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService,
+    @Inject(forwardRef(() => UserService)) private userService: UserService,
+    @Inject(forwardRef(() => GardenService)) private gardenService: GardenService
   ) {}
 
   async sendSummaryEmail() {
     try {
       const today = startOfDay(new Date()).getTime();
 
-      const tasks = await this.taskService.getTasks({ completedOn: null, start: { $lt: endOfDay(new Date()) } });
-      if (tasks.length === 0) {
-        this.logger.log('No active tasks. Will not send summary email');
-        return;
-      }
-
-      const containers = await this.containerService.getContainers({ archived: false });
-
-      const containerTitleById = containers.reduce((acc, container) => {
-        if (container._id) {
-          acc[container._id] = container.name;
-        }
-        return acc;
-      }, {} as Record<string, string>);
-
-      const tasksWithoutContainer: TaskDocument[] = [];
-      const tasksByContainer: Record<string, TaskDocument[]> = {};
-      for (const task of tasks) {
-        if (isNotEmpty(task.plantInstanceId) && task.plantInstanceId != 'null') {
-          const plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId);
-          if (plantInstance) {
-            if (!(plantInstance.containerId in tasksByContainer)) {
-              tasksByContainer[plantInstance.containerId] = [];
+      const users = await this.userService.getUsers();
+      for (const user of users) {
+        const gardens = await this.gardenService.getGardens(user._id);
+        for (const garden of gardens) {
+          const tasks = await this.taskService.findTasks(user._id, garden._id, [
+            {
+              $match: {
+                completedOn: null,
+                start: { $lt: endOfDay(new Date()) }
+              }
             }
-
-            tasksByContainer[plantInstance.containerId].push(task);
-          } else {
-            tasksWithoutContainer.push(task);
+          ]);
+          if (tasks.length === 0) {
+            this.logger.log('No active tasks. Will not send summary email');
+            return;
           }
-        } else {
-          tasksWithoutContainer.push(task);
+
+          const containers = await this.containerService.getContainers(user._id, garden._id, [
+            {
+              $match: {
+                archived: false
+              }
+            }
+          ]);
+
+          const containerTitleById = containers.reduce((acc, container) => {
+            if (container._id) {
+              acc[container._id] = container.name;
+            }
+            return acc;
+          }, {} as Record<string, string>);
+
+          const tasksWithoutContainer: TaskDocument[] = [];
+          const tasksByContainer: Record<string, TaskDocument[]> = {};
+          for (const task of tasks) {
+            if (isNotEmpty(task.plantInstanceId) && task.plantInstanceId != 'null') {
+              const plantInstance = await this.plantInstanceService.getPlantInstance(
+                task.plantInstanceId,
+                user._id,
+                garden._id
+              );
+              if (plantInstance) {
+                if (!(plantInstance.containerId in tasksByContainer)) {
+                  tasksByContainer[plantInstance.containerId] = [];
+                }
+
+                tasksByContainer[plantInstance.containerId].push(task);
+              } else {
+                tasksWithoutContainer.push(task);
+              }
+            } else {
+              tasksWithoutContainer.push(task);
+            }
+          }
+
+          const tasksWithContainer = (Object.keys(tasksByContainer) as string[]).reduce((acc, id) => {
+            tasksByContainer[id].sort((a, b) => a.due.getTime() - b.due.getTime());
+
+            acc.push({
+              title: id in containerTitleById ? containerTitleById[id] : id,
+              tasks: tasksByContainer[id].map((task) => taskToData(task, today))
+            });
+
+            return acc;
+          }, [] as { title: string; tasks: TaskData[] }[]);
+
+          tasksWithContainer.sort((a, b) => a.title.localeCompare(b.title));
+
+          if (tasksWithoutContainer.length > 0) {
+            tasksWithContainer.unshift({
+              title: 'General Tasks',
+              tasks: tasksWithoutContainer.map((task) => taskToData(task, today))
+            });
+          }
+
+          await this.mailerService.sendMail({
+            to: process.env.TO_EMAIL,
+            from: `"Garden Planner Team" <${process.env.FROM_EMAIL_ADDRESS}>`,
+            subject: `🍅 Garden Planner - Daily Summary - ${garden.name}`,
+            template: './summary',
+            context: {
+              domain: process.env.DOMAIN,
+              tasksWithContainer: tasksWithContainer
+            }
+          });
         }
       }
-
-      const tasksWithContainer = (Object.keys(tasksByContainer) as string[]).reduce((acc, id) => {
-        tasksByContainer[id].sort((a, b) => a.due.getTime() - b.due.getTime());
-
-        acc.push({
-          title: id in containerTitleById ? containerTitleById[id] : id,
-          tasks: tasksByContainer[id].map((task) => taskToData(task, today))
-        });
-
-        return acc;
-      }, [] as { title: string; tasks: TaskData[] }[]);
-
-      tasksWithContainer.sort((a, b) => a.title.localeCompare(b.title));
-
-      if (tasksWithoutContainer.length > 0) {
-        tasksWithContainer.unshift({
-          title: 'General Tasks',
-          tasks: tasksWithoutContainer.map((task) => taskToData(task, today))
-        });
-      }
-
-      await this.mailerService.sendMail({
-        to: process.env.TO_EMAIL,
-        from: `"Garden Planner Team" <${process.env.FROM_EMAIL_ADDRESS}>`,
-        subject: '🍅 Garden Planner - Daily Summary',
-        template: './summary',
-        context: {
-          domain: process.env.DOMAIN,
-          tasksWithContainer: tasksWithContainer
-        }
-      });
     } catch (e) {
       this.logger.error('Failed to send summary email', e);
       console.error(e);

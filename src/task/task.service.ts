@@ -1,8 +1,8 @@
-import { BadRequestException, Inject, Injectable, forwardRef } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import addDays from 'date-fns/addDays';
 import subDays from 'date-fns/subDays';
-import { FilterQuery, Model, UpdateQuery, UpdateWithAggregationPipeline } from 'mongoose';
+import { Model, PipelineStage, Types, UpdateQuery, UpdateWithAggregationPipeline } from 'mongoose';
 import { ONE_WEEK, TWO_WEEKS } from '../constants';
 import { ContainerService } from '../container/container.service';
 import { ContainerDocument } from '../container/interfaces/container.interface';
@@ -51,73 +51,233 @@ export class TaskService {
     @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService
   ) {}
 
-  async addTask(createTaskDTO: CreateTaskDTO): Promise<TaskDocument> {
+  async addTask(createTaskDTO: CreateTaskDTO, userId: string, gardenId: string): Promise<TaskDocument> {
+    const plantInstance = await this.plantInstanceService.getPlantInstance(
+      createTaskDTO.plantInstanceId,
+      userId,
+      gardenId
+    );
+    if (!plantInstance) {
+      throw new NotFoundException('Plant instance does not exist!');
+    }
+
     const newTask = await this.taskModel.create(sanitizeCreateTaskDTO(createTaskDTO));
     return newTask.save();
   }
 
-  async getTaskById(taskId: string): Promise<TaskDocument | null> {
-    return await this.taskModel.findById(taskId).exec();
-  }
-
-  async getOpenTaskByTypeAndPlantInstanceId(type: TaskType, plantInstanceId: string): Promise<TaskDocument | null> {
-    return this.taskModel
-      .findOne({ type: { $eq: type }, plantInstanceId: { $eq: plantInstanceId }, completedOn: null })
+  async findTasks(userId: string, gardenId: string, extraPipeline: PipelineStage[] = []): Promise<TaskDocument[]> {
+    const tasks = await this.taskModel
+      .aggregate<TaskDocument>([
+        {
+          $lookup: {
+            from: 'plantinstances',
+            localField: 'plantInstanceId',
+            foreignField: '_id',
+            as: 'plantInstance'
+          }
+        },
+        {
+          $unwind: {
+            path: '$plantInstance',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: 'containers',
+            localField: 'plantInstance.containerId',
+            foreignField: '_id',
+            as: 'container'
+          }
+        },
+        {
+          $unwind: {
+            path: '$container',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $match: {
+            'container.gardenId': new Types.ObjectId(gardenId)
+          }
+        },
+        {
+          $lookup: {
+            from: 'gardens',
+            localField: 'container.gardenId',
+            foreignField: '_id',
+            as: 'garden'
+          }
+        },
+        {
+          $unwind: {
+            path: '$garden',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $match: {
+            'garden.userId': new Types.ObjectId(userId)
+          }
+        },
+        ...extraPipeline,
+        {
+          $project: {
+            _id: 1,
+            text: 1,
+            type: 1,
+            start: 1,
+            due: 1,
+            plantInstanceId: 1,
+            path: 1,
+            completedOn: 1
+          }
+        }
+      ])
       .exec();
+
+    return tasks;
   }
 
-  async getOpenTasksByTypeAndPlantInstanceId(type: TaskType, plantInstanceId: string): Promise<TaskDocument[]> {
-    return this.taskModel
-      .find({ type: { $eq: type }, plantInstanceId: { $eq: plantInstanceId }, completedOn: null })
-      .exec();
+  async getTask(
+    taskId: string | null | undefined,
+    gardenId: string | null | undefined,
+    userId: string
+  ): Promise<TaskDocument | null> {
+    if (!taskId || !gardenId) {
+      return null;
+    }
+
+    const task = await this.findTasks(userId, gardenId, [
+      {
+        $match: {
+          _id: new Types.ObjectId(taskId)
+        }
+      }
+    ]);
+
+    if (task.length === 0) {
+      return null;
+    }
+
+    return task[0];
   }
 
-  async getTasksByTypeAndPlantInstanceId(type: TaskType, plantInstanceId: string): Promise<TaskDocument[]> {
-    return this.taskModel.find({ type: { $eq: type }, plantInstanceId: { $eq: plantInstanceId } }).exec();
+  async findTask(userId: string, gardenId: string, extraPipeline: PipelineStage[] = []): Promise<TaskDocument | null> {
+    const task = await this.findTasks(userId, gardenId, extraPipeline);
+
+    if (task.length === 0) {
+      return null;
+    }
+
+    return task[0];
   }
 
-  async getTasks(filter: FilterQuery<TaskDocument> = {}): Promise<TaskDocument[]> {
-    return this.taskModel.find(filter).exec();
+  async getOpenTaskByTypeAndPlantInstanceId(
+    type: TaskType,
+    plantInstanceId: string,
+    userId: string,
+    gardenId: string
+  ): Promise<TaskDocument | null> {
+    return this.findTask(userId, gardenId, [
+      {
+        $match: {
+          type: { $eq: type },
+          plantInstanceId: { $eq: plantInstanceId },
+          completedOn: null
+        }
+      }
+    ]);
   }
 
-  async getTasksByPlantInstanceId(plantInstanceId: string): Promise<TaskDocument[]> {
-    return this.taskModel.find({ plantInstanceId: { $eq: plantInstanceId } }).exec();
+  async getOpenTasksByTypeAndPlantInstanceId(
+    type: TaskType,
+    plantInstanceId: string,
+    userId: string,
+    gardenId: string
+  ): Promise<TaskDocument[]> {
+    return this.findTasks(userId, gardenId, [
+      {
+        $match: {
+          type: { $eq: type },
+          plantInstanceId: { $eq: plantInstanceId },
+          completedOn: null
+        }
+      }
+    ]);
   }
 
-  async copyTasks(originPlantInstanceId: string, targetPlantInstanceId: string) {
-    const oldTasks = await this.getTasksByPlantInstanceId(originPlantInstanceId);
+  async getTasksByTypeAndPlantInstanceId(
+    type: TaskType,
+    plantInstanceId: string,
+    userId: string,
+    gardenId: string
+  ): Promise<TaskDocument[]> {
+    return this.findTasks(userId, gardenId, [
+      {
+        $match: {
+          type: { $eq: type },
+          plantInstanceId: { $eq: plantInstanceId }
+        }
+      }
+    ]);
+  }
+
+  async getTasksByPlantInstanceId(plantInstanceId: string, userId: string, gardenId: string): Promise<TaskDocument[]> {
+    return this.findTasks(userId, gardenId, [
+      {
+        $match: {
+          plantInstanceId: { $eq: plantInstanceId }
+        }
+      }
+    ]);
+  }
+
+  async copyTasks(originPlantInstanceId: string, targetPlantInstanceId: string, userId: string, gardenId: string) {
+    const oldTasks = await this.getTasksByPlantInstanceId(originPlantInstanceId, userId, gardenId);
 
     for (const task of oldTasks) {
-      await this.addTask({
-        text: task.text,
-        type: task.type,
-        start: task.start,
-        due: task.due,
-        plantInstanceId: targetPlantInstanceId,
-        path: task.path,
-        completedOn: task.completedOn
-      });
+      await this.addTask(
+        {
+          text: task.text,
+          type: task.type,
+          start: task.start,
+          due: task.due,
+          plantInstanceId: targetPlantInstanceId,
+          path: task.path,
+          completedOn: task.completedOn
+        },
+        userId,
+        gardenId
+      );
     }
   }
 
   async editTask(
     taskId: string,
+    userId: string,
+    gardenId: string,
     createTaskDTO: CreateTaskDTO,
     updateContainerTasks: boolean
   ): Promise<TaskDocument | null> {
+    const oldTask = await this.getTask(taskId, userId, gardenId);
+    if (!oldTask) {
+      throw new NotFoundException('Task does not exist!');
+    }
+
     const task = await this.taskModel.findByIdAndUpdate(taskId, sanitizeCreateTaskDTO(createTaskDTO), {
       new: true
     });
 
     if (task?.type === FERTILIZE && updateContainerTasks) {
-      const plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId);
-      await this.plantInstanceService.createUpdatePlantInstanceTasks(plantInstance);
+      const plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId, userId, gardenId);
+      await this.plantInstanceService.createUpdatePlantInstanceTasks(plantInstance, userId, gardenId);
     }
 
     return task;
   }
 
-  async buildCompleteTasks(dto: BulkCompleteTaskDTO): Promise<number> {
+  async buildCompleteTasks(dto: BulkCompleteTaskDTO, userId: string, gardenId: string): Promise<number> {
     const sanitizedDto = sanitizeBulkCompleteTaskDTO(dto);
     if (!sanitizedDto) {
       return 0;
@@ -130,12 +290,12 @@ export class TaskService {
 
     let tasksUpdated = 0;
     for (const taskId of taskIds) {
-      const task = await this.getTaskById(taskId);
+      const task = await this.getTask(taskId, userId, gardenId);
       if (!task) {
         continue;
       }
 
-      let plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId);
+      let plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId, userId, gardenId);
       if (!plantInstance) {
         continue;
       }
@@ -150,11 +310,11 @@ export class TaskService {
         }
       });
 
-      await this.findByIdAndUpdate(task._id, {
+      await this.findByIdAndUpdate(task._id, userId, gardenId, {
         completedOn: new Date(date)
       });
 
-      await this.plantInstanceService.createUpdatePlantInstanceTasks(plantInstance);
+      await this.plantInstanceService.createUpdatePlantInstanceTasks(plantInstance, userId, gardenId);
 
       tasksUpdated++;
     }
@@ -162,8 +322,8 @@ export class TaskService {
     return tasksUpdated;
   }
 
-  async updatePlantName(plantInstanceId: string, oldName: string, newName: string) {
-    const tasks = await this.getTasksByPlantInstanceId(plantInstanceId);
+  async updatePlantName(plantInstanceId: string, userId: string, gardenId: string, oldName: string, newName: string) {
+    const tasks = await this.getTasksByPlantInstanceId(plantInstanceId, userId, gardenId);
 
     for (const task of tasks) {
       await this.taskModel.findByIdAndUpdate(
@@ -178,13 +338,20 @@ export class TaskService {
 
   async findByIdAndUpdate(
     taskId: string,
+    userId: string,
+    gardenId: string,
     update: UpdateWithAggregationPipeline | UpdateQuery<TaskDocument>
   ): Promise<TaskDocument | null> {
+    const oldTask = await this.getTask(taskId, userId, gardenId);
+    if (!oldTask) {
+      throw new NotFoundException('Task does not exist!');
+    }
+
     return this.taskModel.findByIdAndUpdate(taskId, update, { new: true });
   }
 
-  async deleteTask(taskId: string, force = false): Promise<TaskDocument | null> {
-    const task = await this.getTaskById(taskId);
+  async deleteTask(taskId: string, userId: string, gardenId: string, force = false): Promise<TaskDocument | null> {
+    const task = await this.getTask(taskId, userId, gardenId);
     if (!force && task?.type !== 'Custom') {
       return null;
     }
@@ -192,7 +359,12 @@ export class TaskService {
     return await this.taskModel.findByIdAndRemove(taskId);
   }
 
-  async deleteOpenTasksByPlantInstance(plantInstanceId: string): Promise<void> {
+  async deleteOpenTasksByPlantInstance(plantInstanceId: string, userId: string, gardenId: string): Promise<void> {
+    const plantInstance = await this.plantInstanceService.getPlantInstance(plantInstanceId, userId, gardenId);
+    if (!plantInstance) {
+      throw new NotFoundException('Plant instance does not exist!');
+    }
+
     await this.taskModel.deleteMany({ plantInstanceId, completedOn: null }).exec();
   }
 
@@ -288,6 +460,8 @@ export class TaskService {
   }
 
   async createUpdatePlantedTask(
+    userId: string,
+    gardenId: string,
     season: Season,
     container: ContainerDocument,
     instance: PlantInstanceDocument | null,
@@ -300,10 +474,10 @@ export class TaskService {
       return;
     }
 
-    let tasks = await this.getTasksByTypeAndPlantInstanceId(PLANT, instance._id);
+    let tasks = await this.getTasksByTypeAndPlantInstanceId(PLANT, instance._id, userId, gardenId);
     if (tasks.length > 1) {
       for (const task of tasks) {
-        await this.deleteTask(task._id, true);
+        await this.deleteTask(task._id, userId, gardenId, true);
       }
       tasks = [];
     }
@@ -324,7 +498,7 @@ export class TaskService {
       !isValidDate(dates.due)
     ) {
       if (task) {
-        await this.deleteTask(task._id, true);
+        await this.deleteTask(task._id, userId, gardenId, true);
       }
       return;
     }
@@ -333,23 +507,29 @@ export class TaskService {
 
     const completedOn = getPlantedDate(instance);
     if (task && isNullish(task.completedOn) && instance.closed) {
-      await this.deleteTask(task._id, true);
+      await this.deleteTask(task._id, userId, gardenId, true);
       return;
     }
 
     if (!task) {
-      await this.addTask({
-        text: `Plant ${plant.name} in ${container.name} at ${slotTitle}`,
-        type: 'Plant',
-        start,
-        due,
-        plantInstanceId: instance._id.toString(),
-        path,
-        completedOn
-      });
+      await this.addTask(
+        {
+          text: `Plant ${plant.name} in ${container.name} at ${slotTitle}`,
+          type: 'Plant',
+          start,
+          due,
+          plantInstanceId: instance._id.toString(),
+          path,
+          completedOn
+        },
+        userId,
+        gardenId
+      );
     } else {
       await this.editTask(
         task._id,
+        userId,
+        gardenId,
         {
           text: `Plant ${plant.name} in ${container.name} at ${slotTitle}`,
           type: task.type,
@@ -365,6 +545,8 @@ export class TaskService {
   }
 
   async createUpdateTransplantedTask(
+    userId: string,
+    gardenId: string,
     season: Season,
     container: ContainerDocument,
     instance: PlantInstanceDocument | null,
@@ -377,10 +559,10 @@ export class TaskService {
       return;
     }
 
-    let tasks = await this.getOpenTasksByTypeAndPlantInstanceId('Transplant', instance._id);
+    let tasks = await this.getOpenTasksByTypeAndPlantInstanceId('Transplant', instance._id, userId, gardenId);
     if (tasks.length > 1) {
       for (const task of tasks) {
-        await this.deleteTask(task._id, true);
+        await this.deleteTask(task._id, userId, gardenId, true);
       }
       tasks = [];
     }
@@ -402,7 +584,7 @@ export class TaskService {
       container.type !== CONTAINER_TYPE_INSIDE
     ) {
       if (task) {
-        await this.deleteTask(task._id, true);
+        await this.deleteTask(task._id, userId, gardenId, true);
       }
       return;
     }
@@ -410,26 +592,33 @@ export class TaskService {
     const { start, due } = dates;
 
     const completedOn =
-      (await this.plantInstanceService.findTransplantedOutsideHistoryByStatus(instance))?.date ?? null;
+      (await this.plantInstanceService.findTransplantedOutsideHistoryByStatus(instance, userId, gardenId))?.date ??
+      null;
 
     if (task && isNullish(task.completedOn) && instance.closed) {
-      await this.deleteTask(task._id, true);
+      await this.deleteTask(task._id, userId, gardenId, true);
       return;
     }
 
     if (!task) {
-      await this.addTask({
-        text: `Transplant ${plant.name} from ${container.name} at ${slotTitle}`,
-        type: 'Transplant',
-        start,
-        due,
-        plantInstanceId: instance._id.toString(),
-        path,
-        completedOn
-      });
+      await this.addTask(
+        {
+          text: `Transplant ${plant.name} from ${container.name} at ${slotTitle}`,
+          type: 'Transplant',
+          start,
+          due,
+          plantInstanceId: instance._id.toString(),
+          path,
+          completedOn
+        },
+        userId,
+        gardenId
+      );
     } else {
       await this.editTask(
         task._id,
+        userId,
+        gardenId,
         {
           text: `Transplant ${plant.name} from ${container.name} at ${slotTitle}`,
           type: task.type,
@@ -467,6 +656,8 @@ export class TaskService {
   }
 
   async getHarvestStartAndDueDate(
+    userId: string,
+    gardenId: string,
     plant: PlantDocument | null,
     plantedEvent: PlantInstanceHistoryDocument | undefined,
     season: Season,
@@ -478,7 +669,7 @@ export class TaskService {
       return undefined;
     }
 
-    const plantedContainer = await this.containerService.getContainer(plantedEvent.from?.containerId);
+    const plantedContainer = await this.containerService.getContainer(plantedEvent.from?.containerId, userId, gardenId);
 
     const [minDaysToGerminate, maxDaysToGerminate] = this.getDaysRange(plant?.daysToGerminate);
     const [minDaysToMaturity, maxDaysToMaturity] = this.getDaysRange(plant?.daysToMaturity);
@@ -521,6 +712,8 @@ export class TaskService {
   }
 
   async createUpdateHarvestTask(
+    userId: string,
+    gardenId: string,
     season: Season,
     container: ContainerDocument,
     slotId: number,
@@ -535,10 +728,10 @@ export class TaskService {
       return;
     }
 
-    let tasks = await this.getTasksByTypeAndPlantInstanceId('Harvest', instance._id);
+    let tasks = await this.getTasksByTypeAndPlantInstanceId('Harvest', instance._id, userId, gardenId);
     if (tasks.length > 1) {
       for (const task of tasks) {
-        await this.deleteTask(task._id, true);
+        await this.deleteTask(task._id, userId, gardenId, true);
       }
       tasks = [];
     }
@@ -549,9 +742,12 @@ export class TaskService {
     }
 
     const transplantedOn =
-      (await this.plantInstanceService.findTransplantedOutsideHistoryByStatus(instance))?.date ?? null;
+      (await this.plantInstanceService.findTransplantedOutsideHistoryByStatus(instance, userId, gardenId))?.date ??
+      null;
 
     const dates = await this.getHarvestStartAndDueDate(
+      userId,
+      gardenId,
       plant,
       getPlantedEvent(instance),
       season,
@@ -569,7 +765,7 @@ export class TaskService {
       !isValidDate(dates.due)
     ) {
       if (task) {
-        await this.deleteTask(task._id, true);
+        await this.deleteTask(task._id, userId, gardenId, true);
       }
       return;
     }
@@ -591,23 +787,29 @@ export class TaskService {
     }
 
     if (task && isNullish(task.completedOn) && instance.closed) {
-      await this.deleteTask(task._id, true);
+      await this.deleteTask(task._id, userId, gardenId, true);
       return;
     }
 
     if (!task) {
-      await this.addTask({
-        text: `Harvest ${plant.name} from ${container.name} at ${slotTitle}`,
-        type: 'Harvest',
-        start,
-        due,
-        plantInstanceId: instance._id.toString(),
-        path,
-        completedOn
-      });
+      await this.addTask(
+        {
+          text: `Harvest ${plant.name} from ${container.name} at ${slotTitle}`,
+          type: 'Harvest',
+          start,
+          due,
+          plantInstanceId: instance._id.toString(),
+          path,
+          completedOn
+        },
+        userId,
+        gardenId
+      );
     } else {
       await this.editTask(
         task._id,
+        userId,
+        gardenId,
         {
           text: `Harvest ${plant.name} from ${container.name} at ${slotTitle}`,
           type: task.type,
@@ -659,6 +861,8 @@ export class TaskService {
   }
 
   async createUpdateFertilzeTasks(
+    userId: string,
+    gardenId: string,
     season: Season,
     container: ContainerDocument,
     slotId: number,
@@ -673,7 +877,7 @@ export class TaskService {
       return;
     }
 
-    const tasks = await this.getTasksByTypeAndPlantInstanceId('Fertilize', instance._id);
+    const tasks = await this.getTasksByTypeAndPlantInstanceId('Fertilize', instance._id, userId, gardenId);
 
     const taskTexts: string[] = [];
     const tasksToDelete: TaskDocument[] = [];
@@ -688,12 +892,12 @@ export class TaskService {
     }, {} as Record<string, TaskDocument>);
 
     for (const task of tasksToDelete) {
-      await this.deleteTask(task._id, true);
+      await this.deleteTask(task._id, userId, gardenId, true);
     }
 
     const howToGrowData = data?.howToGrow[season];
     const fertilizeData = container.type === 'Inside' ? howToGrowData?.indoor?.fertilize : howToGrowData?.fertilize;
-    const openTasks = await this.getOpenTasksByTypeAndPlantInstanceId('Fertilize', instance._id);
+    const openTasks = await this.getOpenTasksByTypeAndPlantInstanceId('Fertilize', instance._id, userId, gardenId);
     if (
       !plant ||
       !data ||
@@ -704,7 +908,7 @@ export class TaskService {
     ) {
       if (openTasks.length > 0) {
         for (const task of openTasks) {
-          await this.deleteTask(task._id, true);
+          await this.deleteTask(task._id, userId, gardenId, true);
         }
       }
       return;
@@ -713,7 +917,7 @@ export class TaskService {
     let previousTask: TaskDocument | null | undefined;
 
     const plantedEvent = getPlantedEvent(instance);
-    const plantedContainer = await this.containerService.getContainer(plantedEvent?.to?.containerId);
+    const plantedContainer = await this.containerService.getContainer(plantedEvent?.to?.containerId, userId, gardenId);
 
     let i = 0;
     for (const fertilizerApplication of fertilizeData) {
@@ -748,24 +952,30 @@ export class TaskService {
       const task = tasksByText[text];
       if (task && isNullish(task.completedOn) && instance.closed) {
         previousTask = null;
-        await this.deleteTask(task._id, true);
+        await this.deleteTask(task._id, userId, gardenId, true);
         continue;
       }
 
       taskTexts.push(text);
       if (!task) {
-        previousTask = await this.addTask({
-          text: `${text} in ${container.name} at ${slotTitle}`,
-          type: 'Fertilize',
-          start,
-          due,
-          plantInstanceId: instance._id.toString(),
-          path,
-          completedOn: null
-        });
+        previousTask = await this.addTask(
+          {
+            text: `${text} in ${container.name} at ${slotTitle}`,
+            type: 'Fertilize',
+            start,
+            due,
+            plantInstanceId: instance._id.toString(),
+            path,
+            completedOn: null
+          },
+          userId,
+          gardenId
+        );
       } else if (task.completedOn === null) {
         previousTask = await this.editTask(
           task._id,
+          userId,
+          gardenId,
           {
             text: `${text} in ${container.name} at ${slotTitle}`,
             type: 'Fertilize',
@@ -788,7 +998,7 @@ export class TaskService {
           continue;
         }
 
-        await this.deleteTask(task._id, true);
+        await this.deleteTask(task._id, userId, gardenId, true);
       }
     }
   }

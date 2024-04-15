@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { json, urlencoded } from 'express';
-import { auth } from 'express-oauth2-jwt-bearer';
 import { WinstonModule, utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import { join } from 'path';
 import * as winston from 'winston';
@@ -44,7 +43,7 @@ async function bootstrap() {
   app.use(json({ limit: '25mb' }));
   app.use(urlencoded({ extended: true, limit: '25mb' }));
   app.enableCors();
-  app.use(auth());
+  // app.use(auth());
 
   if (env === 'development') {
     const options = new DocumentBuilder()
