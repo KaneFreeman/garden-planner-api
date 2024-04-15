@@ -59,7 +59,7 @@ export class ContainerService {
         },
         {
           $match: {
-            'garden.id': new Types.ObjectId(gardenId),
+            'garden._id': new Types.ObjectId(gardenId),
             'garden.userId': new Types.ObjectId(userId)
           }
         },
