@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { SchemaTypes } from 'mongoose';
 
 export const TaskSchema = new mongoose.Schema({
   text: String,
@@ -8,5 +8,5 @@ export const TaskSchema = new mongoose.Schema({
   plantInstanceId: String,
   path: String,
   completedOn: { type: Date },
-  gardenId: String
+  gardenId: SchemaTypes.ObjectId
 });

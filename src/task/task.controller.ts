@@ -32,9 +32,9 @@ export class TaskController {
     @Req() req: RequestWithUser,
     @Res() res: Response,
     @Body() createTaskDTO: CreateTaskDTO,
-    @Param('taskId', new ValidateObjectId()) gardenId: string
+    @Param('gardenId', new ValidateObjectId()) gardenId: string
   ) {
-    const newTask = await this.taskService.addTask({ ...createTaskDTO, gardenId }, req.user.userId, gardenId);
+    const newTask = await this.taskService.addTask(createTaskDTO, req.user.userId, gardenId);
     return res.status(HttpStatus.OK).json(newTask);
   }
 

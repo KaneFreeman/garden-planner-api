@@ -146,7 +146,7 @@ export class MailService {
           }
 
           await this.mailerService.sendMail({
-            to: process.env.TO_EMAIL,
+            to: user.email,
             from: `"Garden Planner Team" <${process.env.FROM_EMAIL_ADDRESS}>`,
             subject: `🍅 Garden Planner - Daily Summary - ${garden.name}`,
             template: './summary',
@@ -161,5 +161,18 @@ export class MailService {
       this.logger.error('Failed to send summary email', e);
       console.error(e);
     }
+  }
+
+  async sendTokenEmail(email: string, token: string) {
+    await this.mailerService.sendMail({
+      to: email,
+      from: `"Garden Planner Team" <${process.env.FROM_EMAIL_ADDRESS}>`,
+      subject: 'Verification Code For Garden Planner',
+      template: './token',
+      context: {
+        domain: process.env.DOMAIN,
+        token
+      }
+    });
   }
 }

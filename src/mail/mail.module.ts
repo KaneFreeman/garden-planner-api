@@ -31,7 +31,7 @@ const env = process.env.NODE_ENV || 'production';
         from: `"No Reply" ${process.env.FROM_EMAIL_ADDRESS}`
       },
       template: {
-        dir: join(__dirname, env === 'production' ? './templates' : '../templates'),
+        dir: join(__dirname, env === 'production' ? './templates' : './templates'),
         adapter: new HandlebarsAdapter(),
         options: {
           strict: true

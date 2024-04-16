@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException, forwardRef } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import addDays from 'date-fns/addDays';
 import subDays from 'date-fns/subDays';
@@ -46,22 +46,28 @@ import { TaskDocument } from './interfaces/task.interface';
 @Injectable()
 export class TaskService {
   constructor(
+    private logger: Logger,
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
     @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService,
     @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService
   ) {}
 
   async addTask(createTaskDTO: CreateTaskDTO, userId: string, gardenId: string): Promise<TaskDocument> {
-    const plantInstance = await this.plantInstanceService.getPlantInstance(
-      createTaskDTO.plantInstanceId,
-      userId,
-      gardenId
-    );
-    if (!plantInstance) {
-      throw new NotFoundException('Plant instance does not exist!');
+    const sanitizedCreateTaskDTO = sanitizeCreateTaskDTO(createTaskDTO);
+
+    if (isNotNullish(sanitizedCreateTaskDTO.plantInstanceId)) {
+      const plantInstance = await this.plantInstanceService.getPlantInstance(
+        sanitizedCreateTaskDTO.plantInstanceId,
+        userId,
+        gardenId
+      );
+
+      if (!plantInstance) {
+        throw new NotFoundException('Plant instance does not exist!');
+      }
     }
 
-    const newTask = await this.taskModel.create(sanitizeCreateTaskDTO(createTaskDTO));
+    const newTask = await this.taskModel.create({ ...sanitizedCreateTaskDTO, gardenId: new Types.ObjectId(gardenId) });
     return newTask.save();
   }
 
@@ -69,42 +75,14 @@ export class TaskService {
     const tasks = await this.taskModel
       .aggregate<TaskDocument>([
         {
-          $lookup: {
-            from: 'plantinstances',
-            localField: 'plantInstanceId',
-            foreignField: '_id',
-            as: 'plantInstance'
-          }
-        },
-        {
-          $unwind: {
-            path: '$plantInstance',
-            preserveNullAndEmptyArrays: true
-          }
-        },
-        {
-          $lookup: {
-            from: 'containers',
-            localField: 'plantInstance.containerId',
-            foreignField: '_id',
-            as: 'container'
-          }
-        },
-        {
-          $unwind: {
-            path: '$container',
-            preserveNullAndEmptyArrays: true
-          }
-        },
-        {
           $match: {
-            'container.gardenId': new Types.ObjectId(gardenId)
+            gardenId: new Types.ObjectId(gardenId)
           }
         },
         {
           $lookup: {
             from: 'gardens',
-            localField: 'container.gardenId',
+            localField: 'gardenId',
             foreignField: '_id',
             as: 'garden'
           }
@@ -139,11 +117,7 @@ export class TaskService {
     return tasks;
   }
 
-  async getTask(
-    taskId: string | null | undefined,
-    gardenId: string | null | undefined,
-    userId: string
-  ): Promise<TaskDocument | null> {
+  async getTask(taskId: string | null | undefined, userId: string, gardenId: string): Promise<TaskDocument | null> {
     if (!taskId || !gardenId) {
       return null;
     }
@@ -352,6 +326,7 @@ export class TaskService {
 
   async deleteTask(taskId: string, userId: string, gardenId: string, force = false): Promise<TaskDocument | null> {
     const task = await this.getTask(taskId, userId, gardenId);
+    this.logger.log('task', task);
     if (!force && task?.type !== 'Custom') {
       return null;
     }

@@ -12,7 +12,9 @@ export interface CreateTaskDTO {
   readonly gardenId?: string;
 }
 
+export function sanitizeCreateTaskDTO(raw: CreateTaskDTO[]): CreateTaskDTO[];
 export function sanitizeCreateTaskDTO(raw: CreateTaskDTO[] | null | undefined): CreateTaskDTO[] | undefined;
+export function sanitizeCreateTaskDTO(raw: CreateTaskDTO): CreateTaskDTO;
 export function sanitizeCreateTaskDTO(raw: CreateTaskDTO | null | undefined): CreateTaskDTO | undefined;
 export function sanitizeCreateTaskDTO(
   raw: CreateTaskDTO | CreateTaskDTO[] | null | undefined
