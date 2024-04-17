@@ -106,5 +106,8 @@
     "trailingComma": "none",
     "singleQuote": true,
     "printWidth": 120
+  },
+  "engines": {
+    "node": ">=18.18 <19"
   }
 }
