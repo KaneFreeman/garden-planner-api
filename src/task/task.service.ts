@@ -1,7 +1,6 @@
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import addDays from 'date-fns/addDays';
-import subDays from 'date-fns/subDays';
+import { addDays, subDays } from 'date-fns';
 import { Model, PipelineStage, Types, UpdateQuery, UpdateWithAggregationPipeline } from 'mongoose';
 import { ONE_WEEK, TWO_WEEKS } from '../constants';
 import { ContainerService } from '../container/container.service';

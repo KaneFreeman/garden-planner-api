@@ -1,5 +1,4 @@
-import format from 'date-fns/format';
-import subDays from 'date-fns/subDays';
+import { format, subDays } from 'date-fns';
 import growingZoneData from '../../data/growingZoneData';
 import { PlantData } from '../../interface';
 
