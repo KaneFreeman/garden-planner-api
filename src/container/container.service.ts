@@ -133,7 +133,7 @@ export class ContainerService {
       newContainerDTO = {
         ...sanitizedContainerDTO,
         slots: Object.keys(slots).reduce((accumlatedSlots, slotIndex) => {
-          const oldSlot = oldSlots.get(slotIndex);
+          const oldSlot = oldSlots[slotIndex];
           const slot = slots[slotIndex];
 
           const newSlot: ContainerSlotDTO = isNotNullish(slot)
@@ -265,7 +265,8 @@ export class ContainerService {
 
     const { slots } = container;
 
-    for (const [slotIndex, slot] of slots) {
+    for (const slotIndex of Object.keys(slots)) {
+      const slot = slots[slotIndex];
       const path = `/container/${container._id}/slot/${slotIndex}`;
       const slotTitle = getSlotTitle(+slotIndex, container.rows);
 

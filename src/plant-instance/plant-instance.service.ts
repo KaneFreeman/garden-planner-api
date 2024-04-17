@@ -305,10 +305,12 @@ export class PlantInstanceService {
     if (plantInstance && !plantInstance.closed) {
       const container = await this.containerService.getContainer(plantInstance.containerId, userId, gardenId);
       if (container && container._id) {
-        const slot = container.slots?.get(`${plantInstance.slotId}`);
+        const slot = container.slots?.[`${plantInstance.slotId}`];
         const newSlots: Record<string, ContainerSlotDTO> = {};
-        container.slots?.forEach((slot, key) => {
-          newSlots[key] = slot.toObject<ContainerSlotDTO>();
+
+        const oldSlots = container.slots ?? {};
+        Object.keys(oldSlots).forEach((key) => {
+          newSlots[key] = { ...oldSlots[key] };
         });
 
         if (plantInstance.subSlot) {
@@ -364,10 +366,12 @@ export class PlantInstanceService {
 
     const container = await this.containerService.getContainer(plantInstance.containerId, userId, gardenId);
     if (container && container._id) {
-      const slot = container.slots?.get(`${plantInstance.slotId}`);
+      const slot = container.slots?.[`${plantInstance.slotId}`];
       const newSlots: Record<string, ContainerSlotDTO> = {};
-      container.slots?.forEach((slot, key) => {
-        newSlots[key] = slot.toObject<ContainerSlotDTO>();
+
+      const oldSlots = container.slots ?? {};
+      Object.keys(oldSlots).forEach((key) => {
+        newSlots[key] = { ...oldSlots[key] };
       });
 
       newSlots[`${plantInstance.slotId}`] = {

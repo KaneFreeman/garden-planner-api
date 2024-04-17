@@ -1,6 +1,5 @@
-import { Document } from 'mongoose';
-
-export interface ContainerSlotIdentifierDocument extends Document<string> {
+export interface ContainerSlotIdentifierDocument {
+  readonly _id: string;
   readonly containerId: string;
   readonly slotId: number;
   readonly subSlot?: boolean;

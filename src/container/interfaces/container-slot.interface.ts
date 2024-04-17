@@ -1,6 +1,5 @@
-import { Document } from 'mongoose';
-
-export interface BaseSlotDocument extends Document {
+export interface BaseSlotDocument {
+  readonly _id: string;
   readonly plant?: string | null;
   readonly plantInstanceId?: string | null;
   readonly plantInstanceHistory?: string[];

@@ -1,9 +1,9 @@
-import { Document } from 'mongoose';
 import { CommentDocument } from '../../common/interfaces/comment.interface';
 import { PictureDataDocument } from '../../common/interfaces/picutre-data.interface';
 import { PlantType } from '../../interface';
 
-export interface PlantDocument extends Document {
+export interface PlantDocument {
+  readonly _id: string;
   readonly name: string;
   readonly type?: PlantType | null;
   readonly url?: string;
