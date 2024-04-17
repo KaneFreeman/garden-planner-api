@@ -12,7 +12,7 @@
     "start": "nest start",
     "start:dev": "rimraf dist && cross-env NODE_ENV=development nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "cross-env NODE_ENV=production node dist-prod/src/main",
+    "start:prod": "cross-env NODE_ENV=production node dist-prod/main",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\""
   },
   "dependencies": {

@@ -4,7 +4,7 @@ var Service = require('node-windows').Service;
 var svc = new Service({
   name: 'Garden Planner API',
   description: 'NestJS API for Garden Planner application',
-  script: require('path').join(__dirname, 'dist-prod', 'src', 'main.js'),
+  script: require('path').join(__dirname, 'dist-prod', 'main.js'),
   env: {
     name: 'NODE_ENV',
     value: 'production'
