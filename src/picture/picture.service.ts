@@ -18,6 +18,6 @@ export class PictureService {
   }
 
   async deletePicture(pictureId: string): Promise<Picture | null> {
-    return this.pictureModel.findByIdAndRemove(pictureId);
+    return this.pictureModel.findByIdAndDelete(pictureId);
   }
 }

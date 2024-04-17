@@ -65,7 +65,7 @@ export class PlantService {
   }
 
   async deletePlant(plantId: string, userId: string): Promise<PlantDocument | null> {
-    return this.plantModel.findOneAndRemove({ _id: plantId, userId });
+    return this.plantModel.findOneAndDelete({ _id: plantId, userId });
   }
 
   async updateTasksWithNewPlantName(

@@ -21,7 +21,6 @@ const env = process.env.NODE_ENV || 'production';
       envFilePath: [env === 'production' ? '.env.production' : '.env.development']
     }),
     MongooseModule.forRoot(process.env.MONGO_URL ?? 'mongodb://127.0.0.1:27017/', {
-      useNewUrlParser: true,
       retryAttempts: 0
     }),
     ScheduleModule.forRoot(),

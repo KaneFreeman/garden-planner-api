@@ -330,7 +330,7 @@ export class TaskService {
       return null;
     }
 
-    return await this.taskModel.findByIdAndRemove(taskId);
+    return await this.taskModel.findByIdAndDelete(taskId);
   }
 
   async deleteOpenTasksByPlantInstance(plantInstanceId: string, userId: string, gardenId: string): Promise<void> {

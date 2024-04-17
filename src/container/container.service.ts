@@ -180,7 +180,7 @@ export class ContainerService {
       return null;
     }
 
-    const result = this.containerModel.findByIdAndRemove(containerId);
+    const result = this.containerModel.findByIdAndDelete(containerId);
 
     const plantInstances = await this.plantInstanceService.getPlantInstancesByContainer(containerId, userId, gardenId);
     for (const plantInstance of plantInstances) {

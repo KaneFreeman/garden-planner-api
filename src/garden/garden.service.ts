@@ -46,6 +46,6 @@ export class GardenService {
   }
 
   async deleteGarden(gardenId: string, userId: string): Promise<GardenDocument | null> {
-    return this.gardenModel.findOneAndRemove({ _id: gardenId, userId: new Types.ObjectId(userId) });
+    return this.gardenModel.findOneAndDelete({ _id: gardenId, userId: new Types.ObjectId(userId) });
   }
 }
