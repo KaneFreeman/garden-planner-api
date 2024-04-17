@@ -3,7 +3,10 @@ import { HttpAdapterHost } from '@nestjs/core';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  constructor(private readonly logger: Logger, private readonly httpAdapterHost: HttpAdapterHost) {}
+  constructor(
+    private readonly logger: Logger,
+    private readonly httpAdapterHost: HttpAdapterHost
+  ) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const { httpAdapter } = this.httpAdapterHost;

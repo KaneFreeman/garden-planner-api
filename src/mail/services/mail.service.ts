@@ -95,12 +95,15 @@ export class MailService {
             }
           ]);
 
-          const containerTitleById = containers.reduce((acc, container) => {
-            if (container._id) {
-              acc[container._id] = container.name;
-            }
-            return acc;
-          }, {} as Record<string, string>);
+          const containerTitleById = containers.reduce(
+            (acc, container) => {
+              if (container._id) {
+                acc[container._id] = container.name;
+              }
+              return acc;
+            },
+            {} as Record<string, string>
+          );
 
           const tasksWithoutContainer: TaskDocument[] = [];
           const tasksByContainer: Record<string, TaskDocument[]> = {};
@@ -125,16 +128,19 @@ export class MailService {
             }
           }
 
-          const tasksWithContainer = (Object.keys(tasksByContainer) as string[]).reduce((acc, id) => {
-            tasksByContainer[id].sort((a, b) => a.due.getTime() - b.due.getTime());
+          const tasksWithContainer = (Object.keys(tasksByContainer) as string[]).reduce(
+            (acc, id) => {
+              tasksByContainer[id].sort((a, b) => a.due.getTime() - b.due.getTime());
 
-            acc.push({
-              title: id in containerTitleById ? containerTitleById[id] : id,
-              tasks: tasksByContainer[id].map((task) => taskToData(task, today))
-            });
+              acc.push({
+                title: id in containerTitleById ? containerTitleById[id] : id,
+                tasks: tasksByContainer[id].map((task) => taskToData(task, today))
+              });
 
-            return acc;
-          }, [] as { title: string; tasks: TaskData[] }[]);
+              return acc;
+            },
+            [] as { title: string; tasks: TaskData[] }[]
+          );
 
           tasksWithContainer.sort((a, b) => a.title.localeCompare(b.title));
 

@@ -132,36 +132,39 @@ export class ContainerService {
 
       newContainerDTO = {
         ...sanitizedContainerDTO,
-        slots: Object.keys(slots).reduce((accumlatedSlots, slotIndex) => {
-          const oldSlot = oldSlots[slotIndex];
-          const slot = slots[slotIndex];
+        slots: Object.keys(slots).reduce(
+          (accumlatedSlots, slotIndex) => {
+            const oldSlot = oldSlots[slotIndex];
+            const slot = slots[slotIndex];
 
-          const newSlot: ContainerSlotDTO = isNotNullish(slot)
-            ? {
-                ...slot,
-                plant: slot.plantInstanceId ? null : slot.plant
+            const newSlot: ContainerSlotDTO = isNotNullish(slot)
+              ? {
+                  ...slot,
+                  plant: slot.plantInstanceId ? null : slot.plant
+                }
+              : {};
+
+            if (isNotNullish(oldSlot)) {
+              if (
+                isNotNullish(newSlot) &&
+                isNotNullish(oldSlot.plantInstanceId) &&
+                `${oldSlot.plantInstanceId}` !== newSlot.plantInstanceId
+              ) {
+                accumlatedSlots[slotIndex] = {
+                  ...newSlot,
+                  plantInstanceHistory: [...(newSlot.plantInstanceHistory ?? []), `${oldSlot.plantInstanceId}`]
+                };
+              } else {
+                accumlatedSlots[slotIndex] = newSlot;
               }
-            : {};
-
-          if (isNotNullish(oldSlot)) {
-            if (
-              isNotNullish(newSlot) &&
-              isNotNullish(oldSlot.plantInstanceId) &&
-              `${oldSlot.plantInstanceId}` !== newSlot.plantInstanceId
-            ) {
-              accumlatedSlots[slotIndex] = {
-                ...newSlot,
-                plantInstanceHistory: [...(newSlot.plantInstanceHistory ?? []), `${oldSlot.plantInstanceId}`]
-              };
             } else {
               accumlatedSlots[slotIndex] = newSlot;
             }
-          } else {
-            accumlatedSlots[slotIndex] = newSlot;
-          }
 
-          return slots;
-        }, {} as Record<string, ContainerSlotDTO>)
+            return slots;
+          },
+          {} as Record<string, ContainerSlotDTO>
+        )
       };
     }
 

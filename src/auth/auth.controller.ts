@@ -10,7 +10,10 @@ import { TokenService } from './services/token.service';
 
 @Controller('/api/auth')
 export class AuthController {
-  constructor(private authService: AuthService, private tokenService: TokenService) {}
+  constructor(
+    private authService: AuthService,
+    private tokenService: TokenService
+  ) {}
 
   @HttpCode(HttpStatus.OK)
   @Post('login')

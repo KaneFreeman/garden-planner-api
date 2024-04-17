@@ -855,15 +855,18 @@ export class TaskService {
 
     const taskTexts: string[] = [];
     const tasksToDelete: TaskDocument[] = [];
-    const tasksByText = tasks.reduce((byText, task) => {
-      const key = task.text.replace(/( in [\w\W]+? at Row [0-9]+, Column [0-9]+)/g, '');
-      if (key in byText) {
-        tasksToDelete.push(task);
+    const tasksByText = tasks.reduce(
+      (byText, task) => {
+        const key = task.text.replace(/( in [\w\W]+? at Row [0-9]+, Column [0-9]+)/g, '');
+        if (key in byText) {
+          tasksToDelete.push(task);
+          return byText;
+        }
+        byText[key] = task;
         return byText;
-      }
-      byText[key] = task;
-      return byText;
-    }, {} as Record<string, TaskDocument>);
+      },
+      {} as Record<string, TaskDocument>
+    );
 
     for (const task of tasksToDelete) {
       await this.deleteTask(task._id, userId, gardenId, true);
