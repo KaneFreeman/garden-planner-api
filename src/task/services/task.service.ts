@@ -94,8 +94,23 @@ export class TaskService {
           }
         },
         {
+          $lookup: {
+            from: 'plantinstances',
+            localField: 'plantInstanceId',
+            foreignField: '_id',
+            as: 'plantInstance'
+          }
+        },
+        {
+          $unwind: {
+            path: '$plantInstance',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
           $match: {
-            'garden.userId': new Types.ObjectId(userId)
+            'garden.userId': new Types.ObjectId(userId),
+            $or: [{ plantInstance: { $ne: null } }, { type: 'Custom' }]
           }
         },
         ...extraPipeline,
