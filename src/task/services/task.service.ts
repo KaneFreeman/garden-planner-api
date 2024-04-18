@@ -68,14 +68,6 @@ export class TaskService {
       }
     }
 
-    console.log('creating task', {
-      ...sanitizedCreateTaskDTO,
-      plantInstanceId: sanitizedCreateTaskDTO.plantInstanceId
-        ? new Types.ObjectId(sanitizedCreateTaskDTO.plantInstanceId)
-        : null,
-      gardenId: new Types.ObjectId(gardenId)
-    });
-
     const newTask = await this.taskModel.create({
       ...sanitizedCreateTaskDTO,
       plantInstanceId: sanitizedCreateTaskDTO.plantInstanceId
@@ -665,7 +657,6 @@ export class TaskService {
     }
 
     const dates = this.getTransplantedStartAndDueDate(season, data, getPlantedDate(instance), growingZoneData);
-    console.log('dates', dates);
     if (
       !plant ||
       !data ||
