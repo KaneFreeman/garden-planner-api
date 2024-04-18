@@ -3,11 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage, Types } from 'mongoose';
 import { ContainerService } from '../container/container.service';
 import { ContainerSlotDTO } from '../container/dto/container-slot.dto';
-import { ContainerDocument } from '../container/interfaces/container.interface';
+import { ContainerProjection } from '../container/interfaces/container.projection';
 import plantData from '../data/plantData';
 import { CONTAINER_TYPE_OUTSIDE, HistoryStatus, SPRING, TRANSPLANTED, TaskType } from '../interface';
 import { PlantService } from '../plant/plant.service';
-import { TaskService } from '../task/task.service';
+import { TaskService } from '../task/services/task.service';
 import { isNullish } from '../util/null.util';
 import getSlotTitle from '../util/slot.util';
 import {
@@ -16,8 +16,9 @@ import {
 } from './dto/bulk-reopen-close-plant-instance.dto';
 import { PlantInstanceHistoryDto } from './dto/plant-instance-history.dto';
 import { PlantInstanceDTO, sanitizePlantInstanceDTO } from './dto/plant-instance.dto';
-import { PlantInstanceHistoryDocument } from './interfaces/plant-instance-history.interface';
-import { PlantInstanceDocument } from './interfaces/plant-instance.interface';
+import { PlantInstanceHistoryDocument } from './interfaces/plant-instance-history.document';
+import { PlantInstanceDocument } from './interfaces/plant-instance.document';
+import { PlantInstanceProjection } from './interfaces/plant-instance.projection';
 
 interface AddPlantInstanceOptions {
   createTasks?: boolean;
@@ -39,7 +40,7 @@ export class PlantInstanceService {
     userId: string,
     gardenId: string,
     options?: AddPlantInstanceOptions
-  ): Promise<PlantInstanceDocument> {
+  ): Promise<PlantInstanceProjection> {
     const { createTasks = true, copiedFromId } = options ?? {};
 
     const container = this.containerService.getContainer(createPlantInstanceDTO.containerId, userId, gardenId);
@@ -66,9 +67,9 @@ export class PlantInstanceService {
     userId: string,
     gardenId: string,
     extraPipeline: PipelineStage[] = []
-  ): Promise<PlantInstanceDocument[]> {
+  ): Promise<PlantInstanceProjection[]> {
     const plantInstances = await this.plantInstanceModel
-      .aggregate<PlantInstanceDocument>([
+      .aggregate<PlantInstanceProjection>([
         {
           $lookup: {
             from: 'containers',
@@ -135,7 +136,7 @@ export class PlantInstanceService {
     plantInstanceId: string | null | undefined,
     userId: string,
     gardenId: string
-  ): Promise<PlantInstanceDocument | null> {
+  ): Promise<PlantInstanceProjection | null> {
     if (!plantInstanceId) {
       return null;
     }
@@ -155,11 +156,11 @@ export class PlantInstanceService {
     return plantInstance[0];
   }
 
-  async getPlantInstances(userId: string, gardenId: string): Promise<PlantInstanceDocument[]> {
+  async getPlantInstances(userId: string, gardenId: string): Promise<PlantInstanceProjection[]> {
     return this.findPlantInstances(userId, gardenId);
   }
 
-  async getPlantInstancesByPlant(plant: string, userId: string, gardenId: string): Promise<PlantInstanceDocument[]> {
+  async getPlantInstancesByPlant(plant: string, userId: string, gardenId: string): Promise<PlantInstanceProjection[]> {
     return this.findPlantInstances(userId, gardenId, [
       {
         $match: {
@@ -173,7 +174,7 @@ export class PlantInstanceService {
     containerId: string,
     userId: string,
     gardenId: string
-  ): Promise<PlantInstanceDocument[]> {
+  ): Promise<PlantInstanceProjection[]> {
     return this.findPlantInstances(userId, gardenId, [
       {
         $match: {
@@ -228,9 +229,9 @@ export class PlantInstanceService {
   }
 
   async addPlantInstanceHistory(
-    plantInstance: PlantInstanceDocument | null,
+    plantInstance: PlantInstanceProjection | null,
     history: PlantInstanceHistoryDto
-  ): Promise<PlantInstanceDocument | null> {
+  ): Promise<PlantInstanceProjection | null> {
     if (!plantInstance) {
       return null;
     }
@@ -253,7 +254,7 @@ export class PlantInstanceService {
     userId: string,
     gardenId: string,
     createPlantInstanceDTO: PlantInstanceDTO
-  ): Promise<PlantInstanceDocument | null> {
+  ): Promise<PlantInstanceProjection | null> {
     const plantInstance = this.getPlantInstance(plantInstanceId, userId, gardenId);
     if (!plantInstance) {
       throw new NotFoundException('Plant instance does not exist!');
@@ -276,7 +277,7 @@ export class PlantInstanceService {
     plantInstanceId: string | undefined,
     userId: string,
     gardenId: string
-  ): Promise<PlantInstanceDocument | null> {
+  ): Promise<PlantInstanceProjection | null> {
     if (!plantInstanceId) {
       return Promise.resolve(null);
     }
@@ -298,7 +299,7 @@ export class PlantInstanceService {
   }
 
   async updateContainerAfterPlantInstanceUpdate(
-    plantInstance: PlantInstanceDocument | null,
+    plantInstance: PlantInstanceProjection | null,
     userId: string,
     gardenId: string
   ) {
@@ -354,7 +355,7 @@ export class PlantInstanceService {
     plantInstanceId: string,
     userId: string,
     gardenId: string
-  ): Promise<PlantInstanceDocument | null> {
+  ): Promise<PlantInstanceProjection | null> {
     const plantInstance = await this.getPlantInstance(plantInstanceId, userId, gardenId);
     if (!plantInstance || !plantInstance._id) {
       throw new NotFoundException('Plant instance does not exist!');
@@ -403,8 +404,8 @@ export class PlantInstanceService {
   async createUpdateTasks(
     userId: string,
     gardenId: string,
-    container: ContainerDocument,
-    plantInstance: PlantInstanceDocument,
+    container: ContainerProjection,
+    plantInstance: PlantInstanceProjection,
     path: string,
     slotTitle: string
   ) {
@@ -466,7 +467,11 @@ export class PlantInstanceService {
     );
   }
 
-  async createUpdatePlantInstanceTasks(plantInstance: PlantInstanceDocument | null, userId: string, gardenId: string) {
+  async createUpdatePlantInstanceTasks(
+    plantInstance: PlantInstanceProjection | null,
+    userId: string,
+    gardenId: string
+  ) {
     if (!plantInstance) {
       return;
     }
@@ -485,13 +490,13 @@ export class PlantInstanceService {
     dto: BulkReopenClosePlantInstanceDTO,
     userId: string,
     gardenId: string
-  ): Promise<PlantInstanceDocument[]> {
+  ): Promise<PlantInstanceProjection[]> {
     const { action, plantInstanceIds } = sanitizeBulkReopenClosePlantInstanceDTO(dto) ?? {};
     if (!action || !plantInstanceIds || plantInstanceIds.length == 0) {
       return [];
     }
 
-    const plantInstances: PlantInstanceDocument[] = [];
+    const plantInstances: PlantInstanceProjection[] = [];
     for (const plantInstanceId of plantInstanceIds) {
       const plantInstance = await this.getPlantInstance(plantInstanceId, userId, gardenId);
       if (!plantInstance || plantInstance.closed !== (action === 'close')) {
@@ -511,7 +516,7 @@ export class PlantInstanceService {
   }
 
   async findTransplantedOutsideHistoryByStatus(
-    plantInstance: PlantInstanceDocument | undefined | null,
+    plantInstance: PlantInstanceProjection | undefined | null,
     userId: string,
     gardenId: string
   ): Promise<PlantInstanceHistoryDocument | null> {

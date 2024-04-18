@@ -1,6 +1,5 @@
-import { Document } from 'mongoose';
-
-export interface TokenDocument extends Document {
+export interface TokenProjection {
+  readonly _id: string;
   readonly userId: string;
   readonly email: string;
   readonly token: string;

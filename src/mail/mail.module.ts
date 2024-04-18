@@ -2,6 +2,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { Logger, Module, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { join } from 'path';
 import { ContainerModule } from '../container/container.module';
 import { GardenModule } from '../garden/garden.module';
 import { PlantInstanceModule } from '../plant-instance/plant-instance.module';
@@ -30,7 +31,7 @@ const env = process.env.NODE_ENV || 'production';
         from: `"No Reply" ${process.env.FROM_EMAIL_ADDRESS}`
       },
       template: {
-        dir: './templates',
+        dir: join(__dirname, './templates'),
         adapter: new HandlebarsAdapter(),
         options: {
           strict: true

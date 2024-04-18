@@ -2631,7 +2631,7 @@ const plantData: Record<PlantType, PlantData> = {
           transplant_max: 42,
           fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
         },
-        outdoor: { min: 0, max: 14 }
+        outdoor: { min: 14, max: 0 }
       }
     },
     faq: {

@@ -4,14 +4,15 @@ import { Model, PipelineStage, Types } from 'mongoose';
 import { GardenService } from '../garden/garden.service';
 import { TaskType } from '../interface';
 import { PlantInstanceService } from '../plant-instance/plant-instance.service';
-import { TaskService } from '../task/task.service';
+import { TaskService } from '../task/services/task.service';
 import { fromTaskTypeToHistoryStatus } from '../util/history.util';
 import { isNotNullish } from '../util/null.util';
 import getSlotTitle from '../util/slot.util';
 import { ContainerSlotDTO } from './dto/container-slot.dto';
 import { ContainerDTO, sanitizeContainerDTO } from './dto/container.dto';
-import { BaseSlotDocument } from './interfaces/container-slot.interface';
-import { ContainerDocument } from './interfaces/container.interface';
+import { BaseSlot } from './interfaces/container-slot.interface';
+import { ContainerDocument } from './interfaces/container.document';
+import { ContainerProjection } from './interfaces/container.projection';
 
 @Injectable()
 export class ContainerService {
@@ -23,7 +24,7 @@ export class ContainerService {
     @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService
   ) {}
 
-  async addContainer(containerDTO: ContainerDTO, userId: string, gardenId: string): Promise<ContainerDocument> {
+  async addContainer(containerDTO: ContainerDTO, userId: string, gardenId: string): Promise<ContainerProjection> {
     const garden = this.gardenService.getGarden(gardenId, userId);
     if (!garden) {
       throw new NotFoundException('Garden does not exist!');
@@ -40,9 +41,9 @@ export class ContainerService {
     userId: string,
     gardenId: string,
     extraPipeline: PipelineStage[] = []
-  ): Promise<ContainerDocument[]> {
+  ): Promise<ContainerProjection[]> {
     const containers = await this.containerModel
-      .aggregate<ContainerDocument>([
+      .aggregate<ContainerProjection>([
         {
           $lookup: {
             from: 'gardens',
@@ -87,7 +88,7 @@ export class ContainerService {
     containerId: string | null | undefined,
     userId: string,
     gardenId: string
-  ): Promise<ContainerDocument | null> {
+  ): Promise<ContainerProjection | null> {
     if (!containerId) {
       return null;
     }
@@ -113,7 +114,7 @@ export class ContainerService {
     gardenId: string,
     containerDTO: ContainerDTO,
     updateTasks: boolean
-  ): Promise<ContainerDocument | null> {
+  ): Promise<ContainerProjection | null> {
     const sanitizedContainerDTO = sanitizeContainerDTO(containerDTO);
     if (!sanitizedContainerDTO) {
       return null;
@@ -177,7 +178,7 @@ export class ContainerService {
     return editedContainer;
   }
 
-  async deleteContainer(containerId: string, userId: string, gardenId: string): Promise<ContainerDocument | null> {
+  async deleteContainer(containerId: string, userId: string, gardenId: string): Promise<ContainerProjection | null> {
     const oldContainer = await this.getContainer(containerId, userId, gardenId);
     if (!oldContainer) {
       return null;
@@ -242,10 +243,10 @@ export class ContainerService {
   }
 
   async createUpdatePlantTasksForSlot(
-    container: ContainerDocument,
+    container: ContainerProjection,
     userId: string,
     gardenId: string,
-    slot: BaseSlotDocument,
+    slot: BaseSlot,
     path: string,
     slotTitle: string,
     plantId?: string
@@ -257,7 +258,7 @@ export class ContainerService {
   }
 
   async createUpdatePlantTasks(
-    container: ContainerDocument | null | undefined,
+    container: ContainerProjection | null | undefined,
     userId: string,
     gardenId: string,
     plantId?: string

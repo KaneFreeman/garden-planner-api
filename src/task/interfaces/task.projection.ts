@@ -1,7 +1,7 @@
-import { Document } from 'mongoose';
 import { TaskType } from '../../interface';
 
-export interface TaskDocument extends Document {
+export interface TaskProjection {
+  readonly _id: string;
   readonly text: string;
   readonly type: TaskType;
   readonly start: Date;

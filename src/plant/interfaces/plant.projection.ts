@@ -1,8 +1,8 @@
-import { CommentDocument } from '../../common/interfaces/comment.interface';
-import { PictureDataDocument } from '../../common/interfaces/picutre-data.interface';
+import { CommentProjection } from '../../common/interfaces/comment.projection';
+import { PictureDataProjection } from '../../common/interfaces/picutre-data.projection';
 import { PlantType } from '../../interface';
 
-export interface PlantDocument {
+export interface PlantProjection {
   readonly _id: string;
   readonly name: string;
   readonly type?: PlantType | null;
@@ -10,8 +10,8 @@ export interface PlantDocument {
   readonly daysToGerminate?: [number | undefined, number | undefined];
   readonly daysToMaturity?: [number | undefined, number | undefined];
   readonly maturityFrom?: string;
-  readonly pictures?: PictureDataDocument[];
-  readonly comments?: CommentDocument[];
+  readonly pictures?: PictureDataProjection[];
+  readonly comments?: CommentProjection[];
   readonly userId?: string;
   readonly retired?: boolean;
 }

@@ -19,7 +19,7 @@ import { RequestWithUser } from '../auth/dto/requestWithUser';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
 import { BulkCompleteTaskDTO } from './dto/bulk-complete-task.dto';
 import { CreateTaskDTO } from './dto/create-task.dto';
-import { TaskService } from './task.service';
+import { TaskService } from './services/task.service';
 
 @Controller('/api/garden/:gardenId/task')
 export class TaskController {

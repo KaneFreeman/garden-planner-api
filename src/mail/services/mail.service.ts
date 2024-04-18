@@ -4,8 +4,8 @@ import { endOfDay, format, formatDistance, startOfDay } from 'date-fns';
 import { ContainerService } from '../../container/container.service';
 import { GardenService } from '../../garden/garden.service';
 import { PlantInstanceService } from '../../plant-instance/plant-instance.service';
-import { TaskDocument } from '../../task/interfaces/task.interface';
-import { TaskService } from '../../task/task.service';
+import { TaskProjection } from '../../task/interfaces/task.projection';
+import { TaskService } from '../../task/services/task.service';
 import { UserService } from '../../users/user.service';
 import { isNotEmpty } from '../../util/string.util';
 
@@ -30,7 +30,7 @@ interface TaskData {
   overdue: boolean;
 }
 
-function taskToData(task: TaskDocument, today: number): TaskData {
+function taskToData(task: TaskProjection, today: number): TaskData {
   let text = task.text;
   let subtext = '';
 
@@ -72,6 +72,10 @@ export class MailService {
 
       const users = await this.userService.getUsers();
       for (const user of users) {
+        if (!user.summaryEmail) {
+          continue;
+        }
+
         const gardens = await this.gardenService.getGardens(user._id);
         for (const garden of gardens) {
           const tasks = await this.taskService.findTasks(user._id, garden._id, [
@@ -105,8 +109,8 @@ export class MailService {
             {} as Record<string, string>
           );
 
-          const tasksWithoutContainer: TaskDocument[] = [];
-          const tasksByContainer: Record<string, TaskDocument[]> = {};
+          const tasksWithoutContainer: TaskProjection[] = [];
+          const tasksByContainer: Record<string, TaskProjection[]> = {};
           for (const task of tasks) {
             if (isNotEmpty(task.plantInstanceId) && task.plantInstanceId != 'null') {
               const plantInstance = await this.plantInstanceService.getPlantInstance(

@@ -7,7 +7,8 @@ import { UserService } from '../../users/user.service';
 import { GenerateTokenDTO, sanitizeGenerateTokenDTO } from '../dto/generateToken.dto';
 import { SessionDTO } from '../dto/session.dto';
 import { ValidateTokenDTO, sanitizeValidateTokenDTO } from '../dto/validateToken.dto';
-import { TokenDocument } from '../interfaces/token.interface';
+import { TokenDocument } from '../interfaces/token.document';
+import { TokenProjection } from '../interfaces/token.projection';
 import { AuthService } from './auth.service';
 
 @Injectable()
@@ -20,7 +21,7 @@ export class TokenService {
     @Inject(forwardRef(() => UserService)) private userService: UserService
   ) {}
 
-  async generateToken(dto: GenerateTokenDTO): Promise<TokenDocument> {
+  async generateToken(dto: GenerateTokenDTO): Promise<TokenProjection> {
     const sanitizedGenerateTokenDTO = sanitizeGenerateTokenDTO(dto);
 
     const user = await this.userService.getUserByEmail(sanitizedGenerateTokenDTO.email);

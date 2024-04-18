@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { GardenDocument } from './interfaces/garden.interface';
-import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { GardenDTO, sanitizeGardenDTO } from './dto/garden.dto';
+import { Model, Types } from 'mongoose';
 import { isNullish } from '../util/null.util';
+import { GardenDTO, sanitizeGardenDTO } from './dto/garden.dto';
+import { GardenDocument } from './interfaces/garden.document';
+import { GardenProjection } from './interfaces/garden.projection';
 
 @Injectable()
 export class GardenService {
   constructor(@InjectModel('Garden') private readonly gardenModel: Model<GardenDocument>) {}
 
-  async addGarden(createGardenDTO: GardenDTO, userId: string): Promise<GardenDocument> {
+  async addGarden(createGardenDTO: GardenDTO, userId: string): Promise<GardenProjection> {
     const newGarden = await this.gardenModel.create({
       ...sanitizeGardenDTO(createGardenDTO),
       userId: new Types.ObjectId(userId)
@@ -17,18 +18,18 @@ export class GardenService {
     return newGarden.save();
   }
 
-  async getGarden(gardenId: string | null | undefined, userId: string): Promise<GardenDocument | null> {
+  async getGarden(gardenId: string | null | undefined, userId: string): Promise<GardenProjection | null> {
     if (isNullish(gardenId)) {
       return null;
     }
     return this.gardenModel.findOne({ _id: gardenId, userId: new Types.ObjectId(userId) }).exec();
   }
 
-  async getGardens(userId: string): Promise<GardenDocument[]> {
+  async getGardens(userId: string): Promise<GardenProjection[]> {
     return this.gardenModel.find({ userId: new Types.ObjectId(userId) }).exec();
   }
 
-  async editGarden(gardenId: string, userId: string, createGardenDTO: GardenDTO): Promise<GardenDocument | null> {
+  async editGarden(gardenId: string, userId: string, createGardenDTO: GardenDTO): Promise<GardenProjection | null> {
     const oldGarden = await this.getGarden(gardenId, userId);
     if (!oldGarden) {
       return null;
@@ -45,7 +46,7 @@ export class GardenService {
     return updatedGarden;
   }
 
-  async deleteGarden(gardenId: string, userId: string): Promise<GardenDocument | null> {
+  async deleteGarden(gardenId: string, userId: string): Promise<GardenProjection | null> {
     return this.gardenModel.findOneAndDelete({ _id: gardenId, userId: new Types.ObjectId(userId) });
   }
 }

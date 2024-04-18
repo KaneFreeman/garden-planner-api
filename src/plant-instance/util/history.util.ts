@@ -1,8 +1,8 @@
-import { ContainerSlotIdentifier, HistoryStatus, TRANSPLANTED, PLANTED } from '../../interface';
-import { PlantInstanceDocument } from '../interfaces/plant-instance.interface';
-import { PlantInstanceHistoryDocument } from '../interfaces/plant-instance-history.interface';
+import { ContainerSlotIdentifier, HistoryStatus, PLANTED, TRANSPLANTED } from '../../interface';
+import { PlantInstanceHistoryDocument } from '../interfaces/plant-instance-history.document';
+import { PlantInstanceProjection } from '../interfaces/plant-instance.projection';
 
-export function findHistoryByStatus(plantInstance: PlantInstanceDocument | undefined | null, status: HistoryStatus) {
+export function findHistoryByStatus(plantInstance: PlantInstanceProjection | undefined | null, status: HistoryStatus) {
   if (!plantInstance) {
     return undefined;
   }
@@ -11,7 +11,7 @@ export function findHistoryByStatus(plantInstance: PlantInstanceDocument | undef
 }
 
 export function findHistoryFromIndex(
-  plantInstance: PlantInstanceDocument | undefined | null,
+  plantInstance: PlantInstanceProjection | undefined | null,
   from: ContainerSlotIdentifier | undefined | null,
   status?: HistoryStatus
 ): number | undefined {
@@ -34,7 +34,7 @@ export function findHistoryFromIndex(
 }
 
 export function findHistoryFrom(
-  plantInstance: PlantInstanceDocument | undefined | null,
+  plantInstance: PlantInstanceProjection | undefined | null,
   from: ContainerSlotIdentifier | undefined | null,
   status?: HistoryStatus
 ): PlantInstanceHistoryDocument | undefined {
@@ -43,7 +43,7 @@ export function findHistoryFrom(
 }
 
 export function findHistoryToIndex(
-  plantInstance: PlantInstanceDocument | undefined | null,
+  plantInstance: PlantInstanceProjection | undefined | null,
   to: ContainerSlotIdentifier | undefined | null,
   status?: HistoryStatus
 ): number | undefined {
@@ -66,7 +66,7 @@ export function findHistoryToIndex(
 }
 
 export function findHistoryTo(
-  plantInstance: PlantInstanceDocument | undefined | null,
+  plantInstance: PlantInstanceProjection | undefined | null,
   to: ContainerSlotIdentifier | undefined | null,
   status?: HistoryStatus
 ): PlantInstanceHistoryDocument | undefined {
@@ -75,17 +75,17 @@ export function findHistoryTo(
 }
 
 export function getPlantedEvent(
-  plantInstance: PlantInstanceDocument | undefined | null
+  plantInstance: PlantInstanceProjection | undefined | null
 ): PlantInstanceHistoryDocument | undefined {
   return plantInstance?.history?.find((entry) => entry.status === PLANTED);
 }
 
-export function getPlantedDate(plantInstance: PlantInstanceDocument | undefined | null) {
+export function getPlantedDate(plantInstance: PlantInstanceProjection | undefined | null) {
   return getPlantedEvent(plantInstance)?.date ?? null;
 }
 
 export function getTransplantedDate(
-  plantInstance: PlantInstanceDocument | undefined | null,
+  plantInstance: PlantInstanceProjection | undefined | null,
   to: ContainerSlotIdentifier
 ) {
   return findHistoryTo(plantInstance, to, TRANSPLANTED)?.date ?? null;

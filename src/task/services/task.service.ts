@@ -2,10 +2,10 @@ import { BadRequestException, Inject, Injectable, Logger, NotFoundException, for
 import { InjectModel } from '@nestjs/mongoose';
 import { addDays, subDays } from 'date-fns';
 import { Model, PipelineStage, Types, UpdateQuery, UpdateWithAggregationPipeline } from 'mongoose';
-import { ONE_WEEK, TWO_WEEKS } from '../constants';
-import { ContainerService } from '../container/container.service';
-import { ContainerDocument } from '../container/interfaces/container.interface';
-import growingZoneData from '../data/growingZoneData';
+import { ONE_WEEK, TWO_WEEKS } from '../../constants';
+import { ContainerService } from '../../container/container.service';
+import { ContainerProjection } from '../../container/interfaces/container.projection';
+import growingZoneData from '../../data/growingZoneData';
 import {
   CONTAINER_TYPE_INSIDE,
   CONTAINER_TYPE_OUTSIDE,
@@ -22,25 +22,26 @@ import {
   Season,
   TRANSPLANTED,
   TaskType
-} from '../interface';
-import { PlantInstanceHistoryDocument } from '../plant-instance/interfaces/plant-instance-history.interface';
-import { PlantInstanceDocument } from '../plant-instance/interfaces/plant-instance.interface';
-import { PlantInstanceService } from '../plant-instance/plant-instance.service';
+} from '../../interface';
+import { PlantInstanceHistoryDocument } from '../../plant-instance/interfaces/plant-instance-history.document';
+import { PlantInstanceProjection } from '../../plant-instance/interfaces/plant-instance.projection';
+import { PlantInstanceService } from '../../plant-instance/plant-instance.service';
 import {
   findHistoryFrom,
   getPlantedDate,
   getPlantedEvent,
   getTransplantedDate
-} from '../plant-instance/util/history.util';
-import { PlantDocument } from '../plant/interfaces/plant.interface';
-import { isValidDate } from '../util/date.util';
-import { fromTaskTypeToHistoryStatus } from '../util/history.util';
-import { isNotNullish, isNullish } from '../util/null.util';
-import ordinalSuffixOf from '../util/number.util';
-import { isEmpty, isNotEmpty } from '../util/string.util';
-import { BulkCompleteTaskDTO, sanitizeBulkCompleteTaskDTO } from './dto/bulk-complete-task.dto';
-import { CreateTaskDTO, sanitizeCreateTaskDTO } from './dto/create-task.dto';
-import { TaskDocument } from './interfaces/task.interface';
+} from '../../plant-instance/util/history.util';
+import { PlantProjection } from '../../plant/interfaces/plant.projection';
+import { isValidDate } from '../../util/date.util';
+import { fromTaskTypeToHistoryStatus } from '../../util/history.util';
+import { isNotNullish, isNullish } from '../../util/null.util';
+import ordinalSuffixOf from '../../util/number.util';
+import { isEmpty, isNotEmpty } from '../../util/string.util';
+import { BulkCompleteTaskDTO, sanitizeBulkCompleteTaskDTO } from '../dto/bulk-complete-task.dto';
+import { CreateTaskDTO, sanitizeCreateTaskDTO } from '../dto/create-task.dto';
+import { TaskDocument } from '../interfaces/task.document';
+import { TaskProjection } from '../interfaces/task.projection';
 
 @Injectable()
 export class TaskService {
@@ -51,7 +52,7 @@ export class TaskService {
     @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService
   ) {}
 
-  async addTask(createTaskDTO: CreateTaskDTO, userId: string, gardenId: string): Promise<TaskDocument> {
+  async addTask(createTaskDTO: CreateTaskDTO, userId: string, gardenId: string): Promise<TaskProjection> {
     const sanitizedCreateTaskDTO = sanitizeCreateTaskDTO(createTaskDTO);
 
     if (isNotNullish(sanitizedCreateTaskDTO.plantInstanceId)) {
@@ -70,9 +71,9 @@ export class TaskService {
     return newTask.save();
   }
 
-  async findTasks(userId: string, gardenId: string, extraPipeline: PipelineStage[] = []): Promise<TaskDocument[]> {
+  async findTasks(userId: string, gardenId: string, extraPipeline: PipelineStage[] = []): Promise<TaskProjection[]> {
     const tasks = await this.taskModel
-      .aggregate<TaskDocument>([
+      .aggregate<TaskProjection>([
         {
           $match: {
             gardenId: new Types.ObjectId(gardenId)
@@ -116,7 +117,7 @@ export class TaskService {
     return tasks;
   }
 
-  async getTask(taskId: string | null | undefined, userId: string, gardenId: string): Promise<TaskDocument | null> {
+  async getTask(taskId: string | null | undefined, userId: string, gardenId: string): Promise<TaskProjection | null> {
     if (!taskId || !gardenId) {
       return null;
     }
@@ -136,7 +137,11 @@ export class TaskService {
     return task[0];
   }
 
-  async findTask(userId: string, gardenId: string, extraPipeline: PipelineStage[] = []): Promise<TaskDocument | null> {
+  async findTask(
+    userId: string,
+    gardenId: string,
+    extraPipeline: PipelineStage[] = []
+  ): Promise<TaskProjection | null> {
     const task = await this.findTasks(userId, gardenId, extraPipeline);
 
     if (task.length === 0) {
@@ -151,7 +156,7 @@ export class TaskService {
     plantInstanceId: string,
     userId: string,
     gardenId: string
-  ): Promise<TaskDocument | null> {
+  ): Promise<TaskProjection | null> {
     return this.findTask(userId, gardenId, [
       {
         $match: {
@@ -168,7 +173,7 @@ export class TaskService {
     plantInstanceId: string,
     userId: string,
     gardenId: string
-  ): Promise<TaskDocument[]> {
+  ): Promise<TaskProjection[]> {
     return this.findTasks(userId, gardenId, [
       {
         $match: {
@@ -185,7 +190,7 @@ export class TaskService {
     plantInstanceId: string,
     userId: string,
     gardenId: string
-  ): Promise<TaskDocument[]> {
+  ): Promise<TaskProjection[]> {
     return this.findTasks(userId, gardenId, [
       {
         $match: {
@@ -196,7 +201,11 @@ export class TaskService {
     ]);
   }
 
-  async getTasksByPlantInstanceId(plantInstanceId: string, userId: string, gardenId: string): Promise<TaskDocument[]> {
+  async getTasksByPlantInstanceId(
+    plantInstanceId: string,
+    userId: string,
+    gardenId: string
+  ): Promise<TaskProjection[]> {
     return this.findTasks(userId, gardenId, [
       {
         $match: {
@@ -232,7 +241,7 @@ export class TaskService {
     gardenId: string,
     createTaskDTO: CreateTaskDTO,
     updateContainerTasks: boolean
-  ): Promise<TaskDocument | null> {
+  ): Promise<TaskProjection | null> {
     const oldTask = await this.getTask(taskId, userId, gardenId);
     if (!oldTask) {
       throw new NotFoundException('Task does not exist!');
@@ -314,7 +323,7 @@ export class TaskService {
     userId: string,
     gardenId: string,
     update: UpdateWithAggregationPipeline | UpdateQuery<TaskDocument>
-  ): Promise<TaskDocument | null> {
+  ): Promise<TaskProjection | null> {
     const oldTask = await this.getTask(taskId, userId, gardenId);
     if (!oldTask) {
       throw new NotFoundException('Task does not exist!');
@@ -323,7 +332,7 @@ export class TaskService {
     return this.taskModel.findByIdAndUpdate(taskId, update, { new: true });
   }
 
-  async deleteTask(taskId: string, userId: string, gardenId: string, force = false): Promise<TaskDocument | null> {
+  async deleteTask(taskId: string, userId: string, gardenId: string, force = false): Promise<TaskProjection | null> {
     const task = await this.getTask(taskId, userId, gardenId);
     this.logger.log('task', task);
     if (!force && task?.type !== 'Custom') {
@@ -340,6 +349,51 @@ export class TaskService {
     }
 
     await this.taskModel.deleteMany({ plantInstanceId, completedOn: null }).exec();
+  }
+
+  async deleteOrphanedTasks(): Promise<void> {
+    const tasks = await this.taskModel
+      .aggregate<TaskProjection>([
+        {
+          $lookup: {
+            from: 'plantinstances',
+            localField: 'plantInstanceId',
+            foreignField: '_id',
+            as: 'plantInstance'
+          }
+        },
+        {
+          $unwind: {
+            path: '$plantInstance',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $match: {
+            plantInstance: null,
+            type: {
+              $ne: 'Custom'
+            }
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            text: 1,
+            type: 1,
+            start: 1,
+            due: 1,
+            plantInstanceId: 1,
+            path: 1,
+            completedOn: 1
+          }
+        }
+      ])
+      .exec();
+
+    for (const task of tasks) {
+      await this.taskModel.findByIdAndDelete(task._id);
+    }
   }
 
   getTaskStartDate(season: Season, growingZoneData: GrowingZoneData): Date {
@@ -437,9 +491,9 @@ export class TaskService {
     userId: string,
     gardenId: string,
     season: Season,
-    container: ContainerDocument,
-    instance: PlantInstanceDocument | null,
-    plant: PlantDocument | null,
+    container: ContainerProjection,
+    instance: PlantInstanceProjection | null,
+    plant: PlantProjection | null,
     data: PlantData | undefined,
     path: string,
     slotTitle: string
@@ -456,7 +510,7 @@ export class TaskService {
       tasks = [];
     }
 
-    let task: TaskDocument | undefined = undefined;
+    let task: TaskProjection | undefined = undefined;
     if (tasks.length > 0) {
       task = tasks[0];
     }
@@ -522,9 +576,9 @@ export class TaskService {
     userId: string,
     gardenId: string,
     season: Season,
-    container: ContainerDocument,
-    instance: PlantInstanceDocument | null,
-    plant: PlantDocument | null,
+    container: ContainerProjection,
+    instance: PlantInstanceProjection | null,
+    plant: PlantProjection | null,
     data: PlantData | undefined,
     path: string,
     slotTitle: string
@@ -541,7 +595,7 @@ export class TaskService {
       tasks = [];
     }
 
-    let task: TaskDocument | undefined = undefined;
+    let task: TaskProjection | undefined = undefined;
     if (tasks.length > 0) {
       task = tasks[0];
     }
@@ -632,10 +686,10 @@ export class TaskService {
   async getHarvestStartAndDueDate(
     userId: string,
     gardenId: string,
-    plant: PlantDocument | null,
+    plant: PlantProjection | null,
     plantedEvent: PlantInstanceHistoryDocument | undefined,
     season: Season,
-    instance: PlantInstanceDocument | null,
+    instance: PlantInstanceProjection | null,
     data: PlantData | undefined,
     transplantedOn?: Date | null
   ): Promise<{ start: Date; due: Date } | undefined> {
@@ -689,11 +743,11 @@ export class TaskService {
     userId: string,
     gardenId: string,
     season: Season,
-    container: ContainerDocument,
+    container: ContainerProjection,
     slotId: number,
     subSlot: boolean,
-    instance: PlantInstanceDocument | null,
-    plant: PlantDocument | null,
+    instance: PlantInstanceProjection | null,
+    plant: PlantProjection | null,
     data: PlantData | undefined,
     path: string,
     slotTitle: string
@@ -710,7 +764,7 @@ export class TaskService {
       tasks = [];
     }
 
-    let task: TaskDocument | undefined = undefined;
+    let task: TaskProjection | undefined = undefined;
     if (tasks.length > 0) {
       task = tasks[0];
     }
@@ -800,10 +854,10 @@ export class TaskService {
 
   getFertilizeStartAndDueDate(
     plantedEvent: PlantInstanceHistoryDocument | undefined | null,
-    plantedContainer: ContainerDocument | null,
+    plantedContainer: ContainerProjection | null,
     transplantedDate: Date | null,
     fertilizerApplication: FertilizerApplication,
-    previousTask: TaskDocument | null | undefined
+    previousTask: TaskProjection | null | undefined
   ): { start: Date; due: Date } | undefined {
     let fromDate = plantedEvent?.date ?? null;
     if (fertilizerApplication.from === TRANSPLANTED && plantedContainer?.type === CONTAINER_TYPE_INSIDE) {
@@ -838,11 +892,11 @@ export class TaskService {
     userId: string,
     gardenId: string,
     season: Season,
-    container: ContainerDocument,
+    container: ContainerProjection,
     slotId: number,
     subSlot: boolean,
-    instance: PlantInstanceDocument | null,
-    plant: PlantDocument | null,
+    instance: PlantInstanceProjection | null,
+    plant: PlantProjection | null,
     data: PlantData | undefined,
     path: string,
     slotTitle: string
@@ -854,7 +908,7 @@ export class TaskService {
     const tasks = await this.getTasksByTypeAndPlantInstanceId('Fertilize', instance._id, userId, gardenId);
 
     const taskTexts: string[] = [];
-    const tasksToDelete: TaskDocument[] = [];
+    const tasksToDelete: TaskProjection[] = [];
     const tasksByText = tasks.reduce(
       (byText, task) => {
         const key = task.text.replace(/( in [\w\W]+? at Row [0-9]+, Column [0-9]+)/g, '');
@@ -865,7 +919,7 @@ export class TaskService {
         byText[key] = task;
         return byText;
       },
-      {} as Record<string, TaskDocument>
+      {} as Record<string, TaskProjection>
     );
 
     for (const task of tasksToDelete) {
@@ -891,7 +945,7 @@ export class TaskService {
       return;
     }
 
-    let previousTask: TaskDocument | null | undefined;
+    let previousTask: TaskProjection | null | undefined;
 
     const plantedEvent = getPlantedEvent(instance);
     const plantedContainer = await this.containerService.getContainer(plantedEvent?.to?.containerId, userId, gardenId);
