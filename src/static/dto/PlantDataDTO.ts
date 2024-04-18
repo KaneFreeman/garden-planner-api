@@ -1,6 +1,5 @@
 import { format, subDays } from 'date-fns';
-import growingZoneData from '../../data/growingZoneData';
-import { PlantData } from '../../interface';
+import { GrowingZoneData, PlantData } from '../../interface';
 
 function dateToString(anchorDate: Date, daysDiff: number) {
   return format(subDays(anchorDate, daysDiff), 'MMM d');
@@ -57,7 +56,7 @@ export class PlantDataDTO {
     this.faq = faq;
   }
 
-  static toDTO(data: PlantData): PlantDataDTO {
+  static toDTO(data: PlantData, growingZoneData: GrowingZoneData): PlantDataDTO {
     const howToGrow: PlantDataDTO['howToGrow'] = {};
 
     if (data.howToGrow.spring) {

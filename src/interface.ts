@@ -418,6 +418,18 @@ export interface PlantData {
   };
 }
 
+export interface RawGrowingZoneData {
+  zone: string;
+  lastFrost: {
+    month: number;
+    day: number;
+  };
+  firstFrost: {
+    month: number;
+    day: number;
+  };
+}
+
 export interface GrowingZoneData {
   zone: string;
   lastFrost: Date;
@@ -428,4 +440,33 @@ export interface ContainerSlotIdentifier {
   containerId: string;
   slotId: number;
   subSlot?: boolean;
+}
+
+export enum GrowingZone {
+  '1a' = '1a',
+  '1b' = '1b',
+  '2a' = '2a',
+  '2b' = '2b',
+  '3a' = '3a',
+  '3b' = '3b',
+  '4a' = '4a',
+  '4b' = '4b',
+  '5a' = '5a',
+  '5b' = '5b',
+  '6a' = '6a',
+  '6b' = '6b',
+  '7a' = '7a',
+  '7b' = '7b',
+  '8a' = '8a',
+  '8b' = '8b',
+  '9a' = '9a',
+  '9b' = '9b',
+  '10a' = '10a',
+  '10b' = '10b',
+  '11a' = '11a',
+  '11b' = '11b',
+  '12a' = '12a',
+  '12b' = '12b',
+  '13a' = '13a',
+  '13b' = '13b'
 }

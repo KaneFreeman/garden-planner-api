@@ -5,5 +5,6 @@ export const UserSchema = new mongoose.Schema({
   password: { type: String, select: false },
   firstName: String,
   lastName: String,
-  summaryEmail: Boolean
+  summaryEmail: Boolean,
+  zipCode: String
 });

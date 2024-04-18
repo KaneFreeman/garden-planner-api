@@ -5,6 +5,7 @@ import { ContainerService } from '../container/container.service';
 import { GardenService } from '../garden/garden.service';
 import { PlantInstanceService } from '../plant-instance/plant-instance.service';
 import { TaskService } from '../task/services/task.service';
+import { UserService } from '../users/user.service';
 import { isNullish } from '../util/null.util';
 import { PlantDTO, sanitizePlantDTO } from './dto/plant.dto';
 import { PlantDocument } from './interfaces/plant.document';
@@ -17,7 +18,8 @@ export class PlantService {
     @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService,
     @Inject(forwardRef(() => TaskService)) private taskService: TaskService,
     @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService,
-    @Inject(forwardRef(() => GardenService)) private gardenService: GardenService
+    @Inject(forwardRef(() => GardenService)) private gardenService: GardenService,
+    @Inject(forwardRef(() => UserService)) private userService: UserService
   ) {}
 
   async addPlant(createPlantDTO: PlantDTO, userId: string): Promise<PlantProjection> {
@@ -86,10 +88,13 @@ export class PlantService {
   }
 
   async updateTasks(plantId: string, userId: string, gardenId: string) {
-    const containers = await this.containerService.getContainers(userId, gardenId);
+    const growingZoneData = await this.userService.getGrowingZoneData(userId);
+    if (growingZoneData) {
+      const containers = await this.containerService.getContainers(userId, gardenId);
 
-    for (const container of containers) {
-      await this.containerService.createUpdatePlantTasks(container, plantId, gardenId);
+      for (const container of containers) {
+        await this.containerService.createUpdatePlantTasks(container, plantId, gardenId, undefined, growingZoneData);
+      }
     }
   }
 }

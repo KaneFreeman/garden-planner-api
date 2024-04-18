@@ -5,9 +5,10 @@ import { ContainerService } from '../container/container.service';
 import { ContainerSlotDTO } from '../container/dto/container-slot.dto';
 import { ContainerProjection } from '../container/interfaces/container.projection';
 import plantData from '../data/plantData';
-import { CONTAINER_TYPE_OUTSIDE, HistoryStatus, SPRING, TRANSPLANTED, TaskType } from '../interface';
+import { CONTAINER_TYPE_OUTSIDE, GrowingZoneData, HistoryStatus, SPRING, TRANSPLANTED, TaskType } from '../interface';
 import { PlantService } from '../plant/plant.service';
 import { TaskService } from '../task/services/task.service';
+import { UserService } from '../users/user.service';
 import { isNullish } from '../util/null.util';
 import getSlotTitle from '../util/slot.util';
 import {
@@ -32,7 +33,8 @@ export class PlantInstanceService {
     private readonly plantInstanceModel: Model<PlantInstanceDocument>,
     @Inject(forwardRef(() => PlantService)) private plantService: PlantService,
     @Inject(forwardRef(() => TaskService)) private taskService: TaskService,
-    @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService
+    @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService,
+    @Inject(forwardRef(() => UserService)) private userService: UserService
   ) {}
 
   async addPlantInstance(
@@ -43,12 +45,16 @@ export class PlantInstanceService {
   ): Promise<PlantInstanceProjection> {
     const { createTasks = true, copiedFromId } = options ?? {};
 
-    const container = this.containerService.getContainer(createPlantInstanceDTO.containerId, userId, gardenId);
+    const sanitizedPlantInstanceDTO = sanitizePlantInstanceDTO(createPlantInstanceDTO);
+    const container = this.containerService.getContainer(sanitizedPlantInstanceDTO.containerId, userId, gardenId);
     if (!container) {
       throw new NotFoundException('Container does not exist!');
     }
 
-    const newPlantInstance = await this.plantInstanceModel.create(sanitizePlantInstanceDTO(createPlantInstanceDTO));
+    const newPlantInstance = await this.plantInstanceModel.create({
+      ...sanitizedPlantInstanceDTO,
+      containerId: new Types.ObjectId(sanitizedPlantInstanceDTO.containerId)
+    });
 
     if (copiedFromId) {
       await this.taskService.copyTasks(copiedFromId, newPlantInstance._id.toString(), userId, gardenId);
@@ -57,7 +63,10 @@ export class PlantInstanceService {
     await this.updateContainerAfterPlantInstanceUpdate(newPlantInstance, userId, gardenId);
 
     if (createTasks) {
-      await this.createUpdatePlantInstanceTasks(newPlantInstance, userId, gardenId);
+      const growingZoneData = await this.userService.getGrowingZoneData(userId);
+      if (growingZoneData) {
+        await this.createUpdatePlantInstanceTasks(newPlantInstance, userId, gardenId, growingZoneData);
+      }
     }
 
     return newPlantInstance.save();
@@ -222,7 +231,10 @@ export class PlantInstanceService {
         completedOn: new Date(date)
       });
 
-      await this.createUpdatePlantInstanceTasks(updatePlantInstance, userId, gardenId);
+      const growingZoneData = await this.userService.getGrowingZoneData(userId);
+      if (growingZoneData) {
+        await this.createUpdatePlantInstanceTasks(updatePlantInstance, userId, gardenId, growingZoneData);
+      }
     }
 
     return updatePlantInstance;
@@ -255,19 +267,28 @@ export class PlantInstanceService {
     gardenId: string,
     createPlantInstanceDTO: PlantInstanceDTO
   ): Promise<PlantInstanceProjection | null> {
+    const sanitizedPlantInstanceDTO = sanitizePlantInstanceDTO(createPlantInstanceDTO);
+
     const plantInstance = this.getPlantInstance(plantInstanceId, userId, gardenId);
     if (!plantInstance) {
       throw new NotFoundException('Plant instance does not exist!');
     }
 
-    createPlantInstanceDTO.history?.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    sanitizedPlantInstanceDTO.history?.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     const editedPlantInstance = await this.plantInstanceModel.findByIdAndUpdate(
       plantInstanceId,
-      sanitizePlantInstanceDTO(createPlantInstanceDTO),
+      {
+        ...sanitizedPlantInstanceDTO,
+        containerId: new Types.ObjectId(sanitizedPlantInstanceDTO.containerId)
+      },
       { new: true }
     );
 
-    await this.createUpdatePlantInstanceTasks(editedPlantInstance, userId, gardenId);
+    const growingZoneData = await this.userService.getGrowingZoneData(userId);
+    if (growingZoneData) {
+      await this.createUpdatePlantInstanceTasks(editedPlantInstance, userId, gardenId, growingZoneData);
+    }
+
     await this.updateContainerAfterPlantInstanceUpdate(editedPlantInstance, userId, gardenId);
 
     return editedPlantInstance;
@@ -276,7 +297,8 @@ export class PlantInstanceService {
   async closePlantInstance(
     plantInstanceId: string | undefined,
     userId: string,
-    gardenId: string
+    gardenId: string,
+    growingZoneData: GrowingZoneData | undefined
   ): Promise<PlantInstanceProjection | null> {
     if (!plantInstanceId) {
       return Promise.resolve(null);
@@ -293,7 +315,7 @@ export class PlantInstanceService {
       { new: true }
     );
 
-    await this.createUpdatePlantInstanceTasks(editedPlantInstance, userId, gardenId);
+    await this.createUpdatePlantInstanceTasks(editedPlantInstance, userId, gardenId, growingZoneData);
 
     return editedPlantInstance;
   }
@@ -407,7 +429,8 @@ export class PlantInstanceService {
     container: ContainerProjection,
     plantInstance: PlantInstanceProjection,
     path: string,
-    slotTitle: string
+    slotTitle: string,
+    growingZoneData: GrowingZoneData
   ) {
     const plant = await this.plantService.getPlant(plantInstance.plant, userId);
     const data = plant?.type ? plantData[plant.type] : undefined;
@@ -422,6 +445,7 @@ export class PlantInstanceService {
       plantInstance,
       plant,
       data,
+      growingZoneData,
       path,
       slotTitle
     );
@@ -434,6 +458,7 @@ export class PlantInstanceService {
       plantInstance,
       plant,
       data,
+      growingZoneData,
       path,
       slotTitle
     );
@@ -470,9 +495,10 @@ export class PlantInstanceService {
   async createUpdatePlantInstanceTasks(
     plantInstance: PlantInstanceProjection | null,
     userId: string,
-    gardenId: string
+    gardenId: string,
+    growingZoneData: GrowingZoneData | undefined
   ) {
-    if (!plantInstance) {
+    if (!plantInstance || !growingZoneData) {
       return;
     }
 
@@ -482,7 +508,7 @@ export class PlantInstanceService {
       const path = `/container/${container._id}/slot/${plantInstance.slotId}`;
       const slotTitle = getSlotTitle(plantInstance.slotId, container.rows);
 
-      await this.createUpdateTasks(userId, gardenId, container, plantInstance, path, slotTitle);
+      await this.createUpdateTasks(userId, gardenId, container, plantInstance, path, slotTitle, growingZoneData);
     }
   }
 
@@ -496,6 +522,8 @@ export class PlantInstanceService {
       return [];
     }
 
+    const growingZoneData = await this.userService.getGrowingZoneData(userId);
+
     const plantInstances: PlantInstanceProjection[] = [];
     for (const plantInstanceId of plantInstanceIds) {
       const plantInstance = await this.getPlantInstance(plantInstanceId, userId, gardenId);
@@ -505,7 +533,9 @@ export class PlantInstanceService {
 
       await this.plantInstanceModel.findByIdAndUpdate(plantInstanceId, { closed: action === 'close' }, { new: true });
 
-      await this.createUpdatePlantInstanceTasks(plantInstance, userId, gardenId);
+      if (growingZoneData) {
+        await this.createUpdatePlantInstanceTasks(plantInstance, userId, gardenId, growingZoneData);
+      }
 
       if (plantInstance) {
         plantInstances.push(plantInstance);

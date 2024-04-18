@@ -17,8 +17,10 @@ export interface PlantInstanceDTO extends ContainerSlotIdentifierDTO {
   readonly plantedCount: number;
 }
 
-export function sanitizePlantInstanceDTO(raw: PlantInstanceDTO[] | null | undefined): PlantInstanceDTO[] | undefined;
+export function sanitizePlantInstanceDTO(raw: PlantInstanceDTO): PlantInstanceDTO;
 export function sanitizePlantInstanceDTO(raw: PlantInstanceDTO | null | undefined): PlantInstanceDTO | undefined;
+export function sanitizePlantInstanceDTO(raw: PlantInstanceDTO[]): PlantInstanceDTO[];
+export function sanitizePlantInstanceDTO(raw: PlantInstanceDTO[] | null | undefined): PlantInstanceDTO[] | undefined;
 export function sanitizePlantInstanceDTO(
   raw: PlantInstanceDTO | PlantInstanceDTO[] | null | undefined
 ): PlantInstanceDTO | PlantInstanceDTO[] | undefined {

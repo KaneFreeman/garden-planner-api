@@ -5,4 +5,5 @@ export interface UserProjection {
   readonly firstName: string;
   readonly lastName: string;
   readonly summaryEmail: boolean;
+  readonly zipCode: string;
 }

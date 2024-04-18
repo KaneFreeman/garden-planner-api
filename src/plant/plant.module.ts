@@ -1,9 +1,10 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { forwardRef, Logger, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ContainerModule } from '../container/container.module';
 import { GardenModule } from '../garden/garden.module';
 import { PlantInstanceModule } from '../plant-instance/plant-instance.module';
 import { TaskModule } from '../task/task.module';
+import { UserModule } from '../users/user.module';
 import { PlantController } from './plant.controller';
 import { PlantService } from './plant.service';
 import { PlantSchema } from './schemas/plant.schema';
@@ -14,9 +15,10 @@ import { PlantSchema } from './schemas/plant.schema';
     forwardRef(() => ContainerModule),
     forwardRef(() => TaskModule),
     forwardRef(() => PlantInstanceModule),
-    forwardRef(() => GardenModule)
+    forwardRef(() => GardenModule),
+    forwardRef(() => UserModule)
   ],
-  providers: [PlantService],
+  providers: [PlantService, Logger],
   controllers: [PlantController],
   exports: [PlantService]
 })

@@ -1,7 +1,9 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
+import { growingZoneDataByZone, growingZonesByZipCode } from '../data/growingZoneData';
+import { GrowingZoneData } from '../interface';
 import { isEmpty, isNotEmpty } from '../util/string.util';
 import { UserDTO, sanitizeUserDTO } from './dto/user.dto';
 import { UserDocument } from './interfaces/user.document';
@@ -90,10 +92,12 @@ export class UserService {
       firstName: string;
       lastName: string;
       summaryEmail: boolean;
+      zipCode: string;
     } = {
       firstName: sanitizedUserDTO.firstName,
       lastName: sanitizedUserDTO.lastName,
-      summaryEmail: sanitizedUserDTO.summaryEmail
+      summaryEmail: sanitizedUserDTO.summaryEmail,
+      zipCode: sanitizedUserDTO.zipCode
     };
 
     if (isNotEmpty(sanitizedUserDTO.password)) {
@@ -101,5 +105,35 @@ export class UserService {
     }
 
     return this.userModel.findByIdAndUpdate(userId, changes, { new: true });
+  }
+
+  async getGrowingZoneData(userId: string): Promise<GrowingZoneData> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new NotFoundException('No user found');
+    }
+
+    if (!(user.zipCode in growingZonesByZipCode)) {
+      throw new NotFoundException('Unknown zip code');
+    }
+
+    const growingZone = growingZonesByZipCode[user.zipCode];
+
+    if (!(growingZone in growingZoneDataByZone)) {
+      throw new NotFoundException('No growing zone data');
+    }
+
+    const data = growingZoneDataByZone[growingZone];
+    if (!data) {
+      throw new NotFoundException('No growing zone data');
+    }
+
+    const year = new Date().getFullYear();
+
+    return {
+      zone: data.zone,
+      lastFrost: new Date(year, data.lastFrost.month, data.lastFrost.day),
+      firstFrost: new Date(year, data.firstFrost.month, data.firstFrost.day)
+    };
   }
 }

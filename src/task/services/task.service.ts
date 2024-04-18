@@ -5,7 +5,6 @@ import { Model, PipelineStage, Types, UpdateQuery, UpdateWithAggregationPipeline
 import { ONE_WEEK, TWO_WEEKS } from '../../constants';
 import { ContainerService } from '../../container/container.service';
 import { ContainerProjection } from '../../container/interfaces/container.projection';
-import growingZoneData from '../../data/growingZoneData';
 import {
   CONTAINER_TYPE_INSIDE,
   CONTAINER_TYPE_OUTSIDE,
@@ -33,6 +32,7 @@ import {
   getTransplantedDate
 } from '../../plant-instance/util/history.util';
 import { PlantProjection } from '../../plant/interfaces/plant.projection';
+import { UserService } from '../../users/user.service';
 import { isValidDate } from '../../util/date.util';
 import { fromTaskTypeToHistoryStatus } from '../../util/history.util';
 import { isNotNullish, isNullish } from '../../util/null.util';
@@ -49,7 +49,8 @@ export class TaskService {
     private logger: Logger,
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
     @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService,
-    @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService
+    @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService,
+    @Inject(forwardRef(() => UserService)) private userService: UserService
   ) {}
 
   async addTask(createTaskDTO: CreateTaskDTO, userId: string, gardenId: string): Promise<TaskProjection> {
@@ -67,7 +68,21 @@ export class TaskService {
       }
     }
 
-    const newTask = await this.taskModel.create({ ...sanitizedCreateTaskDTO, gardenId: new Types.ObjectId(gardenId) });
+    console.log('creating task', {
+      ...sanitizedCreateTaskDTO,
+      plantInstanceId: sanitizedCreateTaskDTO.plantInstanceId
+        ? new Types.ObjectId(sanitizedCreateTaskDTO.plantInstanceId)
+        : null,
+      gardenId: new Types.ObjectId(gardenId)
+    });
+
+    const newTask = await this.taskModel.create({
+      ...sanitizedCreateTaskDTO,
+      plantInstanceId: sanitizedCreateTaskDTO.plantInstanceId
+        ? new Types.ObjectId(sanitizedCreateTaskDTO.plantInstanceId)
+        : null,
+      gardenId: new Types.ObjectId(gardenId)
+    });
     return newTask.save();
   }
 
@@ -262,13 +277,33 @@ export class TaskService {
       throw new NotFoundException('Task does not exist!');
     }
 
-    const task = await this.taskModel.findByIdAndUpdate(taskId, sanitizeCreateTaskDTO(createTaskDTO), {
-      new: true
-    });
+    const sanitizedCreateTaskDTO = sanitizeCreateTaskDTO(createTaskDTO);
+
+    const task = await this.taskModel.findByIdAndUpdate(
+      taskId,
+      {
+        plantInstanceId: sanitizedCreateTaskDTO.plantInstanceId
+          ? new Types.ObjectId(sanitizedCreateTaskDTO.plantInstanceId)
+          : null,
+        gardenId: new Types.ObjectId(gardenId)
+      },
+      {
+        new: true
+      }
+    );
 
     if (task?.type === FERTILIZE && updateContainerTasks) {
       const plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId, userId, gardenId);
-      await this.plantInstanceService.createUpdatePlantInstanceTasks(plantInstance, userId, gardenId);
+
+      const growingZoneData = await this.userService.getGrowingZoneData(userId);
+      if (growingZoneData) {
+        await this.plantInstanceService.createUpdatePlantInstanceTasks(
+          plantInstance,
+          userId,
+          gardenId,
+          growingZoneData
+        );
+      }
     }
 
     return task;
@@ -284,6 +319,8 @@ export class TaskService {
     if (type !== FERTILIZE && type !== HARVEST && type !== PLANT) {
       throw new BadRequestException('Unsupported task type');
     }
+
+    const growingZoneData = await this.userService.getGrowingZoneData(userId);
 
     let tasksUpdated = 0;
     for (const taskId of taskIds) {
@@ -311,7 +348,14 @@ export class TaskService {
         completedOn: new Date(date)
       });
 
-      await this.plantInstanceService.createUpdatePlantInstanceTasks(plantInstance, userId, gardenId);
+      if (growingZoneData) {
+        await this.plantInstanceService.createUpdatePlantInstanceTasks(
+          plantInstance,
+          userId,
+          gardenId,
+          growingZoneData
+        );
+      }
 
       tasksUpdated++;
     }
@@ -434,9 +478,11 @@ export class TaskService {
   getPlantedStartAndDueDate(
     season: Season,
     type: ContainerType,
-    data: PlantData | undefined
+    data: PlantData | undefined,
+    growingZoneData: GrowingZoneData
   ): { start: Date; due: Date } | undefined {
     const howToGrowData = data?.howToGrow[season];
+
     const startDate = this.getTaskStartDate(season, growingZoneData);
     if (type === CONTAINER_TYPE_INSIDE && howToGrowData?.indoor) {
       return {
@@ -481,7 +527,8 @@ export class TaskService {
   getTransplantedStartAndDueDate(
     season: Season,
     data: PlantData | undefined,
-    plantedDate: Date | null
+    plantedDate: Date | null,
+    growingZoneData: GrowingZoneData
   ): { start: Date; due: Date } | undefined {
     const howToGrowData = data?.howToGrow[season];
     if (howToGrowData?.indoor) {
@@ -510,6 +557,7 @@ export class TaskService {
     instance: PlantInstanceProjection | null,
     plant: PlantProjection | null,
     data: PlantData | undefined,
+    growingZoneData: GrowingZoneData,
     path: string,
     slotTitle: string
   ) {
@@ -530,7 +578,7 @@ export class TaskService {
       task = tasks[0];
     }
 
-    const dates = this.getPlantedStartAndDueDate(season, container.type, data);
+    const dates = this.getPlantedStartAndDueDate(season, container.type, data, growingZoneData);
     if (
       !plant ||
       !data ||
@@ -595,6 +643,7 @@ export class TaskService {
     instance: PlantInstanceProjection | null,
     plant: PlantProjection | null,
     data: PlantData | undefined,
+    growingZoneData: GrowingZoneData,
     path: string,
     slotTitle: string
   ) {
@@ -615,7 +664,8 @@ export class TaskService {
       task = tasks[0];
     }
 
-    const dates = this.getTransplantedStartAndDueDate(season, data, getPlantedDate(instance));
+    const dates = this.getTransplantedStartAndDueDate(season, data, getPlantedDate(instance), growingZoneData);
+    console.log('dates', dates);
     if (
       !plant ||
       !data ||
@@ -650,7 +700,7 @@ export class TaskService {
           type: 'Transplant',
           start,
           due,
-          plantInstanceId: instance._id.toString(),
+          plantInstanceId: instance._id,
           path,
           completedOn
         },
