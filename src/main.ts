@@ -26,7 +26,7 @@ async function bootstrap() {
           )
         }),
         new FileTransport({
-          filename: join(__dirname, 'logs/garden-planner-dev.log'),
+          filename: join(__dirname, 'logs/garden-planner.log'),
           format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.ms(),

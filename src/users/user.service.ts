@@ -132,8 +132,8 @@ export class UserService {
 
     return {
       zone: data.zone,
-      lastFrost: new Date(year, data.lastFrost.month, data.lastFrost.day),
-      firstFrost: new Date(year, data.firstFrost.month, data.firstFrost.day)
+      lastFrost: data.lastFrost ? new Date(year, data.lastFrost.month, data.lastFrost.day) : undefined,
+      firstFrost: data.firstFrost ? new Date(year, data.firstFrost.month, data.firstFrost.day) : undefined
     };
   }
 }

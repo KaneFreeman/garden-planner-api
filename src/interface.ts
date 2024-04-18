@@ -420,20 +420,24 @@ export interface PlantData {
 
 export interface RawGrowingZoneData {
   zone: string;
-  lastFrost: {
-    month: number;
-    day: number;
-  };
-  firstFrost: {
-    month: number;
-    day: number;
-  };
+  lastFrost:
+    | {
+        month: number;
+        day: number;
+      }
+    | undefined;
+  firstFrost:
+    | {
+        month: number;
+        day: number;
+      }
+    | undefined;
 }
 
 export interface GrowingZoneData {
   zone: string;
-  lastFrost: Date;
-  firstFrost: Date;
+  lastFrost?: Date;
+  firstFrost?: Date;
 }
 
 export interface ContainerSlotIdentifier {

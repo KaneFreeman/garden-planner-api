@@ -1,16 +1,255 @@
 import { GrowingZone, RawGrowingZoneData } from '../interface';
 
-export const growingZoneDataByZone: Partial<Record<GrowingZone, RawGrowingZoneData>> = {
-  [GrowingZone['6a']]: {
-    zone: GrowingZone['6a'],
+export const growingZoneDataByZone: Record<GrowingZone, RawGrowingZoneData> = {
+  [GrowingZone['1a']]: {
+    zone: GrowingZone['1a'],
+    lastFrost: {
+      month: 5,
+      day: 4
+    },
+    firstFrost: {
+      month: 7,
+      day: 25
+    }
+  },
+  [GrowingZone['1b']]: {
+    zone: GrowingZone['1b'],
+    lastFrost: {
+      month: 4,
+      day: 22
+    },
+    firstFrost: {
+      month: 7,
+      day: 31
+    }
+  },
+  [GrowingZone['2a']]: {
+    zone: GrowingZone['2a'],
+    lastFrost: {
+      month: 4,
+      day: 22
+    },
+    firstFrost: {
+      month: 8,
+      day: 1
+    }
+  },
+  [GrowingZone['2b']]: {
+    zone: GrowingZone['2b'],
+    lastFrost: {
+      month: 4,
+      day: 15
+    },
+    firstFrost: {
+      month: 8,
+      day: 8
+    }
+  },
+  [GrowingZone['3a']]: {
+    zone: GrowingZone['3a'],
+    lastFrost: {
+      month: 4,
+      day: 12
+    },
+    firstFrost: {
+      month: 8,
+      day: 8
+    }
+  },
+  [GrowingZone['3b']]: {
+    zone: GrowingZone['3b'],
+    lastFrost: {
+      month: 4,
+      day: 5
+    },
+    firstFrost: {
+      month: 8,
+      day: 15
+    }
+  },
+  [GrowingZone['4a']]: {
+    zone: GrowingZone['4a'],
+    lastFrost: {
+      month: 3,
+      day: 28
+    },
+    firstFrost: {
+      month: 8,
+      day: 21
+    }
+  },
+  [GrowingZone['4b']]: {
+    zone: GrowingZone['4b'],
+    lastFrost: {
+      month: 3,
+      day: 24
+    },
+    firstFrost: {
+      month: 9,
+      day: 7
+    }
+  },
+  [GrowingZone['5a']]: {
+    zone: GrowingZone['5a'],
+    lastFrost: {
+      month: 3,
+      day: 24
+    },
+    firstFrost: {
+      month: 9,
+      day: 13
+    }
+  },
+  [GrowingZone['5b']]: {
+    zone: GrowingZone['5b'],
     lastFrost: {
       month: 3,
       day: 15
     },
     firstFrost: {
       month: 9,
+      day: 18
+    }
+  },
+  [GrowingZone['6a']]: {
+    zone: GrowingZone['6a'],
+    lastFrost: {
+      month: 3,
+      day: 12
+    },
+    firstFrost: {
+      month: 9,
+      day: 22
+    }
+  },
+  [GrowingZone['6b']]: {
+    zone: GrowingZone['6b'],
+    lastFrost: {
+      month: 3,
+      day: 3
+    },
+    firstFrost: {
+      month: 9,
+      day: 28
+    }
+  },
+  [GrowingZone['7a']]: {
+    zone: GrowingZone['7a'],
+    lastFrost: {
+      month: 3,
+      day: 1
+    },
+    firstFrost: {
+      month: 9,
+      day: 29
+    }
+  },
+  [GrowingZone['7b']]: {
+    zone: GrowingZone['7b'],
+    lastFrost: {
+      month: 2,
+      day: 28
+    },
+    firstFrost: {
+      month: 10,
+      day: 7
+    }
+  },
+  [GrowingZone['8a']]: {
+    zone: GrowingZone['8a'],
+    lastFrost: {
+      month: 2,
+      day: 28
+    },
+    firstFrost: {
+      month: 10,
+      day: 12
+    }
+  },
+  [GrowingZone['8b']]: {
+    zone: GrowingZone['8b'],
+    lastFrost: {
+      month: 2,
+      day: 13
+    },
+    firstFrost: {
+      month: 10,
+      day: 24
+    }
+  },
+  [GrowingZone['9a']]: {
+    zone: GrowingZone['9a'],
+    lastFrost: {
+      month: 1,
+      day: 28
+    },
+    firstFrost: {
+      month: 10,
+      day: 25
+    }
+  },
+  [GrowingZone['9b']]: {
+    zone: GrowingZone['9b'],
+    lastFrost: {
+      month: 1,
+      day: 6
+    },
+    firstFrost: {
+      month: 11,
+      day: 13
+    }
+  },
+  [GrowingZone['10a']]: {
+    zone: GrowingZone['10a'],
+    lastFrost: {
+      month: 0,
+      day: 15
+    },
+    firstFrost: {
+      month: 11,
       day: 15
     }
+  },
+  [GrowingZone['10b']]: {
+    zone: GrowingZone['10b'],
+    lastFrost: {
+      month: 0,
+      day: 1
+    },
+    firstFrost: {
+      month: 11,
+      day: 31
+    }
+  },
+  [GrowingZone['11a']]: {
+    zone: GrowingZone['11a'],
+    lastFrost: undefined,
+    firstFrost: undefined
+  },
+  [GrowingZone['11b']]: {
+    zone: GrowingZone['11b'],
+    lastFrost: undefined,
+    firstFrost: undefined
+  },
+  [GrowingZone['12a']]: {
+    zone: GrowingZone['12a'],
+    lastFrost: undefined,
+    firstFrost: undefined
+  },
+  [GrowingZone['12b']]: {
+    zone: GrowingZone['12b'],
+    lastFrost: undefined,
+    firstFrost: undefined
+  },
+  [GrowingZone['13a']]: {
+    zone: GrowingZone['13a'],
+    lastFrost: undefined,
+    firstFrost: undefined
+  },
+  [GrowingZone['13b']]: {
+    zone: GrowingZone['13b'],
+    lastFrost: undefined,
+    firstFrost: undefined
   }
 };
 

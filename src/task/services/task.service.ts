@@ -42,6 +42,7 @@ import { BulkCompleteTaskDTO, sanitizeBulkCompleteTaskDTO } from '../dto/bulk-co
 import { CreateTaskDTO, sanitizeCreateTaskDTO } from '../dto/create-task.dto';
 import { TaskDocument } from '../interfaces/task.document';
 import { TaskProjection } from '../interfaces/task.projection';
+import { hasFrostDates } from '../../util/growingZone.util';
 
 @Injectable()
 export class TaskService {
@@ -447,7 +448,7 @@ export class TaskService {
     }
   }
 
-  getTaskStartDate(season: Season, growingZoneData: GrowingZoneData): Date {
+  getTaskStartDate(season: Season, growingZoneData: Required<GrowingZoneData>): Date {
     const today = new Date();
 
     if (season === SPRING) {
@@ -475,19 +476,21 @@ export class TaskService {
   ): { start: Date; due: Date } | undefined {
     const howToGrowData = data?.howToGrow[season];
 
-    const startDate = this.getTaskStartDate(season, growingZoneData);
-    if (type === CONTAINER_TYPE_INSIDE && howToGrowData?.indoor) {
-      return {
-        start: subDays(startDate, howToGrowData.indoor.min),
-        due: subDays(startDate, howToGrowData.indoor.max)
-      };
-    }
+    if (hasFrostDates(growingZoneData)) {
+      const startDate = this.getTaskStartDate(season, growingZoneData);
+      if (type === CONTAINER_TYPE_INSIDE && howToGrowData?.indoor) {
+        return {
+          start: subDays(startDate, howToGrowData.indoor.min),
+          due: subDays(startDate, howToGrowData.indoor.max)
+        };
+      }
 
-    if (type === CONTAINER_TYPE_OUTSIDE && howToGrowData?.outdoor) {
-      return {
-        start: subDays(startDate, howToGrowData.outdoor.min),
-        due: subDays(startDate, howToGrowData.outdoor.max)
-      };
+      if (type === CONTAINER_TYPE_OUTSIDE && howToGrowData?.outdoor) {
+        return {
+          start: subDays(startDate, howToGrowData.outdoor.min),
+          due: subDays(startDate, howToGrowData.outdoor.max)
+        };
+      }
     }
 
     return undefined;
@@ -531,11 +534,13 @@ export class TaskService {
         };
       }
 
-      const startDate = this.getTaskStartDate(season, growingZoneData);
-      return {
-        start: subDays(startDate, howToGrowData.indoor.min - howToGrowData.indoor.transplant_min),
-        due: subDays(startDate, howToGrowData.indoor.max - howToGrowData.indoor.transplant_max)
-      };
+      if (hasFrostDates(growingZoneData)) {
+        const startDate = this.getTaskStartDate(season, growingZoneData);
+        return {
+          start: subDays(startDate, howToGrowData.indoor.min - howToGrowData.indoor.transplant_min),
+          due: subDays(startDate, howToGrowData.indoor.max - howToGrowData.indoor.transplant_max)
+        };
+      }
     }
 
     return undefined;
