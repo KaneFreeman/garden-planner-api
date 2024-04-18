@@ -844,7 +844,7 @@ export class TaskService {
       !dates ||
       instance.closed ||
       container.archived ||
-      instance?.containerId !== container._id.toString() ||
+      instance?.containerId.toString() !== container._id.toString() ||
       !isValidDate(dates.start) ||
       !isValidDate(dates.due)
     ) {
@@ -991,7 +991,7 @@ export class TaskService {
       fertilizeData === undefined ||
       instance.closed ||
       container.archived ||
-      instance?.containerId !== container._id.toString()
+      instance?.containerId.toString() !== container._id.toString()
     ) {
       if (openTasks.length > 0) {
         for (const task of openTasks) {
