@@ -33,8 +33,6 @@ export class TokenService {
 
     await this.tokenModel.deleteMany({ email: sanitizedGenerateTokenDTO.email });
 
-    this.logger.log(`user._id: ${typeof user._id}, ${user._id}`);
-
     const newToken = await this.tokenModel.create({
       userId: new Types.ObjectId(user._id),
       email: sanitizedGenerateTokenDTO.email,

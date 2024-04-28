@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException, forwardRef } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage, Types } from 'mongoose';
 import { ContainerService } from '../container/container.service';
@@ -31,6 +31,7 @@ export class PlantInstanceService {
   constructor(
     @InjectModel('PlantInstance')
     private readonly plantInstanceModel: Model<PlantInstanceDocument>,
+    private logger: Logger,
     @Inject(forwardRef(() => PlantService)) private plantService: PlantService,
     @Inject(forwardRef(() => TaskService)) private taskService: TaskService,
     @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService,

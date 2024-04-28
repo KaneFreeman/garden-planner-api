@@ -275,6 +275,7 @@ export class TaskService {
     const task = await this.taskModel.findByIdAndUpdate(
       taskId,
       {
+        ...sanitizedCreateTaskDTO,
         plantInstanceId: sanitizedCreateTaskDTO.plantInstanceId
           ? new Types.ObjectId(sanitizedCreateTaskDTO.plantInstanceId)
           : null,
@@ -386,7 +387,6 @@ export class TaskService {
 
   async deleteTask(taskId: string, userId: string, gardenId: string, force = false): Promise<TaskProjection | null> {
     const task = await this.getTask(taskId, userId, gardenId);
-    this.logger.log('task', task);
     if (!force && task?.type !== 'Custom') {
       return null;
     }

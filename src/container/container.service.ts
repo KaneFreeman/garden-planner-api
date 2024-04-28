@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage, Types } from 'mongoose';
 import { GardenService } from '../garden/garden.service';
@@ -20,6 +20,7 @@ export class ContainerService {
   constructor(
     @InjectModel('Container')
     private readonly containerModel: Model<ContainerDocument>,
+    private logger: Logger,
     @Inject(forwardRef(() => TaskService)) private taskService: TaskService,
     @Inject(forwardRef(() => GardenService)) private gardenService: GardenService,
     @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService,
@@ -219,7 +220,7 @@ export class ContainerService {
         $match: {
           type,
           completedOn: null,
-          start: { $lte: date }
+          start: { $lte: new Date(date) }
         }
       }
     ]);
@@ -230,10 +231,12 @@ export class ContainerService {
       const plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId, userId, gardenId);
       if (
         plantInstance &&
-        plantInstance.containerId === containerId &&
+        plantInstance.containerId.toString() === containerId &&
         (!plantInstanceIds || (plantInstance._id && plantInstanceIds.includes(plantInstance._id.toString())))
       ) {
-        const updatedTask = await this.taskService.findByIdAndUpdate(task._id, userId, gardenId, { completedOn: date });
+        const updatedTask = await this.taskService.findByIdAndUpdate(task._id, userId, gardenId, {
+          completedOn: new Date(date)
+        });
         updatedCount++;
 
         if (task?.type === type && updatedTask?.completedOn) {
