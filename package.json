@@ -42,7 +42,7 @@
     "winston": "3.13.0"
   },
   "devDependencies": {
-    "@nestjs/cli": "10.4.1",
+    "@nestjs/cli": "10.4.2",
     "@nestjs/schematics": "10.1.2",
     "@types/bcrypt": "5.0.2",
     "@types/ejs": "3.1.5",
