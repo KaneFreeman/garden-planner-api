@@ -24,7 +24,7 @@
     "@nestjs/mongoose": "10.1.0",
     "@nestjs/platform-express": "10.4.15",
     "@nestjs/schedule": "4.1.2",
-    "@nestjs/swagger": "7.4.2",
+    "@nestjs/swagger": "11.0.6",
     "bcrypt": "5.1.1",
     "date-fns": "3.6.0",
     "dotenv": "16.4.7",
