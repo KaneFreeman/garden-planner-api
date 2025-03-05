@@ -220,7 +220,9 @@ export class ContainerService {
         $match: {
           type,
           completedOn: null,
-          start: { $lte: new Date(date) }
+          _id: {
+            $in: plantInstanceIds
+          }
         }
       }
     ]);
