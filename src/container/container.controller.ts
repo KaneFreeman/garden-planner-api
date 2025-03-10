@@ -108,7 +108,7 @@ export class ContainerController {
   // Update tasks in a container
   @UseGuards(AuthGuard)
   @Post('/:containerId/:taskType')
-  async fertilizeContainer(
+  async updateContainerPlantsByTaskType(
     @Req() req: RequestWithUser,
     @Res() res: Response,
     @Param('gardenId', new ValidateObjectId()) gardenId: string,
@@ -121,7 +121,7 @@ export class ContainerController {
       return res.status(HttpStatus.BAD_REQUEST).json({ error: 'Task type does not exist!' });
     }
 
-    const updatedTasksCount = await this.containerService.updateContainerTasksByType(
+    const updatedTasksCount = await this.containerService.updateContainerPlantsByTaskType(
       containerId,
       req.user.userId,
       gardenId,

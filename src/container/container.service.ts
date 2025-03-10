@@ -14,6 +14,7 @@ import { ContainerDTO, sanitizeContainerDTO } from './dto/container.dto';
 import { BaseSlot } from './interfaces/container-slot.interface';
 import { ContainerDocument } from './interfaces/container.document';
 import { ContainerProjection } from './interfaces/container.projection';
+import { TaskProjection } from '../task/interfaces/task.projection';
 
 @Injectable()
 export class ContainerService {
@@ -202,63 +203,71 @@ export class ContainerService {
     return result;
   }
 
-  async updateContainerTasksByType(
+  async updateContainerPlantsByTaskType(
     containerId: string,
     userId: string,
     gardenId: string,
     date: string,
     type: TaskType,
-    plantInstanceIds?: string[]
+    plantInstanceIds: string[]
   ): Promise<number> {
     const growingZoneData = await this.userService.getGrowingZoneData(userId);
     if (!growingZoneData) {
       return 0;
     }
 
-    const tasks = await this.taskService.findTasks(userId, gardenId, [
-      {
-        $match: {
-          type,
-          completedOn: null,
-          _id: {
-            $in: plantInstanceIds
+    const plantInstances = await this.plantInstanceService.getPlantInstancesByContainerAndIdIn(
+      containerId,
+      plantInstanceIds,
+      userId,
+      gardenId
+    );
+
+    const tasks = (
+      await this.taskService.findTasks(userId, gardenId, [
+        {
+          $match: {
+            type,
+            completedOn: null,
+            _id: {
+              $in: plantInstanceIds
+            }
           }
         }
-      }
-    ]);
+      ])
+    ).reduce<Record<string, TaskProjection>>((acc, task) => {
+      acc[task.plantInstanceId] = task;
+
+      return acc;
+    }, {});
 
     let updatedCount = 0;
 
-    for (const task of tasks) {
-      const plantInstance = await this.plantInstanceService.getPlantInstance(task.plantInstanceId, userId, gardenId);
-      if (
-        plantInstance &&
-        plantInstance.containerId.toString() === containerId &&
-        (!plantInstanceIds || (plantInstance._id && plantInstanceIds.includes(plantInstance._id.toString())))
-      ) {
-        const updatedTask = await this.taskService.findByIdAndUpdate(task._id, userId, gardenId, {
+    for (const plantInstance of plantInstances) {
+      updatedCount++;
+
+      const task = tasks[plantInstance._id];
+      if (task) {
+        await this.taskService.findByIdAndUpdate(task._id, userId, gardenId, {
           completedOn: new Date(date)
         });
-        updatedCount++;
-
-        if (task?.type === type && updatedTask?.completedOn) {
-          const updatedPlantInstance = await this.plantInstanceService.addPlantInstanceHistory(plantInstance, {
-            status: fromTaskTypeToHistoryStatus(type),
-            date: updatedTask.completedOn.toISOString(),
-            from: {
-              containerId: plantInstance.containerId,
-              slotId: plantInstance.slotId,
-              subSlot: plantInstance.subSlot
-            }
-          });
-          await this.plantInstanceService.createUpdatePlantInstanceTasks(
-            updatedPlantInstance,
-            userId,
-            gardenId,
-            growingZoneData
-          );
-        }
       }
+
+      const updatedPlantInstance = await this.plantInstanceService.addPlantInstanceHistory(plantInstance, {
+        status: fromTaskTypeToHistoryStatus(type),
+        date: date,
+        from: {
+          containerId: plantInstance.containerId,
+          slotId: plantInstance.slotId,
+          subSlot: plantInstance.subSlot
+        }
+      });
+      await this.plantInstanceService.createUpdatePlantInstanceTasks(
+        updatedPlantInstance,
+        userId,
+        gardenId,
+        growingZoneData
+      );
     }
 
     return updatedCount;

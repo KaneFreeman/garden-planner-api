@@ -5,7 +5,15 @@ import { ContainerService } from '../container/container.service';
 import { ContainerSlotDTO } from '../container/dto/container-slot.dto';
 import { ContainerProjection } from '../container/interfaces/container.projection';
 import plantData from '../data/plantData';
-import { CONTAINER_TYPE_OUTSIDE, GrowingZoneData, HistoryStatus, SPRING, TRANSPLANTED, TaskType } from '../interface';
+import {
+  CONTAINER_TYPE_OUTSIDE,
+  FALL,
+  GrowingZoneData,
+  HistoryStatus,
+  SPRING,
+  TRANSPLANTED,
+  TaskType
+} from '../interface';
 import { PlantService } from '../plant/plant.service';
 import { TaskService } from '../task/services/task.service';
 import { UserService } from '../users/user.service';
@@ -20,6 +28,7 @@ import { PlantInstanceDTO, sanitizePlantInstanceDTO } from './dto/plant-instance
 import { PlantInstanceHistoryDocument } from './interfaces/plant-instance-history.document';
 import { PlantInstanceDocument } from './interfaces/plant-instance.document';
 import { PlantInstanceProjection } from './interfaces/plant-instance.projection';
+import { isAfter, isBefore, parseISO } from 'date-fns';
 
 interface AddPlantInstanceOptions {
   createTasks?: boolean;
@@ -175,6 +184,24 @@ export class PlantInstanceService {
       {
         $match: {
           plant: new Types.ObjectId(plant)
+        }
+      }
+    ]);
+  }
+
+  async getPlantInstancesByContainerAndIdIn(
+    containerId: string,
+    plantInstanceIds: string[],
+    userId: string,
+    gardenId: string
+  ): Promise<PlantInstanceProjection[]> {
+    return this.findPlantInstances(userId, gardenId, [
+      {
+        $match: {
+          containerId: new Types.ObjectId(containerId),
+          _id: {
+            $in: plantInstanceIds.map((id) => new Types.ObjectId(id))
+          }
         }
       }
     ]);
