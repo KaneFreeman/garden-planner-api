@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { isAfter, isBefore, parseISO } from 'date-fns';
 import { Model, PipelineStage, Types } from 'mongoose';
 import { ContainerService } from '../container/container.service';
 import { ContainerSlotDTO } from '../container/dto/container-slot.dto';
@@ -10,6 +11,7 @@ import {
   FALL,
   GrowingZoneData,
   HistoryStatus,
+  PLANTED,
   SPRING,
   TRANSPLANTED,
   TaskType
@@ -28,7 +30,6 @@ import { PlantInstanceDTO, sanitizePlantInstanceDTO } from './dto/plant-instance
 import { PlantInstanceHistoryDocument } from './interfaces/plant-instance-history.document';
 import { PlantInstanceDocument } from './interfaces/plant-instance.document';
 import { PlantInstanceProjection } from './interfaces/plant-instance.projection';
-import { isAfter, isBefore, parseISO } from 'date-fns';
 
 interface AddPlantInstanceOptions {
   createTasks?: boolean;
@@ -276,10 +277,29 @@ export class PlantInstanceService {
       return null;
     }
 
+    let season = plantInstance.season;
+    const historyDate = parseISO(history.date);
+    if (history.status === PLANTED) {
+      if (season === SPRING) {
+        const fallCutoffDate = new Date();
+        fallCutoffDate.setFullYear(historyDate.getFullYear(), 6, 31); // July 31st
+        if (isAfter(historyDate, fallCutoffDate)) {
+          season = FALL;
+        }
+      } else if (season === FALL) {
+        const springCutoffDate = new Date();
+        springCutoffDate.setFullYear(historyDate.getFullYear(), 5, 1); // June 1st
+        if (isBefore(historyDate, springCutoffDate)) {
+          season = SPRING;
+        }
+      }
+    }
+
     return this.plantInstanceModel
       .findByIdAndUpdate(
         plantInstance._id,
         {
+          season,
           history: [...(plantInstance.history ?? []), history].sort(
             (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
           )
