@@ -43,6 +43,7 @@ import { CreateTaskDTO, sanitizeCreateTaskDTO } from '../dto/create-task.dto';
 import { TaskDocument } from '../interfaces/task.document';
 import { TaskProjection } from '../interfaces/task.projection';
 import { hasFrostDates } from '../../util/growingZone.util';
+import { getPlantTitle } from '../../util/plant.util';
 
 @Injectable()
 export class TaskService {
@@ -602,7 +603,7 @@ export class TaskService {
     if (!task) {
       await this.addTask(
         {
-          text: `Plant ${plant.name} in ${container.name} at ${slotTitle}`,
+          text: `Plant ${getPlantTitle(plant)} in ${container.name} at ${slotTitle}`,
           type: 'Plant',
           start,
           due,
@@ -619,7 +620,7 @@ export class TaskService {
         userId,
         gardenId,
         {
-          text: `Plant ${plant.name} in ${container.name} at ${slotTitle}`,
+          text: `Plant ${getPlantTitle(plant)} in ${container.name} at ${slotTitle}`,
           type: task.type,
           start,
           due,
@@ -692,7 +693,7 @@ export class TaskService {
     if (!task) {
       await this.addTask(
         {
-          text: `Transplant ${plant.name} from ${container.name} at ${slotTitle}`,
+          text: `Transplant ${getPlantTitle(plant)} from ${container.name} at ${slotTitle}`,
           type: 'Transplant',
           start,
           due,
@@ -709,7 +710,7 @@ export class TaskService {
         userId,
         gardenId,
         {
-          text: `Transplant ${plant.name} from ${container.name} at ${slotTitle}`,
+          text: `Transplant ${getPlantTitle(plant)} from ${container.name} at ${slotTitle}`,
           type: task.type,
           start,
           due,
@@ -883,7 +884,7 @@ export class TaskService {
     if (!task) {
       await this.addTask(
         {
-          text: `Harvest ${plant.name} from ${container.name} at ${slotTitle}`,
+          text: `Harvest ${getPlantTitle(plant)} from ${container.name} at ${slotTitle}`,
           type: 'Harvest',
           start,
           due,
@@ -900,7 +901,7 @@ export class TaskService {
         userId,
         gardenId,
         {
-          text: `Harvest ${plant.name} from ${container.name} at ${slotTitle}`,
+          text: `Harvest ${getPlantTitle(plant)} from ${container.name} at ${slotTitle}`,
           type: task.type,
           start,
           due,
@@ -1034,11 +1035,11 @@ export class TaskService {
 
       let text: string;
       if (fertilizeData.length > 1 && isEmpty(fertilizerApplication.description)) {
-        text = `Fertilize (${ordinalSuffixOf(i)} time) ${plant.name}`;
+        text = `Fertilize (${ordinalSuffixOf(i)} time) ${getPlantTitle(plant)}`;
       } else if (isNotEmpty(fertilizerApplication.description)) {
-        text = `Fertilize ${plant.name} (${fertilizerApplication.description})`;
+        text = `Fertilize ${getPlantTitle(plant)} (${fertilizerApplication.description})`;
       } else {
-        text = `Fertilize ${plant.name}`;
+        text = `Fertilize ${getPlantTitle(plant)}`;
       }
 
       const task = tasksByText[text];
