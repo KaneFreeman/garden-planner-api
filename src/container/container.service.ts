@@ -75,6 +75,7 @@ export class ContainerService {
             name: 1,
             gardenId: 1,
             type: 1,
+            year: 1,
             rows: 1,
             columns: 1,
             slots: 1,
@@ -173,7 +174,11 @@ export class ContainerService {
       };
     }
 
-    const editedContainer = await this.containerModel.findByIdAndUpdate(containerId, newContainerDTO, { new: true });
+    const editedContainer = await this.containerModel.findByIdAndUpdate(
+      containerId,
+      { $set: newContainerDTO },
+      { new: true }
+    );
 
     if (editedContainer && updateTasks) {
       const growingZoneData = await this.userService.getGrowingZoneData(userId);

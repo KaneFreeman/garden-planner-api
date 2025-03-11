@@ -6,6 +6,7 @@ export interface ContainerProjection {
   readonly name: string;
   readonly gardenId: string;
   readonly type: ContainerType;
+  readonly year?: number;
   readonly rows: number;
   readonly columns: number;
   readonly slots?: Record<string, Slot>;

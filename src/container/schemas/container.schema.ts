@@ -5,6 +5,7 @@ export const ContainerSchema = new mongoose.Schema({
   name: String,
   gardenId: SchemaTypes.ObjectId,
   type: String,
+  year: Number,
   rows: Number,
   columns: Number,
   slots: {

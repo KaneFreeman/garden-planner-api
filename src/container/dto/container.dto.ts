@@ -6,6 +6,7 @@ import { ContainerSlotDTO, sanitizeContainerSlotDTO } from './container-slot.dto
 export interface ContainerDTO {
   readonly name: string;
   readonly type: ContainerType;
+  readonly year?: number;
   readonly rows: number;
   readonly columns: number;
   readonly slots?: Record<string, ContainerSlotDTO>;
@@ -29,6 +30,7 @@ export function sanitizeContainerDTO(
   return raw.map((dto) => ({
     name: `${dto.name}`,
     type: toContainerType(dto.type),
+    year: isNotNullish(dto.year) ? Number(dto.year) : undefined,
     rows: Number(dto.rows),
     columns: Number(dto.columns),
     slots: mapRecord(dto.slots, (slot) => sanitizeContainerSlotDTO(slot)),
