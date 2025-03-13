@@ -49,84 +49,84 @@ export const growingZoneDataByZone: Record<GrowingZone, RawGrowingZoneData> = {
     zone: GrowingZone['3a'],
     lastFrost: {
       month: 4,
-      day: 12
+      day: 26
     },
     firstFrost: {
       month: 8,
-      day: 8
+      day: 2
     }
   },
   [GrowingZone['3b']]: {
     zone: GrowingZone['3b'],
     lastFrost: {
       month: 4,
-      day: 5
+      day: 20
     },
     firstFrost: {
       month: 8,
-      day: 15
+      day: 10
     }
   },
   [GrowingZone['4a']]: {
     zone: GrowingZone['4a'],
     lastFrost: {
-      month: 3,
-      day: 28
+      month: 4,
+      day: 15
     },
     firstFrost: {
       month: 8,
-      day: 21
+      day: 18
     }
   },
   [GrowingZone['4b']]: {
     zone: GrowingZone['4b'],
     lastFrost: {
-      month: 3,
-      day: 24
+      month: 4,
+      day: 8
     },
     firstFrost: {
-      month: 9,
-      day: 7
+      month: 8,
+      day: 26
     }
   },
   [GrowingZone['5a']]: {
     zone: GrowingZone['5a'],
     lastFrost: {
-      month: 3,
-      day: 24
+      month: 4,
+      day: 2
     },
     firstFrost: {
       month: 9,
-      day: 13
+      day: 5
     }
   },
   [GrowingZone['5b']]: {
     zone: GrowingZone['5b'],
     lastFrost: {
       month: 3,
-      day: 15
+      day: 23
     },
     firstFrost: {
       month: 9,
-      day: 18
+      day: 12
     }
   },
   [GrowingZone['6a']]: {
     zone: GrowingZone['6a'],
     lastFrost: {
       month: 3,
-      day: 12
+      day: 18
     },
     firstFrost: {
       month: 9,
-      day: 22
+      day: 20
     }
   },
   [GrowingZone['6b']]: {
     zone: GrowingZone['6b'],
     lastFrost: {
       month: 3,
-      day: 3
+      day: 8
     },
     firstFrost: {
       month: 9,
@@ -137,66 +137,66 @@ export const growingZoneDataByZone: Record<GrowingZone, RawGrowingZoneData> = {
     zone: GrowingZone['7a'],
     lastFrost: {
       month: 3,
-      day: 1
+      day: 2
     },
     firstFrost: {
-      month: 9,
-      day: 29
+      month: 10,
+      day: 5
     }
   },
   [GrowingZone['7b']]: {
     zone: GrowingZone['7b'],
     lastFrost: {
       month: 2,
-      day: 28
-    },
-    firstFrost: {
-      month: 10,
-      day: 7
-    }
-  },
-  [GrowingZone['8a']]: {
-    zone: GrowingZone['8a'],
-    lastFrost: {
-      month: 2,
-      day: 28
+      day: 23
     },
     firstFrost: {
       month: 10,
       day: 12
     }
   },
+  [GrowingZone['8a']]: {
+    zone: GrowingZone['8a'],
+    lastFrost: {
+      month: 2,
+      day: 18
+    },
+    firstFrost: {
+      month: 10,
+      day: 23
+    }
+  },
   [GrowingZone['8b']]: {
     zone: GrowingZone['8b'],
     lastFrost: {
       month: 2,
-      day: 13
+      day: 8
     },
     firstFrost: {
-      month: 10,
-      day: 24
+      month: 11,
+      day: 5
     }
   },
   [GrowingZone['9a']]: {
     zone: GrowingZone['9a'],
     lastFrost: {
       month: 1,
-      day: 28
+      day: 23
     },
     firstFrost: {
-      month: 10,
-      day: 25
+      month: 11,
+      day: 15
     }
   },
   [GrowingZone['9b']]: {
     zone: GrowingZone['9b'],
     lastFrost: {
       month: 1,
-      day: 6
+      day: 8
     },
     firstFrost: {
       month: 11,
-      day: 13
+      day: 25
     }
   },
   [GrowingZone['10a']]: {
