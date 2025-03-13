@@ -61,7 +61,7 @@ export class PlantService {
         await this.updateTasksWithNewPlantName(plantId, userId, garden._id, oldPlant.name, createPlantDTO.name);
       }
 
-      await this.updateTasks(plantId, userId, garden._id);
+      await this.updateTasks(userId, garden._id, plantId);
     }
 
     return updatedPlant;
@@ -87,14 +87,7 @@ export class PlantService {
     }
   }
 
-  async updateTasks(plantId: string, userId: string, gardenId: string) {
-    const growingZoneData = await this.userService.getGrowingZoneData(userId);
-    if (growingZoneData) {
-      const containers = await this.containerService.getContainers(userId, gardenId);
-
-      for (const container of containers) {
-        await this.containerService.createUpdatePlantTasks(container, plantId, gardenId, undefined, growingZoneData);
-      }
-    }
+  async updateTasks(userId: string, gardenId: string, plantId: string) {
+    await this.containerService.createUpdatePlantTasksForAllContainers(userId, gardenId, plantId);
   }
 }

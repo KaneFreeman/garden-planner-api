@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
@@ -8,6 +8,7 @@ import { isEmpty, isNotEmpty } from '../util/string.util';
 import { UserDTO, sanitizeUserDTO } from './dto/user.dto';
 import { UserDocument } from './interfaces/user.document';
 import { UserProjection } from './interfaces/user.projection';
+import { GardenService } from '../garden/garden.service';
 
 @Injectable()
 export class UserService {
@@ -15,7 +16,8 @@ export class UserService {
 
   constructor(
     private logger: Logger,
-    @InjectModel('User') private userModel: Model<UserDocument>
+    @InjectModel('User') private userModel: Model<UserDocument>,
+    @Inject(forwardRef(() => GardenService)) private gardenService: GardenService
   ) {
     this.whitelist = (process.env.USER_WHITELIST ?? '').split(',').map((email) => email.trim());
   }
@@ -135,5 +137,12 @@ export class UserService {
       lastFrost: data.lastFrost ? new Date(year, data.lastFrost.month, data.lastFrost.day) : undefined,
       firstFrost: data.firstFrost ? new Date(year, data.firstFrost.month, data.firstFrost.day) : undefined
     };
+  }
+
+  async createUpdatePlantTasksForAllUsers() {
+    const users = await this.getUsers();
+    for (const user of users) {
+      await this.gardenService.createUpdatePlantTasksForAllGardens(user._id);
+    }
   }
 }

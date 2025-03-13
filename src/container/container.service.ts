@@ -183,7 +183,7 @@ export class ContainerService {
     if (editedContainer && updateTasks) {
       const growingZoneData = await this.userService.getGrowingZoneData(userId);
       if (growingZoneData) {
-        await this.createUpdatePlantTasks(editedContainer, userId, gardenId, undefined, growingZoneData);
+        await this.createUpdatePlantTasksForContainer(editedContainer, userId, gardenId, undefined, growingZoneData);
       }
     }
 
@@ -302,7 +302,22 @@ export class ContainerService {
     }
   }
 
-  async createUpdatePlantTasks(
+  async createUpdatePlantTasksForAllContainers(userId: string, gardenId: string, plantId?: string) {
+    const growingZoneData = await this.userService.getGrowingZoneData(userId);
+    if (growingZoneData) {
+      const containers = await this.getContainers(userId, gardenId);
+
+      for (const container of containers) {
+        if (container.archived) {
+          continue;
+        }
+
+        await this.createUpdatePlantTasksForContainer(container, userId, gardenId, plantId, growingZoneData);
+      }
+    }
+  }
+
+  async createUpdatePlantTasksForContainer(
     container: ContainerProjection | null | undefined,
     userId: string,
     gardenId: string,

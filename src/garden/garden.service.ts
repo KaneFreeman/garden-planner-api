@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { ContainerService } from '../container/container.service';
 import { isNullish } from '../util/null.util';
 import { GardenDTO, sanitizeGardenDTO } from './dto/garden.dto';
 import { GardenDocument } from './interfaces/garden.document';
@@ -8,7 +9,10 @@ import { GardenProjection } from './interfaces/garden.projection';
 
 @Injectable()
 export class GardenService {
-  constructor(@InjectModel('Garden') private readonly gardenModel: Model<GardenDocument>) {}
+  constructor(
+    @InjectModel('Garden') private readonly gardenModel: Model<GardenDocument>,
+    @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService
+  ) {}
 
   async addGarden(createGardenDTO: GardenDTO, userId: string): Promise<GardenProjection> {
     const newGarden = await this.gardenModel.create({
@@ -48,5 +52,16 @@ export class GardenService {
 
   async deleteGarden(gardenId: string, userId: string): Promise<GardenProjection | null> {
     return this.gardenModel.findOneAndDelete({ _id: gardenId, userId: new Types.ObjectId(userId) });
+  }
+
+  async createUpdatePlantTasksForAllGardens(userId: string) {
+    const gardens = await this.getGardens(userId);
+    for (const garden of gardens) {
+      if (garden.retired) {
+        continue;
+      }
+
+      await this.containerService.createUpdatePlantTasksForAllContainers(userId, garden._id);
+    }
   }
 }
