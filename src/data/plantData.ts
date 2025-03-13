@@ -8,8 +8,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 78,
           max: 50,
           transplant_min: 64,
-          transplant_max: 85,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 85
         }
       }
     },
@@ -85,8 +84,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 84,
           max: 71,
           transplant_min: 56,
-          transplant_max: 99,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 99
         },
         plant: { min: 28, max: -28 }
       },
@@ -95,8 +93,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 98,
           max: 60,
           transplant_min: 18,
-          transplant_max: 35,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 35
         },
         plant: { min: 63, max: 42 }
       }
@@ -199,8 +196,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 63,
           max: 42,
           transplant_min: 40,
-          transplant_max: 54,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 54
         },
         plant: { min: 21, max: -14 },
         outdoor: { min: 21, max: -7 },
@@ -211,8 +207,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 84,
           max: 70,
           transplant_min: 7,
-          transplant_max: 14,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 14
         },
         plant: { min: 77, max: 56 },
         outdoor: { min: 77, max: 56 },
@@ -278,8 +273,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 63,
           max: 42,
           transplant_min: 42,
-          transplant_max: 56,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 56
         },
         plant: { min: 21, max: -14 },
         outdoor: { min: 21, max: -7 }
@@ -289,8 +283,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 84,
           max: 70,
           transplant_min: 7,
-          transplant_max: 14,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 14
         },
         plant: { min: 77, max: 56 }
       }
@@ -327,8 +320,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 77,
           max: 63,
           transplant_min: 49,
-          transplant_max: 63,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 63
         },
         plant: { min: 28, max: 0 }
       },
@@ -337,8 +329,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 84,
           max: 77,
           transplant_min: 21,
-          transplant_max: 35,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 35
         },
         plant: { min: 63, max: 42 }
       }
@@ -375,8 +366,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 63,
           max: 49,
           transplant_min: 42,
-          transplant_max: 56,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 56
         },
         plant: { min: 21, max: -7 },
         outdoor: { min: -14, max: -21 }
@@ -386,8 +376,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 84,
           max: 77,
           transplant_min: 22,
-          transplant_max: 35,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 35
         },
         plant: { min: 63, max: 42 },
         outdoor: { min: 56, max: 42 }
@@ -425,8 +414,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 28,
           max: 21,
           transplant_min: 28,
-          transplant_max: 28,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 28
         },
         outdoor: { min: -14, max: -21 }
       }
@@ -499,8 +487,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 63,
           max: 42,
           transplant_min: 42,
-          transplant_max: 49,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 49
         },
         plant: { min: 21, max: -7 }
       },
@@ -509,8 +496,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 84,
           max: 70,
           transplant_min: 14,
-          transplant_max: 28,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 28
         },
         plant: { min: 70, max: 42 }
       }
@@ -547,8 +533,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 84,
           max: 70,
           transplant_min: 64,
-          transplant_max: 70,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 70
         },
         plant: { min: 20, max: 0 }
       }
@@ -585,8 +570,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 114,
           max: 93,
           transplant_min: 14,
-          transplant_max: 14,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 14
         },
         outdoor: { min: 100, max: 79 }
       }
@@ -769,8 +753,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 70,
           max: 42,
           transplant_min: 77,
-          transplant_max: 84,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 84
         },
         plant: { min: -14, max: -35 }
       }
@@ -990,8 +973,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 70,
           max: 42,
           transplant_min: 14,
-          transplant_max: 28,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 28
         },
         outdoor: { min: 37, max: 23 }
       }
@@ -1090,8 +1072,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 35,
           max: 28,
           transplant_min: 49,
-          transplant_max: 56,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 56
         },
         outdoor: { min: -14, max: -28 }
       }
@@ -1215,8 +1196,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 77,
           max: 63,
           transplant_min: 49,
-          transplant_max: 70,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 70
         },
         plant: { min: 28, max: -7 },
         fertilize: [
@@ -1343,8 +1323,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 70,
           max: 42,
           transplant_min: 70,
-          transplant_max: 84,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 84
         },
         outdoor: { min: -7, max: -28 },
         plant: { min: -14, max: -28 },
@@ -1742,8 +1721,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 56,
           max: 42,
           transplant_min: 70,
-          transplant_max: 70,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 70
         },
         plant: { min: -14, max: -28 },
         fertilize: [
@@ -1814,8 +1792,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 28,
           max: 21,
           transplant_min: 42,
-          transplant_max: 49,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 49
         },
         outdoor: { min: -14, max: -28 }
       }
@@ -1852,8 +1829,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 56,
           max: 42,
           transplant_min: 70,
-          transplant_max: 70,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 70
         },
         plant: { min: -14, max: -28 },
         outdoor: { min: -14, max: -28 },
@@ -1951,8 +1927,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 56,
           max: 35,
           transplant_min: 63,
-          transplant_max: 70,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 70
         },
         plant: { min: -14, max: -28 },
         outdoor: { min: -14, max: -28 }
@@ -1990,8 +1965,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 63,
           max: 35,
           transplant_min: 63,
-          transplant_max: 77,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 77
         },
         plant: { min: -14, max: -28 },
         outdoor: { min: -14, max: -28 }
@@ -2029,8 +2003,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 56,
           max: 28,
           transplant_min: 56,
-          transplant_max: 70,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 70
         },
         plant: { min: -14, max: -28 },
         outdoor: { min: 7, max: -21 }
@@ -2068,8 +2041,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 70,
           max: 63,
           transplant_min: 42,
-          transplant_max: 77,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 77
         },
         plant: { min: 28, max: -14 }
       }
@@ -2106,8 +2078,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 63,
           max: 28,
           transplant_min: 56,
-          transplant_max: 63,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 63
         },
         plant: { min: 7, max: -35 },
         outdoor: { min: -7, max: -35 },
@@ -2158,8 +2129,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 42,
           max: 21,
           transplant_min: 21,
-          transplant_max: 56,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 56
         },
         outdoor: { min: 21, max: -35 },
         fertilize: [{ start: 28, from: 'Transplanted' }]
@@ -2197,8 +2167,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 56,
           max: 28,
           transplant_min: 56,
-          transplant_max: 70,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 70
         },
         plant: { min: -14, max: -28 },
         outdoor: { min: -14, max: -28 }
@@ -2236,8 +2205,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 77,
           max: 56,
           transplant_min: 49,
-          transplant_max: 70,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 70
         },
         outdoor: { min: 21, max: -14 },
         plant: { min: 28, max: -14 }
@@ -2276,8 +2244,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 63,
           max: 42,
           transplant_min: 70,
-          transplant_max: 77,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 77
         },
         plant: { min: -14, max: -28 },
         outdoor: { min: -14, max: -28 }
@@ -2352,8 +2319,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 77,
           max: 56,
           transplant_min: 84,
-          transplant_max: 91,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 91
         },
         plant: { min: -14, max: -28 },
         outdoor: { min: -14, max: -28 }
@@ -2391,8 +2357,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 70,
           max: 42,
           transplant_min: 49,
-          transplant_max: 70,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 70
         },
         plant: { min: 21, max: -28 },
         fertilize: [{ start: 14, from: 'Transplanted' }]
@@ -2430,8 +2395,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 63,
           max: 42,
           transplant_min: 70,
-          transplant_max: 84,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 84
         },
         outdoor: { min: -7, max: -28 },
         plant: { min: -7, max: -42 },
@@ -2470,8 +2434,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 70,
           max: 56,
           transplant_min: 70,
-          transplant_max: 84,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 84
         },
         plant: { min: 0, max: -28 },
         outdoor: { min: -7, max: -28 },
@@ -2510,8 +2473,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 42,
           max: 28,
           transplant_min: 49,
-          transplant_max: 70,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 70
         },
         plant: { min: -7, max: -42 },
         outdoor: { min: -7, max: -35 },
@@ -2550,8 +2512,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 70,
           max: 56,
           transplant_min: 70,
-          transplant_max: 84,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 84
         },
         plant: { min: 0, max: -28 },
         fertilize: [{ start: 14, from: 'Transplanted' }]
@@ -2589,8 +2550,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 77,
           max: 56,
           transplant_min: 84,
-          transplant_max: 84,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 84
         },
         plant: { min: -7, max: -28 },
         outdoor: { min: 7, max: 21 }
@@ -2628,8 +2588,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: -14,
           max: -42,
           transplant_min: 42,
-          transplant_max: 42,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 42
         },
         outdoor: { min: 14, max: 0 }
       }
@@ -2658,8 +2617,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 77,
           max: 56,
           transplant_min: 84,
-          transplant_max: 84,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 84
         },
         plant: { min: -7, max: -28 }
       }
@@ -2696,8 +2654,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 56,
           max: 42,
           transplant_min: 70,
-          transplant_max: 70,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 70
         }
       }
     },
@@ -2733,8 +2690,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 70,
           max: 56,
           transplant_min: 77,
-          transplant_max: 84,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 84
         },
         plant: { min: -7, max: -28 }
       }
@@ -2810,8 +2766,7 @@ const plantData: Record<PlantType, PlantData> = {
           min: 49,
           max: 28,
           transplant_min: 63,
-          transplant_max: 70,
-          fertilize: [{ start: 14, end: 14, from: 'Planted', description: 'half strength indoor food' }]
+          transplant_max: 70
         },
         plant: { min: -14, max: -42 },
         outdoor: { min: -14, max: -35 },
