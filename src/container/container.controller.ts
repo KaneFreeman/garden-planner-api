@@ -105,6 +105,23 @@ export class ContainerController {
     return res.status(HttpStatus.OK).json(deletedContainer);
   }
 
+  // Finish planning entire container
+  @UseGuards(AuthGuard)
+  @Post('/:containerId/finish-planning')
+  async finishPlanningContainer(
+    @Req() req: RequestWithUser,
+    @Res() res: Response,
+    @Param('gardenId', new ValidateObjectId()) gardenId: string,
+    @Param('containerId', new ValidateObjectId()) containerId: string
+  ) {
+    const plantInstancesCreatedCount = await this.containerService.finishPlanningContainer(
+      containerId,
+      req.user.userId,
+      gardenId
+    );
+    return res.status(HttpStatus.OK).json(plantInstancesCreatedCount);
+  }
+
   // Update tasks in a container
   @UseGuards(AuthGuard)
   @Post('/:containerId/:taskType')

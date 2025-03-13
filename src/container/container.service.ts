@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nest
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage, Types } from 'mongoose';
 import { GardenService } from '../garden/garden.service';
-import { GrowingZoneData, TaskType } from '../interface';
+import { GrowingZoneData, STARTED_FROM_TYPE_SEED, TaskType } from '../interface';
 import { PlantInstanceService } from '../plant-instance/plant-instance.service';
 import { TaskService } from '../task/services/task.service';
 import { UserService } from '../users/user.service';
@@ -15,6 +15,7 @@ import { BaseSlot } from './interfaces/container-slot.interface';
 import { ContainerDocument } from './interfaces/container.document';
 import { ContainerProjection } from './interfaces/container.projection';
 import { TaskProjection } from '../task/interfaces/task.projection';
+import computeSeason from '../util/season.util';
 
 @Injectable()
 export class ContainerService {
@@ -359,5 +360,63 @@ export class ContainerService {
         );
       }
     }
+  }
+
+  async finishPlanningContainer(
+    containerId: string | null | undefined,
+    userId: string,
+    gardenId: string
+  ): Promise<number> {
+    const container = await this.getContainer(containerId, userId, gardenId);
+    if (!container) {
+      throw new NotFoundException('Container does not exist!');
+    }
+
+    const { slots = {} } = container;
+    let plantInstancesCreatedCount = 0;
+
+    for (const slotIndex of Object.keys(slots)) {
+      const slot = slots[slotIndex];
+
+      if (!slot.plantInstanceId && slot.plant) {
+        await this.plantInstanceService.addPlantInstance(
+          {
+            containerId: container._id,
+            slotId: +slotIndex,
+            subSlot: false,
+            plant: slot.plant,
+            created: new Date().toISOString(),
+            startedFrom: container.startedFrom ?? STARTED_FROM_TYPE_SEED,
+            season: computeSeason(),
+            plantedCount: 1
+          },
+          userId,
+          gardenId
+        );
+
+        plantInstancesCreatedCount++;
+      }
+
+      if (slot.subSlot && !slot.subSlot.plantInstanceId && slot.subSlot.plant) {
+        await this.plantInstanceService.addPlantInstance(
+          {
+            containerId: container._id,
+            slotId: +slotIndex,
+            subSlot: true,
+            plant: slot.subSlot.plant,
+            created: new Date().toISOString(),
+            startedFrom: container.startedFrom ?? STARTED_FROM_TYPE_SEED,
+            season: computeSeason(),
+            plantedCount: 1
+          },
+          userId,
+          gardenId
+        );
+
+        plantInstancesCreatedCount++;
+      }
+    }
+
+    return plantInstancesCreatedCount;
   }
 }
