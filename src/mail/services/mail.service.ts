@@ -158,7 +158,7 @@ export class MailService {
           await this.mailerService.sendMail({
             to: user.email,
             from: `"Garden Planner Team" <${process.env.FROM_EMAIL_ADDRESS}>`,
-            subject: `🍅 Garden Planner - Daily Summary - ${garden.name}`,
+            subject: `🍅 Garden Planner - Weekly Summary - ${garden.name}`,
             template: './summary',
             context: {
               domain: process.env.DOMAIN,

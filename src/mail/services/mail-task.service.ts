@@ -11,7 +11,7 @@ export class MailTaskService {
     @Inject(forwardRef(() => MailService)) private mailService: MailService
   ) {}
 
-  @Cron('0 8 * * *')
+  @Cron('0 8 * * 1')
   async handleCron() {
     if (env !== 'production') {
       this.logger.log(`Not production (env: ${env}), skipping summary email...`);
