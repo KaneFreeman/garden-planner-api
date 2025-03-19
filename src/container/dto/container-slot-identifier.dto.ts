@@ -3,7 +3,6 @@ import { isNullish } from '../../util/null.util';
 export interface ContainerSlotIdentifierDTO {
   readonly containerId: string;
   readonly slotId: number;
-  readonly subSlot?: boolean;
 }
 
 export function sanitizeContainerSlotIdentifierDto(
@@ -15,7 +14,6 @@ export function sanitizeContainerSlotIdentifierDto(
 
   return {
     containerId: `${raw.containerId}`,
-    slotId: Number(raw.slotId),
-    subSlot: Boolean(raw.subSlot)
+    slotId: Number(raw.slotId)
   };
 }

@@ -19,7 +19,6 @@ import {
 import { PlantService } from '../plant/plant.service';
 import { TaskService } from '../task/services/task.service';
 import { UserService } from '../users/user.service';
-import { isNullish } from '../util/null.util';
 import getSlotTitle from '../util/slot.util';
 import {
   BulkReopenClosePlantInstanceDTO,
@@ -134,7 +133,6 @@ export class PlantInstanceService {
             _id: 1,
             containerId: 1,
             slotId: 1,
-            subSlot: 1,
             plant: 1,
             created: 1,
             history: 1,
@@ -244,8 +242,7 @@ export class PlantInstanceService {
       date,
       from: {
         containerId: plantInstance.containerId,
-        slotId: plantInstance.slotId,
-        subSlot: plantInstance.subSlot
+        slotId: plantInstance.slotId
       }
     });
 
@@ -384,25 +381,10 @@ export class PlantInstanceService {
           newSlots[key] = { ...oldSlots[key] };
         });
 
-        if (plantInstance.subSlot) {
-          const subSlot = slot?.subSlot;
-
-          if (!subSlot || isNullish(subSlot.plantInstanceId)) {
-            newSlots[`${plantInstance.slotId}`] = {
-              ...newSlots[`${plantInstance.slotId}`],
-              subSlot: {
-                plantInstanceId: plantInstance._id?.toString(),
-                plantInstanceHistory: subSlot?.plantInstanceHistory
-              }
-            };
-          }
-        } else {
-          newSlots[`${plantInstance.slotId}`] = {
-            plantInstanceId: plantInstance._id?.toString(),
-            plantInstanceHistory: slot?.plantInstanceHistory,
-            subSlot: slot?.subSlot
-          };
-        }
+        newSlots[`${plantInstance.slotId}`] = {
+          plantInstanceId: plantInstance._id?.toString(),
+          plantInstanceHistory: slot?.plantInstanceHistory
+        };
 
         await this.containerService.editContainer(
           container._id,
@@ -447,8 +429,7 @@ export class PlantInstanceService {
 
       newSlots[`${plantInstance.slotId}`] = {
         plantInstanceId: null,
-        plantInstanceHistory: slot?.plantInstanceHistory,
-        subSlot: slot?.subSlot
+        plantInstanceHistory: slot?.plantInstanceHistory
       };
 
       await this.containerService.editContainer(
@@ -517,7 +498,6 @@ export class PlantInstanceService {
       season,
       container,
       plantInstance.slotId,
-      plantInstance.subSlot ?? false,
       plantInstance,
       plant,
       data,
@@ -531,7 +511,6 @@ export class PlantInstanceService {
       season,
       container,
       plantInstance.slotId,
-      plantInstance.subSlot ?? false,
       plantInstance,
       plant,
       data,

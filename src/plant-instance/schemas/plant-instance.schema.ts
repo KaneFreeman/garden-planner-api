@@ -6,7 +6,6 @@ import { PlantInstanceHistorySchema } from './plant-instance-history.schema';
 export const PlantInstanceSchema = new mongoose.Schema({
   containerId: SchemaTypes.ObjectId,
   slotId: Number,
-  subSlot: Boolean,
   plant: SchemaTypes.ObjectId,
   created: { type: Date },
   pictures: [PictureDataSchema],

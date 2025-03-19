@@ -1,12 +1,5 @@
-import mongoose from 'mongoose';
-
-export const BaseContainerSlotSchema = {
+export const ContainerSlotSchema = {
   plant: String,
   plantInstanceId: String,
   plantInstanceHistory: [String]
 };
-
-export const ContainerSlotSchema = new mongoose.Schema({
-  ...BaseContainerSlotSchema,
-  subSlot: BaseContainerSlotSchema
-});

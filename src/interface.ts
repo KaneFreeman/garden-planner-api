@@ -443,7 +443,6 @@ export interface GrowingZoneData {
 export interface ContainerSlotIdentifier {
   containerId: string;
   slotId: number;
-  subSlot?: boolean;
 }
 
 export enum GrowingZone {

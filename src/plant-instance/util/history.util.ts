@@ -20,10 +20,7 @@ export function findHistoryFromIndex(
   }
 
   return plantInstance.history?.findIndex((entry) => {
-    const fromMatch =
-      entry.from?.containerId === from.containerId &&
-      entry.from?.slotId === from.slotId &&
-      entry.from?.subSlot === from.subSlot;
+    const fromMatch = entry.from?.containerId === from.containerId && entry.from?.slotId === from.slotId;
 
     if (status) {
       return fromMatch && entry.status === status;
@@ -52,10 +49,7 @@ export function findHistoryToIndex(
   }
 
   return plantInstance.history?.findIndex((entry) => {
-    const fromMatch =
-      entry.to?.containerId.toString() === to.containerId.toString() &&
-      entry.to?.slotId === to.slotId &&
-      entry.to?.subSlot === to.subSlot;
+    const fromMatch = entry.to?.containerId.toString() === to.containerId.toString() && entry.to?.slotId === to.slotId;
 
     if (status) {
       return fromMatch && entry.status === status;

@@ -34,16 +34,16 @@ import {
 import { PlantProjection } from '../../plant/interfaces/plant.projection';
 import { UserService } from '../../users/user.service';
 import { isValidDate } from '../../util/date.util';
+import { hasFrostDates } from '../../util/growingZone.util';
 import { fromTaskTypeToHistoryStatus } from '../../util/history.util';
 import { isNotNullish, isNullish } from '../../util/null.util';
 import ordinalSuffixOf from '../../util/number.util';
+import { getPlantTitle } from '../../util/plant.util';
 import { isEmpty, isNotEmpty } from '../../util/string.util';
 import { BulkCompleteTaskDTO, sanitizeBulkCompleteTaskDTO } from '../dto/bulk-complete-task.dto';
 import { CreateTaskDTO, sanitizeCreateTaskDTO } from '../dto/create-task.dto';
 import { TaskDocument } from '../interfaces/task.document';
 import { TaskProjection } from '../interfaces/task.projection';
-import { hasFrostDates } from '../../util/growingZone.util';
-import { getPlantTitle } from '../../util/plant.util';
 
 @Injectable()
 export class TaskService {
@@ -334,8 +334,7 @@ export class TaskService {
         date,
         from: {
           containerId: plantInstance.containerId,
-          slotId: plantInstance.slotId,
-          subSlot: plantInstance.subSlot
+          slotId: plantInstance.slotId
         }
       });
 
@@ -807,7 +806,6 @@ export class TaskService {
     season: Season,
     container: ContainerProjection,
     slotId: number,
-    subSlot: boolean,
     instance: PlantInstanceProjection | null,
     plant: PlantProjection | null,
     data: PlantData | undefined,
@@ -869,8 +867,7 @@ export class TaskService {
           instance,
           {
             containerId: container._id.toString(),
-            slotId,
-            subSlot
+            slotId
           },
           HARVESTED
         )?.date ?? null;
@@ -956,7 +953,6 @@ export class TaskService {
     season: Season,
     container: ContainerProjection,
     slotId: number,
-    subSlot: boolean,
     instance: PlantInstanceProjection | null,
     plant: PlantProjection | null,
     data: PlantData | undefined,
@@ -1020,8 +1016,7 @@ export class TaskService {
         plantedContainer,
         getTransplantedDate(instance, {
           containerId: container._id.toString(),
-          slotId,
-          subSlot
+          slotId
         }),
         fertilizerApplication,
         previousTask

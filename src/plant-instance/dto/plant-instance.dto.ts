@@ -43,7 +43,6 @@ export function sanitizePlantInstanceDTO(
     season: toSeason(dto.season),
     plantedCount: Number(dto.plantedCount),
     containerId: `${dto.containerId}`,
-    slotId: Number(dto.slotId),
-    subSlot: Boolean(dto.subSlot)
+    slotId: Number(dto.slotId)
   }));
 }

@@ -4,18 +4,18 @@ import { Model, PipelineStage, Types } from 'mongoose';
 import { GardenService } from '../garden/garden.service';
 import { GrowingZoneData, STARTED_FROM_TYPE_SEED, TaskType } from '../interface';
 import { PlantInstanceService } from '../plant-instance/plant-instance.service';
+import { TaskProjection } from '../task/interfaces/task.projection';
 import { TaskService } from '../task/services/task.service';
 import { UserService } from '../users/user.service';
 import { fromTaskTypeToHistoryStatus } from '../util/history.util';
 import { isNotNullish } from '../util/null.util';
+import computeSeason from '../util/season.util';
 import getSlotTitle from '../util/slot.util';
 import { ContainerSlotDTO } from './dto/container-slot.dto';
 import { ContainerDTO, sanitizeContainerDTO } from './dto/container.dto';
 import { BaseSlot } from './interfaces/container-slot.interface';
 import { ContainerDocument } from './interfaces/container.document';
 import { ContainerProjection } from './interfaces/container.projection';
-import { TaskProjection } from '../task/interfaces/task.projection';
-import computeSeason from '../util/season.util';
 
 @Injectable()
 export class ContainerService {
@@ -264,8 +264,7 @@ export class ContainerService {
         date: date,
         from: {
           containerId: plantInstance.containerId,
-          slotId: plantInstance.slotId,
-          subSlot: plantInstance.subSlot
+          slotId: plantInstance.slotId
         }
       });
       await this.plantInstanceService.createUpdatePlantInstanceTasks(
@@ -346,19 +345,6 @@ export class ContainerService {
         plantId,
         growingZoneData
       );
-
-      if (slot.subSlot) {
-        await this.createUpdatePlantTasksForSlot(
-          container,
-          userId,
-          gardenId,
-          slot.subSlot,
-          `${path}/sub-slot`,
-          slotTitle,
-          plantId,
-          growingZoneData
-        );
-      }
     }
   }
 
@@ -383,27 +369,7 @@ export class ContainerService {
           {
             containerId: container._id,
             slotId: +slotIndex,
-            subSlot: false,
             plant: slot.plant,
-            created: new Date().toISOString(),
-            startedFrom: container.startedFrom ?? STARTED_FROM_TYPE_SEED,
-            season: computeSeason(),
-            plantedCount: 1
-          },
-          userId,
-          gardenId
-        );
-
-        plantInstancesCreatedCount++;
-      }
-
-      if (slot.subSlot && !slot.subSlot.plantInstanceId && slot.subSlot.plant) {
-        await this.plantInstanceService.addPlantInstance(
-          {
-            containerId: container._id,
-            slotId: +slotIndex,
-            subSlot: true,
-            plant: slot.subSlot.plant,
             created: new Date().toISOString(),
             startedFrom: container.startedFrom ?? STARTED_FROM_TYPE_SEED,
             season: computeSeason(),
