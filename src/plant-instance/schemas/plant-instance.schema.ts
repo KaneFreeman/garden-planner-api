@@ -13,6 +13,5 @@ export const PlantInstanceSchema = new mongoose.Schema({
   history: [PlantInstanceHistorySchema],
   closed: Boolean,
   startedFrom: String,
-  season: String,
-  plantedCount: Number
+  season: String
 });

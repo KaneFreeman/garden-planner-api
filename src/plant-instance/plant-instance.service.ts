@@ -137,7 +137,6 @@ export class PlantInstanceService {
             created: 1,
             history: 1,
             startedFrom: 1,
-            plantedCount: 1,
             pictures: 1,
             comments: 1,
             closed: 1,

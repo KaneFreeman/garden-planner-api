@@ -13,5 +13,4 @@ export interface PlantInstanceProjection extends ContainerSlotIdentifier {
   readonly closed?: boolean;
   readonly startedFrom: StartedFromType;
   readonly season: Season;
-  readonly plantedCount: number;
 }

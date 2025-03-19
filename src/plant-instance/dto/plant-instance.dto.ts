@@ -14,7 +14,6 @@ export interface PlantInstanceDTO extends ContainerSlotIdentifierDTO {
   readonly closed?: boolean;
   readonly startedFrom: string;
   readonly season: string;
-  readonly plantedCount: number;
 }
 
 export function sanitizePlantInstanceDTO(raw: PlantInstanceDTO): PlantInstanceDTO;
@@ -41,7 +40,6 @@ export function sanitizePlantInstanceDTO(
     closed: Boolean(dto.closed),
     startedFrom: toStartedFromType(dto.startedFrom),
     season: toSeason(dto.season),
-    plantedCount: Number(dto.plantedCount),
     containerId: `${dto.containerId}`,
     slotId: Number(dto.slotId)
   }));

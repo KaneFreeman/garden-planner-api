@@ -13,7 +13,7 @@ import computeSeason from '../util/season.util';
 import getSlotTitle from '../util/slot.util';
 import { ContainerSlotDTO } from './dto/container-slot.dto';
 import { ContainerDTO, sanitizeContainerDTO } from './dto/container.dto';
-import { BaseSlot } from './interfaces/container-slot.interface';
+import { Slot } from './interfaces/container-slot.interface';
 import { ContainerDocument } from './interfaces/container.document';
 import { ContainerProjection } from './interfaces/container.projection';
 
@@ -282,7 +282,7 @@ export class ContainerService {
     container: ContainerProjection,
     userId: string,
     gardenId: string,
-    slot: BaseSlot,
+    slot: Slot,
     path: string,
     slotTitle: string,
     plantId: string | undefined,
@@ -372,8 +372,7 @@ export class ContainerService {
             plant: slot.plant,
             created: new Date().toISOString(),
             startedFrom: container.startedFrom ?? STARTED_FROM_TYPE_SEED,
-            season: computeSeason(),
-            plantedCount: 1
+            season: computeSeason()
           },
           userId,
           gardenId
