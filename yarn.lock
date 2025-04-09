@@ -643,10 +643,10 @@
     webpack "5.98.0"
     webpack-node-externals "3.0.0"
 
-"@nestjs/common@11.0.13":
-  version "11.0.13"
-  resolved "https://registry.yarnpkg.com/@nestjs/common/-/common-11.0.13.tgz#532cd172d5b5fa4e7da471c83e6945e0a1ebd80b"
-  integrity sha512-cXqXJPQTcJIYqT8GtBYqjYY9sklCBqp/rh9z1R40E60gWnsU598YIQWkojSFRI9G7lT/+uF+jqSrg/CMPBk7QQ==
+"@nestjs/common@11.0.14":
+  version "11.0.14"
+  resolved "https://registry.yarnpkg.com/@nestjs/common/-/common-11.0.14.tgz#27145dbadb4c73da81d87acb00737495aeb6e30f"
+  integrity sha512-7MKloi0F0xh3S7gSH+reytC3axyhTEn1pJfs8Tp80aXCRYopA5zT/WO4CcmOsqmFt61jnlTFG6CeJ4limz/F7A==
   dependencies:
     uid "2.0.2"
     iterare "1.2.1"
@@ -661,10 +661,10 @@
     dotenv-expand "12.0.1"
     lodash "4.17.21"
 
-"@nestjs/core@11.0.13":
-  version "11.0.13"
-  resolved "https://registry.yarnpkg.com/@nestjs/core/-/core-11.0.13.tgz#595fd5315c1ba8e5b7136aec4d34297bfdac0b3a"
-  integrity sha512-1xjrsYjff4sg4MfvF+/NInOq+7oI1D1vK8Yj9wkrbBH1dM+h2At71tccbFfl/eJUt4ckZlH+XmROnt/T0daYcA==
+"@nestjs/core@11.0.14":
+  version "11.0.14"
+  resolved "https://registry.yarnpkg.com/@nestjs/core/-/core-11.0.14.tgz#cb25b01ed1eb14792954efb78921a3b8e5d331f5"
+  integrity sha512-5lZtGPuMKlyPl7MDzZenoz9183w7tu/2t0ISRcggpBJkhTiWoEtwmJ1qWlMNcASAFtoYDkeuFNdGbF2HWRkLkg==
   dependencies:
     uid "2.0.2"
     "@nuxt/opencollective" "0.4.1"
@@ -691,10 +691,10 @@
   resolved "https://registry.yarnpkg.com/@nestjs/mongoose/-/mongoose-11.0.3.tgz#8278f0c5b76a7a0b7ac780f0c85341e5ce69eb9c"
   integrity sha512-tg7bbKD4MnNMPaiDLXK/JUyTNQxIn3rNnI+oYU1HorLpNiR2E8vPraWVvfptpIj+zferpT6LkrHMvtqvuIKNPw==
 
-"@nestjs/platform-express@11.0.13":
-  version "11.0.13"
-  resolved "https://registry.yarnpkg.com/@nestjs/platform-express/-/platform-express-11.0.13.tgz#f5748a3ba91ab50e4aa808668a34952b239c6e0b"
-  integrity sha512-SaxfIDORX1oV8T6nxr/pltnW2g+3fCRPs5YwO0jBj2d8sC03Axjwlxp/ASg2mf6xvOSBD6ZbhjVLVVDZymyFXQ==
+"@nestjs/platform-express@11.0.14":
+  version "11.0.14"
+  resolved "https://registry.yarnpkg.com/@nestjs/platform-express/-/platform-express-11.0.14.tgz#2b971798a68e8750c7c9fa88c711cdddfa1ad823"
+  integrity sha512-wPDkxO3ynNhxT6yuCXMVeKYK8hdpOz9f88B7+0FnDTpqbcnmC8mF9HbzkQEsJM3S+CZ/1vseFTPwbyUXkBnXog==
   dependencies:
     cors "2.8.5"
     express "5.1.0"
