@@ -14,4 +14,5 @@ export interface PlantProjection {
   readonly comments?: CommentProjection[];
   readonly userId?: string;
   readonly retired?: boolean;
+  readonly reorder?: boolean;
 }

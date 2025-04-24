@@ -12,5 +12,6 @@ export const PlantSchema = new mongoose.Schema({
   pictures: [PictureDataSchema],
   comments: [CommentSchema],
   userId: { type: SchemaTypes.ObjectId, select: false },
-  retired: Boolean
+  retired: Boolean,
+  reorder: Boolean
 });
