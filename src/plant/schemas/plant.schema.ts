@@ -13,5 +13,6 @@ export const PlantSchema = new mongoose.Schema({
   comments: [CommentSchema],
   userId: { type: SchemaTypes.ObjectId, select: false },
   retired: Boolean,
-  reorder: Boolean
+  reorder: Boolean,
+  lastOrdered: { type: Date }
 });

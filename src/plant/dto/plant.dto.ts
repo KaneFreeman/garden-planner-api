@@ -14,6 +14,7 @@ export interface PlantDTO {
   readonly comments?: CommentDto[];
   readonly retired?: boolean;
   readonly reorder?: boolean;
+  readonly lastOrdered?: string;
 }
 
 export function sanitizePlantDTO(raw: PlantDTO[] | null | undefined): PlantDTO[] | undefined;
@@ -49,6 +50,7 @@ export function sanitizePlantDTO(raw: PlantDTO | PlantDTO[] | null | undefined):
     pictures: sanitizePictureDataDto(dto.pictures),
     comments: sanitizeCommentDto(dto.comments),
     retired: isNotNullish(dto.retired) ? Boolean(dto.retired) : false,
-    reorder: isNotNullish(dto.reorder) ? Boolean(dto.reorder) : false
+    reorder: isNotNullish(dto.reorder) ? Boolean(dto.reorder) : false,
+    lastOrdered: isNotNullish(dto.lastOrdered) ? `${dto.lastOrdered}` : undefined
   }));
 }

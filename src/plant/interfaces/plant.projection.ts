@@ -15,4 +15,5 @@ export interface PlantProjection {
   readonly userId?: string;
   readonly retired?: boolean;
   readonly reorder?: boolean;
+  readonly lastOrdered?: Date;
 }
