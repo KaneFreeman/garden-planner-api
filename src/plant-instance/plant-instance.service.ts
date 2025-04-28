@@ -553,7 +553,7 @@ export class PlantInstanceService {
     const plantInstances: PlantInstanceProjection[] = [];
     for (const plantInstanceId of plantInstanceIds) {
       const plantInstance = await this.getPlantInstance(plantInstanceId, userId, gardenId);
-      if (!plantInstance || plantInstance.closed !== (action === 'close')) {
+      if (!plantInstance || plantInstance.closed === (action === 'close')) {
         continue;
       }
 
