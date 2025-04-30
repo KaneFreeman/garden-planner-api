@@ -21,6 +21,12 @@ export class AuthController {
     return this.authService.login(loginDTO.email, loginDTO.password);
   }
 
+  @HttpCode(HttpStatus.OK)
+  @Post('refresh-token')
+  refreshToken(@Body('refreshToken') refreshToken: string): Promise<{ accessToken: string }> {
+    return this.authService.refreshAccessToken(refreshToken);
+  }
+
   @UseGuards(AuthGuard)
   @Get('profile')
   getProfile(@Req() req: RequestWithUser): Omit<SessionDTO, 'accessToken'> {

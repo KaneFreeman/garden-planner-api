@@ -82,6 +82,14 @@ export class UserService {
     return this.userModel.findOne({ email }).select('+password').exec();
   }
 
+  async getUserByRefreshToken(refreshToken: string | null | undefined): Promise<UserProjection | null> {
+    if (!refreshToken) {
+      return null;
+    }
+
+    return this.userModel.findOne({ refreshToken }).exec();
+  }
+
   async getUsers(): Promise<UserProjection[]> {
     return this.userModel.find().exec();
   }
@@ -107,6 +115,10 @@ export class UserService {
     }
 
     return this.userModel.findByIdAndUpdate(userId, changes, { new: true });
+  }
+
+  async updateUserRefreshToken(userId: string, refreshToken: string): Promise<UserProjection | null> {
+    return this.userModel.findByIdAndUpdate(userId, { refreshToken }, { new: true });
   }
 
   async getGrowingZoneData(userId: string): Promise<GrowingZoneData> {

@@ -17,7 +17,7 @@ import { TokenService } from './services/token.service';
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '2 days' }
+      signOptions: { expiresIn: '2h' }
     })
   ],
   providers: [AuthService, TokenService, AuthGuard, Logger],
