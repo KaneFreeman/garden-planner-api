@@ -8,6 +8,7 @@ import { TaskProjection } from '../../task/interfaces/task.projection';
 import { TaskService } from '../../task/services/task.service';
 import { UserService } from '../../users/user.service';
 import { isNotEmpty } from '../../util/string.util';
+import { TaskType } from '../../interface';
 
 function formatRelativeDate(date: Date, prefix: string, today: number): string {
   let text = `${prefix} ${format(date, 'MMMM d')}`;
@@ -30,7 +31,16 @@ interface TaskData {
   overdue: boolean;
 }
 
-function taskToData(task: TaskProjection, today: number): TaskData {
+export interface TaskGroup {
+  key: string;
+  text: string;
+  type: TaskType;
+  start: Date;
+  due: Date;
+  path: string | null;
+}
+
+function taskToData(task: TaskProjection | TaskGroup, today: number): TaskData {
   let text = task.text;
   let subtext = '';
 
@@ -138,7 +148,23 @@ export class MailService {
 
               acc.push({
                 title: id in containerTitleById ? containerTitleById[id] : id,
-                tasks: tasksByContainer[id].map((task) => taskToData(task, today))
+                tasks: Object.values(
+                  tasksByContainer[id].reduce<Record<string, TaskGroup>>((acc, task) => {
+                    const key = `taskGroup-${task.path}_${task.type}_${task.text}_${task.start}_${task.due}_${task.completedOn}`;
+                    if (!(key in acc)) {
+                      acc[key] = {
+                        key,
+                        path: task.path,
+                        type: task.type,
+                        text: task.text,
+                        start: task.start,
+                        due: task.due
+                      };
+                    }
+
+                    return acc;
+                  }, {})
+                ).map((task) => taskToData(task, today))
               });
 
               return acc;

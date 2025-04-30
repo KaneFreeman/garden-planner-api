@@ -19,7 +19,6 @@ import {
 import { PlantService } from '../plant/plant.service';
 import { TaskService } from '../task/services/task.service';
 import { UserService } from '../users/user.service';
-import getSlotTitle from '../util/slot.util';
 import {
   BulkReopenClosePlantInstanceDTO,
   sanitizeBulkReopenClosePlantInstanceDTO
@@ -457,7 +456,6 @@ export class PlantInstanceService {
     container: ContainerProjection,
     plantInstance: PlantInstanceProjection,
     path: string,
-    slotTitle: string,
     growingZoneData: GrowingZoneData
   ) {
     const plant = await this.plantService.getPlant(plantInstance.plant, userId);
@@ -474,8 +472,7 @@ export class PlantInstanceService {
       plant,
       data,
       growingZoneData,
-      path,
-      slotTitle
+      path
     );
 
     await this.taskService.createUpdateTransplantedTask(
@@ -487,8 +484,7 @@ export class PlantInstanceService {
       plant,
       data,
       growingZoneData,
-      path,
-      slotTitle
+      path
     );
 
     await this.taskService.createUpdateHarvestTask(
@@ -500,8 +496,7 @@ export class PlantInstanceService {
       plantInstance,
       plant,
       data,
-      path,
-      slotTitle
+      path
     );
 
     await this.taskService.createUpdateFertilzeTasks(
@@ -513,8 +508,7 @@ export class PlantInstanceService {
       plantInstance,
       plant,
       data,
-      path,
-      slotTitle
+      path
     );
   }
 
@@ -531,10 +525,14 @@ export class PlantInstanceService {
     const container = await this.containerService.getContainer(plantInstance.containerId, userId, gardenId);
 
     if (container) {
-      const path = `/container/${container._id}/slot/${plantInstance.slotId}`;
-      const slotTitle = getSlotTitle(plantInstance.slotId, container.rows);
-
-      await this.createUpdateTasks(userId, gardenId, container, plantInstance, path, slotTitle, growingZoneData);
+      await this.createUpdateTasks(
+        userId,
+        gardenId,
+        container,
+        plantInstance,
+        `/container/${container._id}`,
+        growingZoneData
+      );
     }
   }
 

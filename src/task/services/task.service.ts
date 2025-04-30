@@ -555,8 +555,7 @@ export class TaskService {
     plant: PlantProjection | null,
     data: PlantData | undefined,
     growingZoneData: GrowingZoneData,
-    path: string,
-    slotTitle: string
+    path: string
   ) {
     if (!instance?._id || !container._id) {
       return;
@@ -602,7 +601,7 @@ export class TaskService {
     if (!task) {
       await this.addTask(
         {
-          text: `Plant ${getPlantTitle(plant)} in ${container.name} at ${slotTitle}`,
+          text: `Plant ${getPlantTitle(plant)} in ${container.name}`,
           type: 'Plant',
           start,
           due,
@@ -619,12 +618,12 @@ export class TaskService {
         userId,
         gardenId,
         {
-          text: `Plant ${getPlantTitle(plant)} in ${container.name} at ${slotTitle}`,
+          text: `Plant ${getPlantTitle(plant)} in ${container.name}`,
           type: task.type,
           start,
           due,
           plantInstanceId: instance._id.toString(),
-          path: task.path,
+          path,
           completedOn
         },
         false
@@ -641,8 +640,7 @@ export class TaskService {
     plant: PlantProjection | null,
     data: PlantData | undefined,
     growingZoneData: GrowingZoneData,
-    path: string,
-    slotTitle: string
+    path: string
   ) {
     if (!instance?._id || !container._id) {
       return;
@@ -692,7 +690,7 @@ export class TaskService {
     if (!task) {
       await this.addTask(
         {
-          text: `Transplant ${getPlantTitle(plant)} from ${container.name} at ${slotTitle}`,
+          text: `Transplant ${getPlantTitle(plant)} from ${container.name}`,
           type: 'Transplant',
           start,
           due,
@@ -709,12 +707,12 @@ export class TaskService {
         userId,
         gardenId,
         {
-          text: `Transplant ${getPlantTitle(plant)} from ${container.name} at ${slotTitle}`,
+          text: `Transplant ${getPlantTitle(plant)} from ${container.name}`,
           type: task.type,
           start,
           due,
           plantInstanceId: instance._id.toString(),
-          path: task.path,
+          path,
           completedOn
         },
         false
@@ -809,8 +807,7 @@ export class TaskService {
     instance: PlantInstanceProjection | null,
     plant: PlantProjection | null,
     data: PlantData | undefined,
-    path: string,
-    slotTitle: string
+    path: string
   ) {
     if (!instance?._id || !container._id) {
       return;
@@ -881,7 +878,7 @@ export class TaskService {
     if (!task) {
       await this.addTask(
         {
-          text: `Harvest ${getPlantTitle(plant)} from ${container.name} at ${slotTitle}`,
+          text: `Harvest ${getPlantTitle(plant)} from ${container.name}`,
           type: 'Harvest',
           start,
           due,
@@ -898,12 +895,12 @@ export class TaskService {
         userId,
         gardenId,
         {
-          text: `Harvest ${getPlantTitle(plant)} from ${container.name} at ${slotTitle}`,
+          text: `Harvest ${getPlantTitle(plant)} from ${container.name}`,
           type: task.type,
           start,
           due,
           plantInstanceId: instance._id.toString(),
-          path: task.path,
+          path,
           completedOn
         },
         false
@@ -956,8 +953,7 @@ export class TaskService {
     instance: PlantInstanceProjection | null,
     plant: PlantProjection | null,
     data: PlantData | undefined,
-    path: string,
-    slotTitle: string
+    path: string
   ) {
     if (!instance?._id || !container._id) {
       return;
@@ -1048,7 +1044,7 @@ export class TaskService {
       if (!task) {
         previousTask = await this.addTask(
           {
-            text: `${text} in ${container.name} at ${slotTitle}`,
+            text: `${text} in ${container.name}`,
             type: 'Fertilize',
             start,
             due,
@@ -1065,7 +1061,7 @@ export class TaskService {
           userId,
           gardenId,
           {
-            text: `${text} in ${container.name} at ${slotTitle}`,
+            text: `${text} in ${container.name}`,
             type: 'Fertilize',
             start,
             due,

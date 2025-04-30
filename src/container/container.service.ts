@@ -10,7 +10,6 @@ import { UserService } from '../users/user.service';
 import { fromTaskTypeToHistoryStatus } from '../util/history.util';
 import { isNotNullish } from '../util/null.util';
 import computeSeason from '../util/season.util';
-import getSlotTitle from '../util/slot.util';
 import { ContainerSlotDTO } from './dto/container-slot.dto';
 import { ContainerDTO, sanitizeContainerDTO } from './dto/container.dto';
 import { Slot } from './interfaces/container-slot.interface';
@@ -284,21 +283,12 @@ export class ContainerService {
     gardenId: string,
     slot: Slot,
     path: string,
-    slotTitle: string,
     plantId: string | undefined,
     growingZoneData: GrowingZoneData
   ) {
     const plantInstance = await this.plantInstanceService.getPlantInstance(slot.plantInstanceId, userId, gardenId);
     if (plantInstance && (!plantId || plantInstance.plant === plantId)) {
-      this.plantInstanceService.createUpdateTasks(
-        userId,
-        gardenId,
-        container,
-        plantInstance,
-        path,
-        slotTitle,
-        growingZoneData
-      );
+      this.plantInstanceService.createUpdateTasks(userId, gardenId, container, plantInstance, path, growingZoneData);
     }
   }
 
@@ -331,17 +321,12 @@ export class ContainerService {
     const { slots } = container;
 
     for (const slotIndex of Object.keys(slots)) {
-      const slot = slots[slotIndex];
-      const path = `/container/${container._id}/slot/${slotIndex}`;
-      const slotTitle = getSlotTitle(+slotIndex, container.rows);
-
       await this.createUpdatePlantTasksForSlot(
         container,
         userId,
         gardenId,
-        slot,
-        path,
-        slotTitle,
+        slots[slotIndex],
+        `/container/${container._id}`,
         plantId,
         growingZoneData
       );
