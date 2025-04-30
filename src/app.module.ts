@@ -1,4 +1,4 @@
-import { Logger, Module } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -13,6 +13,7 @@ import { PlantModule } from './plant/plant.module';
 import { StaticModule } from './static/static.module';
 import { TaskModule } from './task/task.module';
 import { UserModule } from './users/user.module';
+import { DeviceIdMiddleware } from './middleware/device-id-middleware';
 
 const env = process.env.NODE_ENV || 'production';
 
@@ -39,4 +40,8 @@ const env = process.env.NODE_ENV || 'production';
   controllers: [],
   providers: [AppService, Logger]
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(DeviceIdMiddleware).forRoutes('*');
+  }
+}

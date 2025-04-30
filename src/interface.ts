@@ -1,3 +1,7 @@
+import { Response } from 'express';
+
+export type ResponseWithDeviceId = Response & { deviceId: string };
+
 export const ARTICHOKE = 'Artichoke';
 export const ARUGULA = 'Arugula';
 export const ASPARAGUS = 'Asparagus';

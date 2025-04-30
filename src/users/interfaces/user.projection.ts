@@ -6,5 +6,4 @@ export interface UserProjection {
   readonly lastName: string;
   readonly summaryEmail: boolean;
   readonly zipCode: string;
-  readonly refreshToken: string;
 }

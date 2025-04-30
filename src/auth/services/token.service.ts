@@ -47,7 +47,7 @@ export class TokenService {
     return savedToken;
   }
 
-  async loginWithToken(dto: ValidateTokenDTO): Promise<SessionDTO> {
+  async loginWithToken(dto: ValidateTokenDTO, deviceId: string): Promise<SessionDTO> {
     const sanitizedValidateTokenDTO = sanitizeValidateTokenDTO(dto);
 
     const tokenRecord = await this.tokenModel.findOneAndDelete({
@@ -65,6 +65,6 @@ export class TokenService {
       throw new NotFoundException('No user found');
     }
 
-    return this.authService.generateAccessToken(user._id);
+    return this.authService.generateAccessToken(user._id, deviceId);
   }
 }

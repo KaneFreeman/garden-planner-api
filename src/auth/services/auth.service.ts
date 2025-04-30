@@ -14,16 +14,18 @@ import { UserService } from '../../users/user.service';
 import { isNullish } from '../../util/null.util';
 import { isEmpty } from '../../util/string.util';
 import { SessionDTO } from '../dto/session.dto';
+import { RefreshTokenService } from './refresh-token.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly logger: Logger,
     @Inject(forwardRef(() => UserService)) private userService: UserService,
+    @Inject(forwardRef(() => RefreshTokenService)) private refreshTokenService: RefreshTokenService,
     private jwtService: JwtService
   ) {}
 
-  async login(email: string, pass: string): Promise<SessionDTO> {
+  async login(email: string, pass: string, deviceId: string): Promise<SessionDTO> {
     const user = await this.userService.getUserWithPasswordByEmail(email);
     if (isNullish(user)) {
       throw new NotFoundException('No user found');
@@ -38,10 +40,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid password');
     }
 
-    return this.generateAccessToken(user._id);
+    return this.generateAccessToken(user._id, deviceId);
   }
 
-  async generateAccessToken(userId: string): Promise<SessionDTO> {
+  async generateAccessToken(userId: string, deviceId: string): Promise<SessionDTO> {
     const user = await this.userService.getUser(userId);
     if (isNullish(user)) {
       throw new NotFoundException('No user found');
@@ -52,23 +54,22 @@ export class AuthService {
     return {
       ...payload,
       accessToken: await this.jwtService.signAsync(payload, { secret: `${process.env.JWT_SECRET}` }),
-      refreshToken: await this.createRefreshToken(user)
+      refreshToken: await this.refreshTokenService.createRefreshToken(user._id, deviceId)
     };
   }
 
-  async createRefreshToken(user: UserProjection): Promise<string> {
-    const refreshToken = this.jwtService.sign({}, { expiresIn: '2w' });
-    this.userService.updateUserRefreshToken(user._id, refreshToken);
-    return refreshToken;
-  }
-
-  async refreshAccessToken(refreshToken: string) {
+  async refreshAccessToken(refreshToken: string, deviceId: string) {
     try {
       this.jwtService.verify(refreshToken);
 
-      const user = await this.userService.getUserByRefreshToken(refreshToken);
-      if (!user) {
+      const record = await this.refreshTokenService.getByRefreshTokenAndDeviceId(refreshToken, deviceId);
+      if (!record) {
         throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      const user = await this.userService.getUser(record.userId);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
       }
 
       const payload = this.generatePayload(user);

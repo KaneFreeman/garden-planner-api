@@ -6,6 +6,5 @@ export const UserSchema = new mongoose.Schema({
   firstName: String,
   lastName: String,
   summaryEmail: Boolean,
-  zipCode: String,
-  refreshToken: String
+  zipCode: String
 });

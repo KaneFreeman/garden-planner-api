@@ -7,6 +7,7 @@ import { SessionDTO } from './dto/session.dto';
 import { ValidateTokenDTO } from './dto/validateToken.dto';
 import { AuthService } from './services/auth.service';
 import { TokenService } from './services/token.service';
+import { ResponseWithDeviceId } from '../interface';
 
 @Controller('/api/auth')
 export class AuthController {
@@ -17,14 +18,17 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  signIn(@Body() loginDTO: LoginDTO): Promise<SessionDTO> {
-    return this.authService.login(loginDTO.email, loginDTO.password);
+  signIn(@Body() loginDTO: LoginDTO, @Req() req: ResponseWithDeviceId): Promise<SessionDTO> {
+    return this.authService.login(loginDTO.email, loginDTO.password, req.deviceId);
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('refresh-token')
-  refreshToken(@Body('refreshToken') refreshToken: string): Promise<{ accessToken: string }> {
-    return this.authService.refreshAccessToken(refreshToken);
+  refreshToken(
+    @Body('refreshToken') refreshToken: string,
+    @Req() req: ResponseWithDeviceId
+  ): Promise<{ accessToken: string }> {
+    return this.authService.refreshAccessToken(refreshToken, req.deviceId);
   }
 
   @UseGuards(AuthGuard)
@@ -40,7 +44,10 @@ export class AuthController {
   }
 
   @Post('token/validate')
-  async validateToken(@Body() validateTokenDTO: ValidateTokenDTO): Promise<SessionDTO> {
-    return this.tokenService.loginWithToken(validateTokenDTO);
+  async validateToken(
+    @Body() validateTokenDTO: ValidateTokenDTO,
+    @Req() req: ResponseWithDeviceId
+  ): Promise<SessionDTO> {
+    return this.tokenService.loginWithToken(validateTokenDTO, req.deviceId);
   }
 }
