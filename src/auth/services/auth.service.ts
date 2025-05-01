@@ -78,7 +78,8 @@ export class AuthService {
       };
     } catch (e: unknown) {
       if (e instanceof Error) {
-        this.logger.error(e.message, e);
+        this.logger.error(e.message);
+        this.logger.error(e.stack);
       }
       throw new UnauthorizedException('Invalid or expired refresh token');
     }

@@ -2,18 +2,19 @@ import { Logger, MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
+import cookieParser from 'cookie-parser';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ContainerModule } from './container/container.module';
 import { GardenModule } from './garden/garden.module';
 import { MailModule } from './mail/mail.module';
+import { DeviceIdMiddleware } from './middleware/device-id-middleware';
 import { PictureModule } from './picture/picture.module';
 import { PlantInstanceModule } from './plant-instance/plant-instance.module';
 import { PlantModule } from './plant/plant.module';
 import { StaticModule } from './static/static.module';
 import { TaskModule } from './task/task.module';
 import { UserModule } from './users/user.module';
-import { DeviceIdMiddleware } from './middleware/device-id-middleware';
 
 const env = process.env.NODE_ENV || 'production';
 
@@ -42,6 +43,6 @@ const env = process.env.NODE_ENV || 'production';
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(DeviceIdMiddleware).forRoutes('*');
+    consumer.apply(cookieParser(), DeviceIdMiddleware).forRoutes('*');
   }
 }
