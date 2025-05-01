@@ -10,6 +10,7 @@ import {
   CONTAINER_TYPE_OUTSIDE,
   ContainerType,
   FERTILIZE,
+  FERTILIZED,
   FertilizerApplication,
   GrowingZoneData,
   HARVEST,
@@ -965,7 +966,7 @@ export class TaskService {
     const tasksToDelete: TaskProjection[] = [];
     const tasksByText = tasks.reduce(
       (byText, task) => {
-        const key = task.text.replace(/( in [\w\W]+? at Row [0-9]+, Column [0-9]+)/g, '');
+        const key = task.text.replace(/( in [\w\W]+?)/g, '');
         if (key in byText) {
           tasksToDelete.push(task);
           return byText;
@@ -1004,6 +1005,10 @@ export class TaskService {
     const plantedEvent = getPlantedEvent(instance);
     const plantedContainer = await this.containerService.getContainer(plantedEvent?.to?.containerId, userId, gardenId);
 
+    const fertilizedDatesInCurrentContainer = (instance.history ?? [])
+      .filter((entry) => entry.from?.containerId.toString() === container._id.toString() && entry.status === FERTILIZED)
+      .map((entry) => entry.date);
+
     let i = 0;
     for (const fertilizerApplication of fertilizeData) {
       i += 1;
@@ -1040,6 +1045,9 @@ export class TaskService {
         continue;
       }
 
+      const completedOn =
+        fertilizedDatesInCurrentContainer.length >= i ? fertilizedDatesInCurrentContainer[i - 1] : null;
+
       taskTexts.push(text);
       if (!task) {
         previousTask = await this.addTask(
@@ -1050,7 +1058,7 @@ export class TaskService {
             due,
             plantInstanceId: instance._id.toString(),
             path,
-            completedOn: null
+            completedOn
           },
           userId,
           gardenId
@@ -1067,7 +1075,7 @@ export class TaskService {
             due,
             plantInstanceId: instance._id.toString(),
             path,
-            completedOn: null
+            completedOn
           },
           false
         );
@@ -1078,7 +1086,7 @@ export class TaskService {
 
     if (!instance.closed) {
       for (const task of tasks) {
-        if (taskTexts.includes(task.text.replace(/( in [\w\W]+? at Row [0-9]+, Column [0-9]+)/g, ''))) {
+        if (taskTexts.includes(task.text.replace(/( in [\w\W]+?)/g, ''))) {
           continue;
         }
 
