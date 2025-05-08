@@ -36,7 +36,7 @@
     "mjml": "4.15.3",
     "mongoose": "8.14.1",
     "nest-winston": "1.10.2",
-    "nodemailer": "6.10.1",
+    "nodemailer": "7.0.3",
     "preview-email": "3.1.0",
     "pug": "3.0.3",
     "reflect-metadata": "0.2.2",
