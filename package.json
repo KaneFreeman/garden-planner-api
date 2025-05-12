@@ -8,6 +8,9 @@
   "scripts": {
     "build": "rimraf dist-prod && nest build -p tsconfig.prod.json --config nest-cli-prod.json",
     "deploy": "npm run build && node service.js",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:restart": "npm run docker:down && docker-compose build --no-cache && npm run docker:up",
     "format": "prettier --write \"src/**/*.ts\"",
     "start": "nest start",
     "start:dev": "rimraf dist && cross-env NODE_ENV=development nest start --watch",
@@ -25,7 +28,7 @@
     "@nestjs/platform-express": "11.1.0",
     "@nestjs/schedule": "5.0.1",
     "@nestjs/swagger": "11.2.0",
-    "bcrypt": "5.1.1",
+    "bcryptjs": "3.0.2",
     "cookie-parser": "1.4.7",
     "date-fns": "3.6.0",
     "dotenv": "16.5.0",
@@ -49,7 +52,6 @@
   "devDependencies": {
     "@nestjs/cli": "11.0.7",
     "@nestjs/schematics": "11.0.5",
-    "@types/bcrypt": "5.0.2",
     "@types/cookie-parser": "1.4.8",
     "@types/ejs": "3.1.5",
     "@types/express": "5.0.1",

@@ -8,7 +8,7 @@ import {
   UnauthorizedException
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { UserProjection } from '../../users/interfaces/user.projection';
 import { UserService } from '../../users/user.service';
 import { isNullish } from '../../util/null.util';

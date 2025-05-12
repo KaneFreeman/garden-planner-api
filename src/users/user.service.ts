@@ -1,6 +1,6 @@
 import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { Model } from 'mongoose';
 import { growingZoneDataByZone, growingZonesByZipCode } from '../data/growingZoneData';
 import { GrowingZoneData } from '../interface';
