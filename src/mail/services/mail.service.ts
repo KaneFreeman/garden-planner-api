@@ -26,7 +26,6 @@ function formatRelativeDate(date: Date, prefix: string, today: number): string {
 
 interface TaskData {
   text: string;
-  subtext: string;
   due: string;
   overdue: boolean;
 }
@@ -42,23 +41,19 @@ export interface TaskGroup {
 
 function taskToData(task: TaskProjection | TaskGroup, today: number): TaskData {
   let text = task.text;
-  let subtext = '';
 
   if (task.text.match(/ from /)) {
     const parts = task.text.split(' from ');
 
     text = parts[0];
-    subtext = `From ${parts[1]}`;
   } else if (task.text.match(/ in /)) {
     const parts = task.text.split(' in ');
 
     text = parts[0];
-    subtext = `In ${parts[1]}`;
   }
 
   return {
     text,
-    subtext,
     due: formatRelativeDate(task.due, 'Due', today),
     overdue: task.due.getTime() < today
   };
