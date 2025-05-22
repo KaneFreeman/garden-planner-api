@@ -49,13 +49,13 @@ export function findHistoryToIndex(
   }
 
   return plantInstance.history?.findIndex((entry) => {
-    const fromMatch = entry.to?.containerId.toString() === to.containerId.toString() && entry.to?.slotId === to.slotId;
+    const toMatch = entry.to?.containerId.toString() === to.containerId.toString() && entry.to?.slotId === to.slotId;
 
     if (status) {
-      return fromMatch && entry.status === status;
+      return toMatch && entry.status === status;
     }
 
-    return fromMatch;
+    return toMatch;
   });
 }
 
