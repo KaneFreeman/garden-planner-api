@@ -848,7 +848,8 @@ export class TaskService {
       container.archived ||
       instance?.containerId.toString() !== container._id.toString() ||
       !isValidDate(dates.start) ||
-      !isValidDate(dates.due)
+      !isValidDate(dates.due) ||
+      data?.harvestable === false
     ) {
       if (task) {
         await this.deleteTask(task._id, userId, gardenId, true);

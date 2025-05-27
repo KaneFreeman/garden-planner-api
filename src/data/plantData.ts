@@ -2760,6 +2760,7 @@ const plantData: Record<PlantType, PlantData> = {
     }
   },
   Marigold: {
+    harvestable: false,
     howToGrow: {
       spring: {
         indoor: {

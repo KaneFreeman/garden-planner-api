@@ -413,6 +413,7 @@ export interface GrowDates {
 }
 
 export interface PlantData {
+  harvestable?: boolean;
   howToGrow: {
     spring?: GrowDates;
     fall?: GrowDates;
