@@ -30,7 +30,7 @@
     "@nestjs/swagger": "11.2.0",
     "bcryptjs": "3.0.2",
     "cookie-parser": "1.4.7",
-    "date-fns": "3.6.0",
+    "date-fns": "4.1.0",
     "dotenv": "16.5.0",
     "ejs": "3.1.10",
     "express": "4.21.2",
