@@ -550,12 +550,16 @@ export class PlantInstanceService {
 
     const plantInstances: PlantInstanceProjection[] = [];
     for (const plantInstanceId of plantInstanceIds) {
-      const plantInstance = await this.getPlantInstance(plantInstanceId, userId, gardenId);
+      let plantInstance = await this.getPlantInstance(plantInstanceId, userId, gardenId);
       if (!plantInstance || plantInstance.closed === (action === 'close')) {
         continue;
       }
 
-      await this.plantInstanceModel.findByIdAndUpdate(plantInstanceId, { closed: action === 'close' }, { new: true });
+      plantInstance = await this.plantInstanceModel.findByIdAndUpdate(
+        plantInstanceId,
+        { closed: action === 'close' },
+        { new: true }
+      );
 
       if (growingZoneData) {
         await this.createUpdatePlantInstanceTasks(plantInstance, userId, gardenId, growingZoneData);
