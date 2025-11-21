@@ -27,7 +27,7 @@
     "@nestjs/platform-express": "11.1.8",
     "@nestjs/schedule": "5.0.1",
     "@nestjs/swagger": "11.2.3",
-    "bcryptjs": "3.0.2",
+    "bcryptjs": "3.0.3",
     "cookie-parser": "1.4.7",
     "date-fns": "3.6.0",
     "dotenv": "16.6.1",
