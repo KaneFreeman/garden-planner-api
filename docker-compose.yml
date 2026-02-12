@@ -13,7 +13,7 @@ services:
       - app-network
 
   mongo:
-    image: mongo:6
+    image: mongo:8
     restart: always
     ports:
       - '27017:27017'
