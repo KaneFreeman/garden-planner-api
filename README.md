@@ -13,32 +13,32 @@ Server API for [Garden Planner](https://github.com/KaneFreeman/garden-planner).
 ## Installation
 
 ```bash
-$ yarn
+$ npm install
 ```
 
 ## Running the app
 
 ```bash
 # development
-$ yarn start
+$ npm run start
 
 # watch mode
-$ yarn start:dev
+$ npm run start:dev
 ```
 
 ## Build
 
 ```bash
 # production build
-$ yarn build
+$ npm run build
 ```
 
 ## Docker
 
 ```bash
 # production build
-$ yarn docker:up
+$ npm run docker:up
 
 # restart/rebuild production build
-$ yarn docker:restart
+$ npm run docker:restart
 ```

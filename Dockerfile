@@ -5,14 +5,14 @@ FROM node:20-alpine
 WORKDIR /usr/src/app
 
 # Install dependencies
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+COPY package.json package-lock.json ./
+RUN npm ci
 
 # Copy source code
 COPY . .
 
 # Build the NestJS application
-RUN yarn build
+RUN npm run build
 
 # Use production environment
 ENV NODE_ENV=production
