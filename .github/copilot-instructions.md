@@ -12,6 +12,10 @@
 - Swagger/OpenAPI in dev
 - Winston logging
 
+## Package manager
+- Use `npm` commands in this repo.
+- Do not use `yarn`.
+
 ## Source layout
 - `src/main.ts`: app bootstrap, logging, CORS, swagger
 - `src/app.module.ts`: root module
@@ -27,12 +31,13 @@
 - Docker uses `.env.production` referenced by `docker-compose.yml`.
 
 ## Scripts (preferred)
-- `yarn start` (dev)
-- `yarn start:dev` (watch)
-- `yarn build` (production build to `dist-prod/`)
-- `yarn lint`
-- `yarn format`
-- `yarn docker:up` / `yarn docker:restart`
+- `npm run start` (dev)
+- `npm run start:dev` (watch)
+- `npm run start:prod`
+- `npm run build` (production build to `dist-prod/`)
+- `npm run lint`
+- `npm run format`
+- `npm run docker:up` / `npm run docker:down` / `npm run docker:restart`
 
 ## Formatting and linting
 - Prettier with single quotes; trailing commas enabled in `.prettierrc`.

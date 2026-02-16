@@ -1,15 +1,17 @@
-import { forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage, Types } from 'mongoose';
 import { GardenService } from '../garden/garden.service';
-import { GrowingZoneData, STARTED_FROM_TYPE_SEED, TaskType } from '../interface';
+import { GrowingZoneData, PLANTED, STARTED_FROM_TYPE_SEED, TaskType } from '../interface';
 import { PlantInstanceService } from '../plant-instance/plant-instance.service';
+import { PlantInstanceDTO } from '../plant-instance/dto/plant-instance.dto';
 import { TaskProjection } from '../task/interfaces/task.projection';
 import { TaskService } from '../task/services/task.service';
 import { UserService } from '../users/user.service';
 import { fromTaskTypeToHistoryStatus } from '../util/history.util';
 import { isNotNullish } from '../util/null.util';
 import computeSeason from '../util/season.util';
+import { ContainerPlanSlotDTO } from './dto/container-plan-slot.dto';
 import { ContainerSlotDTO } from './dto/container-slot.dto';
 import { ContainerDTO, sanitizeContainerDTO } from './dto/container.dto';
 import { Slot } from './interfaces/container-slot.interface';
@@ -368,5 +370,95 @@ export class ContainerService {
     }
 
     return plantInstancesCreatedCount;
+  }
+
+  async planContainerSlot(containerId: string, userId: string, gardenId: string, dto: ContainerPlanSlotDTO) {
+    const slotId = Number(dto.slotId);
+    if (!Number.isInteger(slotId) || slotId < 0) {
+      throw new BadRequestException('Invalid slotId');
+    }
+
+    const plantId = `${dto.plantId ?? ''}`.trim();
+    if (!plantId) {
+      throw new BadRequestException('Invalid plantId');
+    }
+
+    const container = await this.getContainer(containerId, userId, gardenId);
+    if (!container) {
+      throw new NotFoundException('Container does not exist!');
+    }
+
+    const maxSlots = (container.rows ?? 0) * (container.columns ?? 0);
+    if (slotId >= maxSlots) {
+      throw new BadRequestException('slotId is out of range');
+    }
+
+    const slot = container.slots?.[`${slotId}`];
+
+    if (!slot?.plantInstanceId) {
+      return this.plantInstanceService.addPlantInstance(
+        {
+          containerId,
+          slotId,
+          plant: plantId,
+          created: new Date().toISOString(),
+          startedFrom: container.startedFrom ?? STARTED_FROM_TYPE_SEED,
+          season: computeSeason()
+        },
+        userId,
+        gardenId
+      );
+    }
+
+    const plantInstance = await this.plantInstanceService.getPlantInstance(slot.plantInstanceId, userId, gardenId);
+    if (!plantInstance || !plantInstance._id) {
+      throw new NotFoundException('Plant instance does not exist!');
+    }
+
+    const hasPlantedEvent = (plantInstance.history ?? []).some((history) => history.status === PLANTED);
+    const isPlanning = !plantInstance.closed && !hasPlantedEvent;
+
+    if (plantInstance.closed) {
+      return this.plantInstanceService.addPlantInstance(
+        {
+          containerId,
+          slotId,
+          plant: plantId,
+          created: new Date().toISOString(),
+          startedFrom: container.startedFrom ?? STARTED_FROM_TYPE_SEED,
+          season: computeSeason()
+        },
+        userId,
+        gardenId
+      );
+    }
+
+    if (!isPlanning) {
+      throw new BadRequestException('Only closed or planning slots can be updated');
+    }
+
+    const updateDto: PlantInstanceDTO = {
+      containerId,
+      slotId,
+      plant: plantId,
+      created: new Date(plantInstance.created).toISOString(),
+      comments: plantInstance.comments?.map((comment) => ({
+        ...comment,
+        date: new Date(comment.date).toISOString()
+      })),
+      pictures: plantInstance.pictures?.map((picture) => ({
+        ...picture,
+        date: new Date(picture.date).toISOString()
+      })),
+      history: plantInstance.history?.map((history) => ({
+        ...history,
+        date: new Date(history.date).toISOString()
+      })),
+      closed: plantInstance.closed,
+      startedFrom: plantInstance.startedFrom,
+      season: plantInstance.season
+    };
+
+    return this.plantInstanceService.editPlantInstance(plantInstance._id, userId, gardenId, updateDto);
   }
 }
