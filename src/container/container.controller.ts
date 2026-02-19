@@ -18,7 +18,6 @@ import { RequestWithUser } from '../auth/dto/requestWithUser';
 import { toTaskType } from '../interface';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
 import { ContainerService } from './container.service';
-import { ContainerPlanSlotDTO } from './dto/container-plan-slot.dto';
 import { ContainerTaskUpdateDTO } from './dto/container-task-update.dto';
 import { ContainerDTO } from './dto/container.dto';
 
@@ -121,25 +120,6 @@ export class ContainerController {
       gardenId
     );
     return res.status(HttpStatus.OK).json(plantInstancesCreatedCount);
-  }
-
-  @UseGuards(AuthGuard)
-  @Post('/:containerId/plan-slot')
-  async planContainerSlot(
-    @Req() req: RequestWithUser,
-    @Res() res: Response,
-    @Param('gardenId', new ValidateObjectId()) gardenId: string,
-    @Param('containerId', new ValidateObjectId()) containerId: string,
-    @Body() dto: ContainerPlanSlotDTO
-  ) {
-    const updatedPlantInstance = await this.containerService.planContainerSlot(
-      containerId,
-      req.user.userId,
-      gardenId,
-      dto
-    );
-
-    return res.status(HttpStatus.OK).json(updatedPlantInstance);
   }
 
   // Update tasks in a container
