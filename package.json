@@ -31,7 +31,7 @@
     "cookie-parser": "1.4.7",
     "date-fns": "4.1.0",
     "dotenv": "17.3.1",
-    "ejs": "3.1.10",
+    "ejs": "5.0.2",
     "express": "4.22.1",
     "handlebars": "4.7.9",
     "liquidjs": "10.25.7",
