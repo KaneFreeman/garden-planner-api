@@ -1,18 +1,8 @@
-import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  Logger,
-  NotFoundException,
-  UnauthorizedException
-} from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import bcrypt from 'bcryptjs';
 import { UserProjection } from '../../users/interfaces/user.projection';
 import { UserService } from '../../users/user.service';
 import { isNullish } from '../../util/null.util';
-import { isEmpty } from '../../util/string.util';
 import { SessionDTO } from '../dto/session.dto';
 import { RefreshTokenService } from './refresh-token.service';
 
@@ -24,24 +14,6 @@ export class AuthService {
     @Inject(forwardRef(() => RefreshTokenService)) private refreshTokenService: RefreshTokenService,
     private jwtService: JwtService
   ) {}
-
-  async login(email: string, pass: string, deviceId: string): Promise<SessionDTO> {
-    const user = await this.userService.getUserWithPasswordByEmail(email);
-    if (isNullish(user)) {
-      throw new NotFoundException('No user found');
-    }
-
-    if (isEmpty(user.password)) {
-      throw new BadRequestException('No password set');
-    }
-
-    const match = await bcrypt.compare(pass, user.password);
-    if (!match) {
-      throw new UnauthorizedException('Invalid password');
-    }
-
-    return this.generateAccessToken(user._id, deviceId);
-  }
 
   async generateAccessToken(userId: string, deviceId: string): Promise<SessionDTO> {
     const user = await this.userService.getUser(userId);

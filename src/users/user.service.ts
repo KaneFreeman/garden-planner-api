@@ -1,10 +1,9 @@
 import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import bcrypt from 'bcryptjs';
 import { Model } from 'mongoose';
 import { growingZoneDataByZone, growingZonesByZipCode } from '../data/growingZoneData';
 import { GrowingZoneData } from '../interface';
-import { isEmpty, isNotEmpty } from '../util/string.util';
+import { isEmpty } from '../util/string.util';
 import { UserDTO, sanitizeUserDTO } from './dto/user.dto';
 import { UserDocument } from './interfaces/user.document';
 import { UserProjection } from './interfaces/user.projection';
@@ -23,6 +22,8 @@ export class UserService {
   }
 
   async createUser(userDTO: UserDTO): Promise<UserProjection> {
+    this.assertNoPasswordField(userDTO);
+
     const sanitizedUserDTO = sanitizeUserDTO(userDTO);
     if (isEmpty(sanitizedUserDTO.email)) {
       throw new BadRequestException('No email provided');
@@ -38,24 +39,10 @@ export class UserService {
     }
 
     const newUser = await this.userModel.create({
-      ...sanitizedUserDTO,
-      password: this.generateHashedPassword(sanitizedUserDTO.password)
+      ...sanitizedUserDTO
     });
 
     return newUser.save();
-  }
-
-  async generateHashedPassword(newPassword: string | undefined): Promise<string> {
-    if (isEmpty(newPassword)) {
-      throw new BadRequestException('No password provided');
-    }
-
-    if (isEmpty(newPassword)) {
-      throw new BadRequestException('Password must be at least 8');
-    }
-
-    const salt = await bcrypt.genSalt();
-    return bcrypt.hash(newPassword, salt);
   }
 
   async getUser(userId: string | null | undefined): Promise<UserProjection | null> {
@@ -74,23 +61,16 @@ export class UserService {
     return this.userModel.findOne({ email }).exec();
   }
 
-  async getUserWithPasswordByEmail(email: string | null | undefined): Promise<UserProjection | null> {
-    if (!email) {
-      return null;
-    }
-
-    return this.userModel.findOne({ email }).select('+password').exec();
-  }
-
   async getUsers(): Promise<UserProjection[]> {
     return this.userModel.find().exec();
   }
 
   async updateUser(userId: string, userDTO: UserDTO): Promise<UserProjection | null> {
+    this.assertNoPasswordField(userDTO);
+
     const sanitizedUserDTO = sanitizeUserDTO(userDTO);
 
     const changes: {
-      password?: string;
       firstName: string;
       lastName: string;
       summaryEmail: boolean;
@@ -102,11 +82,13 @@ export class UserService {
       zipCode: sanitizedUserDTO.zipCode
     };
 
-    if (isNotEmpty(sanitizedUserDTO.password)) {
-      changes.password = await this.generateHashedPassword(sanitizedUserDTO.password);
-    }
-
     return this.userModel.findByIdAndUpdate(userId, changes, { new: true });
+  }
+
+  private assertNoPasswordField(userDTO: UserDTO) {
+    if (Object.prototype.hasOwnProperty.call(userDTO, 'password')) {
+      throw new BadRequestException('Password authentication has been removed');
+    }
   }
 
   async getGrowingZoneData(userId: string): Promise<GrowingZoneData> {

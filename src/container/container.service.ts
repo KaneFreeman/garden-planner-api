@@ -29,7 +29,7 @@ export class ContainerService {
   ) {}
 
   async addContainer(containerDTO: ContainerDTO, userId: string, gardenId: string): Promise<ContainerProjection> {
-    const garden = this.gardenService.getGarden(gardenId, userId);
+    const garden = await this.gardenService.getGarden(gardenId, userId);
     if (!garden) {
       throw new NotFoundException('Garden does not exist!');
     }
@@ -167,7 +167,7 @@ export class ContainerService {
               accumlatedSlots[slotIndex] = newSlot;
             }
 
-            return slots;
+            return accumlatedSlots;
           },
           {} as Record<string, ContainerSlotDTO>
         )

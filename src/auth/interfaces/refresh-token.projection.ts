@@ -3,4 +3,5 @@ export interface RefreshTokenProjection {
   readonly userId: string;
   readonly deviceId: string;
   readonly refreshToken: string;
+  readonly expiresAt: Date;
 }

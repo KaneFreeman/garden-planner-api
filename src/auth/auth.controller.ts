@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthGuard } from './auth.guard';
 import { GenerateTokenDTO } from './dto/generateToken.dto';
-import { LoginDTO } from './dto/login.dto';
 import { RequestWithUser } from './dto/requestWithUser';
 import { SessionDTO } from './dto/session.dto';
 import { ValidateTokenDTO } from './dto/validateToken.dto';
@@ -15,12 +15,6 @@ export class AuthController {
     private authService: AuthService,
     private tokenService: TokenService
   ) {}
-
-  @HttpCode(HttpStatus.OK)
-  @Post('login')
-  signIn(@Body() loginDTO: LoginDTO, @Req() req: ResponseWithDeviceId): Promise<SessionDTO> {
-    return this.authService.login(loginDTO.email, loginDTO.password, req.deviceId);
-  }
 
   @HttpCode(HttpStatus.OK)
   @Post('refresh-token')
@@ -37,12 +31,16 @@ export class AuthController {
     return req.user;
   }
 
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('token/generate')
   async generateToken(@Body() generateTokenDTO: GenerateTokenDTO): Promise<{ status: string }> {
     await this.tokenService.generateToken(generateTokenDTO);
     return { status: 'success' };
   }
 
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('token/validate')
   async validateToken(
     @Body() validateTokenDTO: ValidateTokenDTO,

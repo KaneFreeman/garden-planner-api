@@ -1,6 +1,7 @@
 import { Logger, Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { MailModule } from '../mail/mail.module';
 import { UserModule } from '../users/user.module';
 import { AuthController } from './auth.controller';
@@ -16,6 +17,12 @@ import { RefreshTokenService } from './services/refresh-token.service';
     MongooseModule.forFeature([
       { name: 'Token', schema: TokenSchema },
       { name: 'RefreshToken', schema: RefreshTokenSchema }
+    ]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100
+      }
     ]),
     forwardRef(() => MailModule),
     forwardRef(() => UserModule),

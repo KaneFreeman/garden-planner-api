@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 export default function mapRecord<V, O>(
   input: Record<string, V> | undefined,
   converter: (value: V) => O

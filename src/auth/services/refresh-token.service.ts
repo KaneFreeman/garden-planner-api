@@ -5,6 +5,8 @@ import { Model } from 'mongoose';
 import { RefreshTokenDocument } from '../interfaces/refresh-token.document';
 import { RefreshTokenProjection } from '../interfaces/refresh-token.projection';
 
+const TWO_WEEKS_IN_MS = 14 * 24 * 60 * 60 * 1000;
+
 @Injectable()
 export class RefreshTokenService {
   constructor(
@@ -15,10 +17,11 @@ export class RefreshTokenService {
 
   async createRefreshToken(userId: string, deviceId: string): Promise<string> {
     const refreshToken = this.jwtService.sign({}, { expiresIn: '2w' });
-    this.refreshTokenModel.create({
+    await this.refreshTokenModel.create({
       userId,
       deviceId,
-      refreshToken
+      refreshToken,
+      expiresAt: new Date(Date.now() + TWO_WEEKS_IN_MS)
     });
     return refreshToken;
   }
@@ -31,7 +34,7 @@ export class RefreshTokenService {
       return null;
     }
 
-    return this.refreshTokenModel.findOne({ refreshToken, deviceId }).exec();
+    return this.refreshTokenModel.findOne({ refreshToken, deviceId, expiresAt: { $gt: new Date() } }).exec();
   }
 
   async update(

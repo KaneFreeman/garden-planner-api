@@ -55,7 +55,7 @@ export class PlantInstanceService {
     const { createTasks = true, copiedFromId } = options ?? {};
 
     const sanitizedPlantInstanceDTO = sanitizePlantInstanceDTO(createPlantInstanceDTO);
-    const container = this.containerService.getContainer(sanitizedPlantInstanceDTO.containerId, userId, gardenId);
+    const container = await this.containerService.getContainer(sanitizedPlantInstanceDTO.containerId, userId, gardenId);
     if (!container) {
       throw new NotFoundException('Container does not exist!');
     }
