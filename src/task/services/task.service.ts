@@ -75,10 +75,8 @@ export class TaskService {
 
     const newTask = await this.taskModel.create({
       ...sanitizedCreateTaskDTO,
-      plantInstanceId: sanitizedCreateTaskDTO.plantInstanceId
-        ? new Types.ObjectId(sanitizedCreateTaskDTO.plantInstanceId)
-        : null,
-      gardenId: new Types.ObjectId(gardenId)
+      plantInstanceId: sanitizedCreateTaskDTO.plantInstanceId ?? null,
+      gardenId
     });
     const savedTask = await newTask.save();
     await this.publishTaskSync(userId, gardenId, 'task.added');
@@ -282,10 +280,8 @@ export class TaskService {
       taskId,
       {
         ...sanitizedCreateTaskDTO,
-        plantInstanceId: sanitizedCreateTaskDTO.plantInstanceId
-          ? new Types.ObjectId(sanitizedCreateTaskDTO.plantInstanceId)
-          : null,
-        gardenId: new Types.ObjectId(gardenId)
+        plantInstanceId: sanitizedCreateTaskDTO.plantInstanceId ?? null,
+        gardenId
       },
       {
         new: true

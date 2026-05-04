@@ -38,7 +38,7 @@ export class ContainerService {
 
     const newContainer = await this.containerModel.create({
       ...sanitizeContainerDTO(containerDTO),
-      gardenId: new Types.ObjectId(gardenId)
+      gardenId
     });
     const savedContainer = await newContainer.save();
     await this.publishGardenSync(userId, gardenId, 'container.added');
@@ -252,7 +252,9 @@ export class ContainerService {
         }
       ])
     ).reduce<Record<string, TaskProjection>>((acc, task) => {
-      acc[task.plantInstanceId] = task;
+      if (task.plantInstanceId) {
+        acc[task.plantInstanceId] = task;
+      }
 
       return acc;
     }, {});

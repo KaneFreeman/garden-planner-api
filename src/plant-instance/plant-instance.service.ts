@@ -65,7 +65,7 @@ export class PlantInstanceService {
 
     const newPlantInstance = await this.plantInstanceModel.create({
       ...sanitizedPlantInstanceDTO,
-      containerId: new Types.ObjectId(sanitizedPlantInstanceDTO.containerId)
+      containerId: sanitizedPlantInstanceDTO.containerId
     });
 
     if (copiedFromId) {
@@ -333,7 +333,7 @@ export class PlantInstanceService {
       plantInstanceId,
       {
         ...sanitizedPlantInstanceDTO,
-        containerId: new Types.ObjectId(sanitizedPlantInstanceDTO.containerId)
+        containerId: sanitizedPlantInstanceDTO.containerId
       },
       { new: true }
     );

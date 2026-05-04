@@ -1,7 +1,7 @@
 import { CommentDto, sanitizeCommentDto } from '../../common/dto/comment.dto';
 import { PictureDataDto, sanitizePictureDataDto } from '../../common/dto/picture-data.dto';
 import { ContainerSlotIdentifierDTO } from '../../container/dto/container-slot-identifier.dto';
-import { toSeason, toStartedFromType } from '../../interface';
+import { Season, StartedFromType, toSeason, toStartedFromType } from '../../interface';
 import { isNotNullish, isNullish } from '../../util/null.util';
 import { PlantInstanceHistoryDto, sanitizePlantInstanceHistoryDto } from './plant-instance-history.dto';
 
@@ -12,8 +12,8 @@ export interface PlantInstanceDTO extends ContainerSlotIdentifierDTO {
   readonly pictures?: PictureDataDto[];
   readonly history?: PlantInstanceHistoryDto[];
   readonly closed?: boolean;
-  readonly startedFrom: string;
-  readonly season: string;
+  readonly startedFrom: StartedFromType;
+  readonly season: Season;
 }
 
 export function sanitizePlantInstanceDTO(raw: PlantInstanceDTO): PlantInstanceDTO;

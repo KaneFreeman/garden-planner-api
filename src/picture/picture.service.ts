@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { RealtimePublisher } from '../realtime/realtime.publisher';
 import { PictureDTO } from './dto/picture.dto';
@@ -16,7 +16,7 @@ export class PictureService {
   async addPicture(createPictureDTO: PictureDTO, userId: string): Promise<PictureProjection> {
     const newPicture = await this.pictureModel.create({
       ...createPictureDTO,
-      userId: new Types.ObjectId(userId)
+      userId
     });
     const savedPicture = await newPicture.save();
     this.realtimePublisher.publishUserSync(userId, 'picture.added', { picture: savedPicture });
@@ -24,13 +24,13 @@ export class PictureService {
   }
 
   async getPicture(pictureId: string, userId: string): Promise<PictureProjection | null> {
-    return this.pictureModel.findOne({ _id: pictureId, userId: new Types.ObjectId(userId) }).exec();
+    return this.pictureModel.findOne({ _id: pictureId, userId }).exec();
   }
 
   async deletePicture(pictureId: string, userId: string): Promise<PictureProjection | null> {
     const deletedPicture = await this.pictureModel.findOneAndDelete({
       _id: pictureId,
-      userId: new Types.ObjectId(userId)
+      userId
     });
 
     if (deletedPicture) {

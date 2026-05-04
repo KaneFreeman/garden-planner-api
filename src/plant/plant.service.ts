@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { ContainerService } from '../container/container.service';
 import { GardenService } from '../garden/garden.service';
 import { PlantInstanceService } from '../plant-instance/plant-instance.service';
@@ -27,7 +27,7 @@ export class PlantService {
   async addPlant(createPlantDTO: PlantDTO, userId: string): Promise<PlantProjection> {
     const newPlant = await this.plantModel.create({
       ...sanitizePlantDTO(createPlantDTO),
-      userId: new Types.ObjectId(userId)
+      userId
     });
     const savedPlant = await newPlant.save();
     await this.publishPlantsSync(userId, 'plant.added');

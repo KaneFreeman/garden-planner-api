@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { ContainerService } from '../container/container.service';
 import { RealtimePublisher } from '../realtime/realtime.publisher';
 import { isNullish } from '../util/null.util';
@@ -19,7 +19,7 @@ export class GardenService {
   async addGarden(createGardenDTO: GardenDTO, userId: string): Promise<GardenProjection> {
     const newGarden = await this.gardenModel.create({
       ...sanitizeGardenDTO(createGardenDTO),
-      userId: new Types.ObjectId(userId)
+      userId
     });
     const savedGarden = await newGarden.save();
     await this.publishGardensSync(userId, 'garden.added');
@@ -30,11 +30,11 @@ export class GardenService {
     if (isNullish(gardenId)) {
       return null;
     }
-    return this.gardenModel.findOne({ _id: gardenId, userId: new Types.ObjectId(userId) }).exec();
+    return this.gardenModel.findOne({ _id: gardenId, userId }).exec();
   }
 
   async getGardens(userId: string): Promise<GardenProjection[]> {
-    return this.gardenModel.find({ userId: new Types.ObjectId(userId) }).exec();
+    return this.gardenModel.find({ userId }).exec();
   }
 
   async editGarden(gardenId: string, userId: string, createGardenDTO: GardenDTO): Promise<GardenProjection | null> {
@@ -44,7 +44,7 @@ export class GardenService {
     }
 
     const updatedGarden = await this.gardenModel.findOneAndUpdate(
-      { _id: gardenId, userId: new Types.ObjectId(userId) },
+      { _id: gardenId, userId },
       sanitizeGardenDTO(createGardenDTO),
       {
         new: true
@@ -61,7 +61,7 @@ export class GardenService {
   async deleteGarden(gardenId: string, userId: string): Promise<GardenProjection | null> {
     const deletedGarden = await this.gardenModel.findOneAndDelete({
       _id: gardenId,
-      userId: new Types.ObjectId(userId)
+      userId
     });
 
     if (deletedGarden) {

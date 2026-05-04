@@ -1,11 +1,11 @@
 import { CommentDto, sanitizeCommentDto } from '../../common/dto/comment.dto';
 import { PictureDataDto, sanitizePictureDataDto } from '../../common/dto/picture-data.dto';
-import { MaturityFromType, toMaturityFromType, toPlantType } from '../../interface';
+import { MaturityFromType, PlantType, toMaturityFromType, toPlantType } from '../../interface';
 import { isNotNullish, isNullish } from '../../util/null.util';
 
 export interface PlantDTO {
   readonly name: string;
-  readonly type?: string | null;
+  readonly type?: PlantType | null;
   readonly url?: string;
   readonly daysToGerminate?: [number | undefined, number | undefined];
   readonly daysToMaturity?: [number | undefined, number | undefined];

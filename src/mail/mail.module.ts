@@ -20,9 +20,7 @@ const templateDir =
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: [
-        env === 'production' ? '.env.production' : '.env.development',
-      ],
+      envFilePath: [env === 'production' ? '.env.production' : '.env.development']
     }),
     MailerModule.forRoot({
       transport: {
@@ -30,27 +28,27 @@ const templateDir =
         secure: true,
         auth: {
           user: process.env.FROM_EMAIL_ADDRESS,
-          pass: process.env.FROM_EMAIL_PASSWORD,
-        },
+          pass: process.env.FROM_EMAIL_PASSWORD
+        }
       },
       defaults: {
-        from: `"No Reply" ${process.env.FROM_EMAIL_ADDRESS}`,
+        from: `"No Reply" ${process.env.FROM_EMAIL_ADDRESS}`
       },
       template: {
         dir: templateDir,
         adapter: new HandlebarsAdapter(),
         options: {
-          strict: true,
-        },
-      },
+          strict: true
+        }
+      }
     }),
     forwardRef(() => TaskModule),
     forwardRef(() => ContainerModule),
     forwardRef(() => PlantInstanceModule),
     forwardRef(() => UserModule),
-    forwardRef(() => GardenModule),
+    forwardRef(() => GardenModule)
   ],
   providers: [MailService, MailTaskService, Logger],
-  exports: [MailService],
+  exports: [MailService]
 })
 export class MailModule {}

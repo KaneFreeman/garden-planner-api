@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { addMinutes } from 'date-fns';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { MailService } from '../../mail/services/mail.service';
 import { UserService } from '../../users/user.service';
 import { GenerateTokenDTO, sanitizeGenerateTokenDTO } from '../dto/generateToken.dto';
@@ -29,12 +29,12 @@ export class TokenService {
       throw new NotFoundException('No user found');
     }
 
-    const token = Math.floor(100000 + Math.random() * 900000);
+    const token = `${Math.floor(100000 + Math.random() * 900000)}`;
 
     await this.tokenModel.deleteMany({ email: sanitizedGenerateTokenDTO.email });
 
     const newToken = await this.tokenModel.create({
-      userId: new Types.ObjectId(user._id),
+      userId: user._id,
       email: sanitizedGenerateTokenDTO.email,
       token,
       expires: addMinutes(new Date(), 5)
