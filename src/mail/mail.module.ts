@@ -1,5 +1,5 @@
 import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
 import { Logger, Module, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { join } from 'path';

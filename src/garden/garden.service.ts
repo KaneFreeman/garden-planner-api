@@ -47,7 +47,7 @@ export class GardenService {
       { _id: gardenId, userId },
       sanitizeGardenDTO(createGardenDTO),
       {
-        new: true
+        returnDocument: 'after'
       }
     );
 

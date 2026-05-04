@@ -182,7 +182,7 @@ export class ContainerService {
     const editedContainer = await this.containerModel.findByIdAndUpdate(
       containerId,
       { $set: newContainerDTO },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (editedContainer && updateTasks) {

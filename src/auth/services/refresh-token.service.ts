@@ -41,6 +41,6 @@ export class RefreshTokenService {
     record: RefreshTokenProjection,
     changes: Partial<Omit<RefreshTokenProjection, '_id'>>
   ): Promise<RefreshTokenProjection | null> {
-    return this.refreshTokenModel.findByIdAndUpdate(record._id, changes, { new: true });
+    return this.refreshTokenModel.findByIdAndUpdate(record._id, changes, { returnDocument: 'after' });
   }
 }

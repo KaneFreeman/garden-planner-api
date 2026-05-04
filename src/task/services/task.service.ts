@@ -284,7 +284,7 @@ export class TaskService {
         gardenId
       },
       {
-        new: true
+        returnDocument: 'after'
       }
     );
 
@@ -375,7 +375,7 @@ export class TaskService {
         {
           text: task.text.replaceAll(oldName, newName)
         },
-        { new: true }
+        { returnDocument: 'after' }
       );
     }
   }
@@ -391,7 +391,7 @@ export class TaskService {
       throw new NotFoundException('Task does not exist!');
     }
 
-    return this.taskModel.findByIdAndUpdate(taskId, update, { new: true });
+    return this.taskModel.findByIdAndUpdate(taskId, update, { returnDocument: 'after' });
   }
 
   async deleteTask(taskId: string, userId: string, gardenId: string, force = false): Promise<TaskProjection | null> {

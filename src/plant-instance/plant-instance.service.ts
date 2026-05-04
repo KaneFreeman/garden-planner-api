@@ -310,7 +310,7 @@ export class PlantInstanceService {
             (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
           )
         },
-        { new: true }
+        { returnDocument: 'after' }
       )
       .exec();
   }
@@ -335,7 +335,7 @@ export class PlantInstanceService {
         ...sanitizedPlantInstanceDTO,
         containerId: sanitizedPlantInstanceDTO.containerId
       },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     const growingZoneData = await this.userService.getGrowingZoneData(userId);
@@ -369,7 +369,7 @@ export class PlantInstanceService {
     const editedPlantInstance = await this.plantInstanceModel.findByIdAndUpdate(
       plantInstanceId,
       { closed: true },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     await this.createUpdatePlantInstanceTasks(editedPlantInstance, userId, gardenId, growingZoneData);
@@ -579,7 +579,7 @@ export class PlantInstanceService {
       plantInstance = await this.plantInstanceModel.findByIdAndUpdate(
         plantInstanceId,
         { closed: action === 'close' },
-        { new: true }
+        { returnDocument: 'after' }
       );
 
       if (growingZoneData) {

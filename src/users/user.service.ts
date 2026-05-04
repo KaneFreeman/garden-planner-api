@@ -86,7 +86,7 @@ export class UserService {
       zipCode: sanitizedUserDTO.zipCode
     };
 
-    const updatedUser = await this.userModel.findByIdAndUpdate(userId, changes, { new: true });
+    const updatedUser = await this.userModel.findByIdAndUpdate(userId, changes, { returnDocument: 'after' });
 
     if (updatedUser) {
       await this.publishUserSync(userId, 'user.updated');

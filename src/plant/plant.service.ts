@@ -55,7 +55,7 @@ export class PlantService {
       { _id: plantId, userId },
       sanitizePlantDTO(createPlantDTO),
       {
-        new: true
+        returnDocument: 'after'
       }
     );
 
