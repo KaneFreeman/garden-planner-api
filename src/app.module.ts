@@ -12,6 +12,7 @@ import { DeviceIdMiddleware } from './middleware/device-id-middleware';
 import { PictureModule } from './picture/picture.module';
 import { PlantInstanceModule } from './plant-instance/plant-instance.module';
 import { PlantModule } from './plant/plant.module';
+import { RealtimeModule } from './realtime/realtime.module';
 import { StaticModule } from './static/static.module';
 import { TaskModule } from './task/task.module';
 import { UserModule } from './users/user.module';
@@ -28,6 +29,7 @@ const env = process.env.NODE_ENV || 'production';
     }),
     ScheduleModule.forRoot(),
     AuthModule,
+    RealtimeModule,
     UserModule,
     PlantModule,
     PlantInstanceModule,

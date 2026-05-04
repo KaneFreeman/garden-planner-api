@@ -12,11 +12,17 @@ import { MailTaskService } from './services/mail-task.service';
 import { MailService } from './services/mail.service';
 
 const env = process.env.NODE_ENV || 'production';
+const templateDir =
+  env === 'production'
+    ? join(process.cwd(), 'dist-prod', 'mail', 'templates')
+    : join(process.cwd(), 'src', 'mail', 'templates');
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: [env === 'production' ? '.env.production' : '.env.development']
+      envFilePath: [
+        env === 'production' ? '.env.production' : '.env.development',
+      ],
     }),
     MailerModule.forRoot({
       transport: {
@@ -24,27 +30,27 @@ const env = process.env.NODE_ENV || 'production';
         secure: true,
         auth: {
           user: process.env.FROM_EMAIL_ADDRESS,
-          pass: process.env.FROM_EMAIL_PASSWORD
-        }
+          pass: process.env.FROM_EMAIL_PASSWORD,
+        },
       },
       defaults: {
-        from: `"No Reply" ${process.env.FROM_EMAIL_ADDRESS}`
+        from: `"No Reply" ${process.env.FROM_EMAIL_ADDRESS}`,
       },
       template: {
-        dir: join(__dirname, './templates'),
+        dir: templateDir,
         adapter: new HandlebarsAdapter(),
         options: {
-          strict: true
-        }
-      }
+          strict: true,
+        },
+      },
     }),
     forwardRef(() => TaskModule),
     forwardRef(() => ContainerModule),
     forwardRef(() => PlantInstanceModule),
     forwardRef(() => UserModule),
-    forwardRef(() => GardenModule)
+    forwardRef(() => GardenModule),
   ],
   providers: [MailService, MailTaskService, Logger],
-  exports: [MailService]
+  exports: [MailService],
 })
 export class MailModule {}

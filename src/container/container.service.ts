@@ -4,6 +4,7 @@ import { Model, PipelineStage, Types } from 'mongoose';
 import { GardenService } from '../garden/garden.service';
 import { GrowingZoneData, STARTED_FROM_TYPE_SEED, TaskType } from '../interface';
 import { PlantInstanceService } from '../plant-instance/plant-instance.service';
+import { RealtimePublisher } from '../realtime/realtime.publisher';
 import { TaskProjection } from '../task/interfaces/task.projection';
 import { TaskService } from '../task/services/task.service';
 import { UserService } from '../users/user.service';
@@ -25,7 +26,8 @@ export class ContainerService {
     @Inject(forwardRef(() => TaskService)) private taskService: TaskService,
     @Inject(forwardRef(() => GardenService)) private gardenService: GardenService,
     @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService,
-    @Inject(forwardRef(() => UserService)) private userService: UserService
+    @Inject(forwardRef(() => UserService)) private userService: UserService,
+    private readonly realtimePublisher: RealtimePublisher
   ) {}
 
   async addContainer(containerDTO: ContainerDTO, userId: string, gardenId: string): Promise<ContainerProjection> {
@@ -38,7 +40,9 @@ export class ContainerService {
       ...sanitizeContainerDTO(containerDTO),
       gardenId: new Types.ObjectId(gardenId)
     });
-    return newContainer.save();
+    const savedContainer = await newContainer.save();
+    await this.publishGardenSync(userId, gardenId, 'container.added');
+    return savedContainer;
   }
 
   async getContainers(
@@ -118,7 +122,8 @@ export class ContainerService {
     userId: string,
     gardenId: string,
     containerDTO: ContainerDTO,
-    updateTasks: boolean
+    updateTasks: boolean,
+    publishSync = true
   ): Promise<ContainerProjection | null> {
     const sanitizedContainerDTO = sanitizeContainerDTO(containerDTO);
     if (!sanitizedContainerDTO) {
@@ -187,6 +192,10 @@ export class ContainerService {
       }
     }
 
+    if (editedContainer && publishSync) {
+      await this.publishGardenSync(userId, gardenId, 'container.updated');
+    }
+
     return editedContainer;
   }
 
@@ -196,14 +205,16 @@ export class ContainerService {
       return null;
     }
 
-    const result = this.containerModel.findByIdAndDelete(containerId);
+    const result = await this.containerModel.findByIdAndDelete(containerId);
 
     const growingZoneData = await this.userService.getGrowingZoneData(userId);
 
     const plantInstances = await this.plantInstanceService.getPlantInstancesByContainer(containerId, userId, gardenId);
     for (const plantInstance of plantInstances) {
-      await this.plantInstanceService.closePlantInstance(plantInstance._id, userId, gardenId, growingZoneData);
+      await this.plantInstanceService.closePlantInstance(plantInstance._id, userId, gardenId, growingZoneData, false);
     }
+
+    await this.publishGardenSync(userId, gardenId, 'container.deleted');
 
     return result;
   }
@@ -274,6 +285,10 @@ export class ContainerService {
       );
     }
 
+    if (updatedCount > 0) {
+      await this.publishGardenSync(userId, gardenId, 'container.task-updated');
+    }
+
     return updatedCount;
   }
 
@@ -292,7 +307,14 @@ export class ContainerService {
       gardenId
     );
     if (plantInstance && (!plantId || plantInstance.plant === plantId)) {
-      this.plantInstanceService.createUpdateTasks(userId, gardenId, container, plantInstance, path, growingZoneData);
+      await this.plantInstanceService.createUpdateTasks(
+        userId,
+        gardenId,
+        container,
+        plantInstance,
+        path,
+        growingZoneData
+      );
     }
   }
 
@@ -364,13 +386,33 @@ export class ContainerService {
             season: computeSeason()
           },
           userId,
-          gardenId
+          gardenId,
+          { publishSync: false }
         );
 
         plantInstancesCreatedCount++;
       }
     }
 
+    if (plantInstancesCreatedCount > 0) {
+      await this.publishGardenSync(userId, gardenId, 'container.finish-planning');
+    }
+
     return plantInstancesCreatedCount;
+  }
+
+  private async publishGardenSync(userId: string, gardenId: string, reason: string) {
+    const [containers, plantInstances, tasks] = await Promise.all([
+      this.getContainers(userId, gardenId),
+      this.plantInstanceService.getPlantInstances(userId, gardenId),
+      this.taskService.findTasks(userId, gardenId)
+    ]);
+
+    this.realtimePublisher.publishGardenSync(userId, gardenId, reason, {
+      containers,
+      gardenId,
+      plantInstances,
+      tasks
+    });
   }
 }

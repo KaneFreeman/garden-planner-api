@@ -18,6 +18,7 @@ function createPlantInstanceService() {
     {
       getContainer: async () => null
     } as never,
+    {} as never,
     {} as never
   );
 }

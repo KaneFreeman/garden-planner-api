@@ -2,6 +2,7 @@ import { forwardRef, Logger, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ContainerModule } from '../container/container.module';
 import { PlantModule } from '../plant/plant.module';
+import { RealtimeModule } from '../realtime/realtime.module';
 import { TaskModule } from '../task/task.module';
 import { UserModule } from '../users/user.module';
 import { PlantInstanceController } from './plant-instance.controller';
@@ -14,7 +15,8 @@ import { PlantInstanceSchema } from './schemas/plant-instance.schema';
     forwardRef(() => TaskModule),
     forwardRef(() => PlantModule),
     forwardRef(() => ContainerModule),
-    forwardRef(() => UserModule)
+    forwardRef(() => UserModule),
+    RealtimeModule
   ],
   providers: [PlantInstanceService, Logger],
   controllers: [PlantInstanceController],

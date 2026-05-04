@@ -17,6 +17,7 @@ import {
   TaskType
 } from '../interface';
 import { PlantService } from '../plant/plant.service';
+import { RealtimePublisher } from '../realtime/realtime.publisher';
 import { TaskService } from '../task/services/task.service';
 import { UserService } from '../users/user.service';
 import {
@@ -32,6 +33,7 @@ import { PlantInstanceProjection } from './interfaces/plant-instance.projection'
 interface AddPlantInstanceOptions {
   createTasks?: boolean;
   copiedFromId?: string;
+  publishSync?: boolean;
 }
 
 @Injectable()
@@ -43,7 +45,8 @@ export class PlantInstanceService {
     @Inject(forwardRef(() => PlantService)) private plantService: PlantService,
     @Inject(forwardRef(() => TaskService)) private taskService: TaskService,
     @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService,
-    @Inject(forwardRef(() => UserService)) private userService: UserService
+    @Inject(forwardRef(() => UserService)) private userService: UserService,
+    private readonly realtimePublisher: RealtimePublisher
   ) {}
 
   async addPlantInstance(
@@ -52,7 +55,7 @@ export class PlantInstanceService {
     gardenId: string,
     options?: AddPlantInstanceOptions
   ): Promise<PlantInstanceProjection> {
-    const { createTasks = true, copiedFromId } = options ?? {};
+    const { createTasks = true, copiedFromId, publishSync = true } = options ?? {};
 
     const sanitizedPlantInstanceDTO = sanitizePlantInstanceDTO(createPlantInstanceDTO);
     const container = await this.containerService.getContainer(sanitizedPlantInstanceDTO.containerId, userId, gardenId);
@@ -78,7 +81,13 @@ export class PlantInstanceService {
       }
     }
 
-    return newPlantInstance.save();
+    const savedPlantInstance = await newPlantInstance.save();
+
+    if (publishSync) {
+      await this.publishGardenSync(userId, gardenId, 'plant-instance.added');
+    }
+
+    return savedPlantInstance;
   }
 
   async findPlantInstances(
@@ -261,6 +270,8 @@ export class PlantInstanceService {
       }
     }
 
+    await this.publishGardenSync(userId, gardenId, 'plant-instance.history-updated');
+
     return updatePlantInstance;
   }
 
@@ -334,6 +345,8 @@ export class PlantInstanceService {
 
     await this.updateContainerAfterPlantInstanceUpdate(editedPlantInstance, userId, gardenId);
 
+    await this.publishGardenSync(userId, gardenId, 'plant-instance.updated');
+
     return editedPlantInstance;
   }
 
@@ -341,7 +354,8 @@ export class PlantInstanceService {
     plantInstanceId: string | undefined,
     userId: string,
     gardenId: string,
-    growingZoneData: GrowingZoneData | undefined
+    growingZoneData: GrowingZoneData | undefined,
+    publishSync = true
   ): Promise<PlantInstanceProjection | null> {
     if (!plantInstanceId) {
       return Promise.resolve(null);
@@ -359,6 +373,10 @@ export class PlantInstanceService {
     );
 
     await this.createUpdatePlantInstanceTasks(editedPlantInstance, userId, gardenId, growingZoneData);
+
+    if (editedPlantInstance && publishSync) {
+      await this.publishGardenSync(userId, gardenId, 'plant-instance.closed');
+    }
 
     return editedPlantInstance;
   }
@@ -395,6 +413,7 @@ export class PlantInstanceService {
             columns: container.columns,
             slots: newSlots
           },
+          false,
           false
         );
       }
@@ -441,12 +460,14 @@ export class PlantInstanceService {
           columns: container.columns,
           slots: newSlots
         },
+        false,
         false
       );
     }
 
     await this.plantInstanceModel.deleteOne({ _id: plantInstanceId });
     await this.taskService.deleteOpenTasksByPlantInstance(plantInstanceId, userId, gardenId);
+    await this.publishGardenSync(userId, gardenId, 'plant-instance.deleted');
     return plantInstance;
   }
 
@@ -570,7 +591,26 @@ export class PlantInstanceService {
       }
     }
 
+    if (plantInstances.length > 0) {
+      await this.publishGardenSync(userId, gardenId, `plant-instance.${action}`);
+    }
+
     return plantInstances;
+  }
+
+  private async publishGardenSync(userId: string, gardenId: string, reason: string) {
+    const [containers, plantInstances, tasks] = await Promise.all([
+      this.containerService.getContainers(userId, gardenId),
+      this.getPlantInstances(userId, gardenId),
+      this.taskService.findTasks(userId, gardenId)
+    ]);
+
+    this.realtimePublisher.publishGardenSync(userId, gardenId, reason, {
+      containers,
+      gardenId,
+      plantInstances,
+      tasks
+    });
   }
 
   async findTransplantedOutsideHistoryByStatus(

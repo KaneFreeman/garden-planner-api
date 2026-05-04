@@ -13,7 +13,7 @@ function createUserService() {
     }
   };
 
-  return new UserService({} as Logger, userModel as never, {} as never);
+  return new UserService({} as Logger, userModel as never, {} as never, {} as never, {} as never);
 }
 
 test('createUser rejects stale password fields', async () => {

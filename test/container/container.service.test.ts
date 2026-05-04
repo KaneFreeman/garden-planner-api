@@ -24,6 +24,7 @@ function createContainerService(overrides?: {
     {} as never,
     gardenService as never,
     {} as never,
+    {} as never,
     {} as never
   );
 }
@@ -99,6 +100,7 @@ test('editContainer preserves plantInstanceHistory using the reducer accumulator
         }
       }
     } as never,
+    false,
     false
   );
 

@@ -15,7 +15,7 @@ test('addPicture persists the authenticated user id', async () => {
     }
   };
 
-  const service = new PictureService(pictureModel as never);
+  const service = new PictureService(pictureModel as never, { publishUserSync: () => undefined } as never);
   const userId = new Types.ObjectId().toString();
   const result = await service.addPicture({ dataUrl: savedRecord.dataUrl }, userId);
 
@@ -39,7 +39,7 @@ test('picture lookups and deletes are scoped to the authenticated user', async (
     }
   };
 
-  const service = new PictureService(pictureModel as never);
+  const service = new PictureService(pictureModel as never, { publishUserSync: () => undefined } as never);
   const userId = new Types.ObjectId().toString();
 
   await service.getPicture('picture-1', userId);

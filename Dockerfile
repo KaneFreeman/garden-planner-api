@@ -1,5 +1,5 @@
 # Dockerfile
-FROM node:20-alpine
+FROM node:24-alpine
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -18,4 +18,4 @@ RUN npm run build
 ENV NODE_ENV=production
 
 # Start the app
-CMD ["node", "dist-prod/main.js"]
+CMD ["node", "dist-prod/src/main.js"]

@@ -2,6 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { ContainerService } from '../container/container.service';
+import { RealtimePublisher } from '../realtime/realtime.publisher';
 import { isNullish } from '../util/null.util';
 import { GardenDTO, sanitizeGardenDTO } from './dto/garden.dto';
 import { GardenDocument } from './interfaces/garden.document';
@@ -11,7 +12,8 @@ import { GardenProjection } from './interfaces/garden.projection';
 export class GardenService {
   constructor(
     @InjectModel('Garden') private readonly gardenModel: Model<GardenDocument>,
-    @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService
+    @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService,
+    private readonly realtimePublisher: RealtimePublisher
   ) {}
 
   async addGarden(createGardenDTO: GardenDTO, userId: string): Promise<GardenProjection> {
@@ -19,7 +21,9 @@ export class GardenService {
       ...sanitizeGardenDTO(createGardenDTO),
       userId: new Types.ObjectId(userId)
     });
-    return newGarden.save();
+    const savedGarden = await newGarden.save();
+    await this.publishGardensSync(userId, 'garden.added');
+    return savedGarden;
   }
 
   async getGarden(gardenId: string | null | undefined, userId: string): Promise<GardenProjection | null> {
@@ -47,11 +51,24 @@ export class GardenService {
       }
     );
 
+    if (updatedGarden) {
+      await this.publishGardensSync(userId, 'garden.updated');
+    }
+
     return updatedGarden;
   }
 
   async deleteGarden(gardenId: string, userId: string): Promise<GardenProjection | null> {
-    return this.gardenModel.findOneAndDelete({ _id: gardenId, userId: new Types.ObjectId(userId) });
+    const deletedGarden = await this.gardenModel.findOneAndDelete({
+      _id: gardenId,
+      userId: new Types.ObjectId(userId)
+    });
+
+    if (deletedGarden) {
+      await this.publishGardensSync(userId, 'garden.deleted');
+    }
+
+    return deletedGarden;
   }
 
   async createUpdatePlantTasksForAllGardens(userId: string) {
@@ -63,5 +80,10 @@ export class GardenService {
 
       await this.containerService.createUpdatePlantTasksForAllContainers(userId, garden._id);
     }
+  }
+
+  private async publishGardensSync(userId: string, reason: string) {
+    const gardens = await this.getGardens(userId);
+    this.realtimePublisher.publishUserSync(userId, reason, { gardens });
   }
 }

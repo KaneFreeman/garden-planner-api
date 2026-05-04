@@ -2,6 +2,7 @@ import { forwardRef, Logger, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ContainerModule } from '../container/container.module';
 import { PlantInstanceModule } from '../plant-instance/plant-instance.module';
+import { RealtimeModule } from '../realtime/realtime.module';
 import { UserModule } from '../users/user.module';
 import { TaskSchema } from './schemas/task.schema';
 import { TaskTasksService } from './services/task-tasks.service';
@@ -13,7 +14,8 @@ import { TaskController } from './task.controller';
     MongooseModule.forFeature([{ name: 'Task', schema: TaskSchema }]),
     forwardRef(() => ContainerModule),
     forwardRef(() => PlantInstanceModule),
-    forwardRef(() => UserModule)
+    forwardRef(() => UserModule),
+    RealtimeModule
   ],
   providers: [TaskService, TaskTasksService, Logger],
   controllers: [TaskController],

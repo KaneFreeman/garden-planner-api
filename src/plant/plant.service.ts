@@ -4,6 +4,7 @@ import { Model, Types } from 'mongoose';
 import { ContainerService } from '../container/container.service';
 import { GardenService } from '../garden/garden.service';
 import { PlantInstanceService } from '../plant-instance/plant-instance.service';
+import { RealtimePublisher } from '../realtime/realtime.publisher';
 import { TaskService } from '../task/services/task.service';
 import { UserService } from '../users/user.service';
 import { isNullish } from '../util/null.util';
@@ -19,7 +20,8 @@ export class PlantService {
     @Inject(forwardRef(() => TaskService)) private taskService: TaskService,
     @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService,
     @Inject(forwardRef(() => GardenService)) private gardenService: GardenService,
-    @Inject(forwardRef(() => UserService)) private userService: UserService
+    @Inject(forwardRef(() => UserService)) private userService: UserService,
+    private readonly realtimePublisher: RealtimePublisher
   ) {}
 
   async addPlant(createPlantDTO: PlantDTO, userId: string): Promise<PlantProjection> {
@@ -27,7 +29,9 @@ export class PlantService {
       ...sanitizePlantDTO(createPlantDTO),
       userId: new Types.ObjectId(userId)
     });
-    return newPlant.save();
+    const savedPlant = await newPlant.save();
+    await this.publishPlantsSync(userId, 'plant.added');
+    return savedPlant;
   }
 
   async getPlant(plantId: string | null | undefined, userId: string): Promise<PlantProjection | null> {
@@ -62,13 +66,24 @@ export class PlantService {
       }
 
       await this.updateTasks(userId, garden._id, plantId);
+      await this.publishGardenTasksSync(userId, garden._id, 'plant.updated');
+    }
+
+    if (updatedPlant) {
+      await this.publishPlantsSync(userId, 'plant.updated');
     }
 
     return updatedPlant;
   }
 
   async deletePlant(plantId: string, userId: string): Promise<PlantProjection | null> {
-    return this.plantModel.findOneAndDelete({ _id: plantId, userId });
+    const deletedPlant = await this.plantModel.findOneAndDelete({ _id: plantId, userId });
+
+    if (deletedPlant) {
+      await this.publishPlantsSync(userId, 'plant.deleted');
+    }
+
+    return deletedPlant;
   }
 
   async updateTasksWithNewPlantName(
@@ -89,5 +104,15 @@ export class PlantService {
 
   async updateTasks(userId: string, gardenId: string, plantId: string) {
     await this.containerService.createUpdatePlantTasksForAllContainers(userId, gardenId, plantId);
+  }
+
+  private async publishPlantsSync(userId: string, reason: string) {
+    const plants = await this.getPlants(userId);
+    this.realtimePublisher.publishUserSync(userId, reason, { plants });
+  }
+
+  private async publishGardenTasksSync(userId: string, gardenId: string, reason: string) {
+    const tasks = await this.taskService.findTasks(userId, gardenId);
+    this.realtimePublisher.publishGardenSync(userId, gardenId, reason, { gardenId, tasks });
   }
 }

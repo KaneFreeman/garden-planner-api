@@ -1,6 +1,6 @@
 {
   "name": "garden-planner-backend",
-  "version": "1.0.0-alpha1",
+  "version": "1.0.0-beta1",
   "description": "",
   "author": "",
   "private": true,
@@ -14,7 +14,7 @@
     "start": "nest start",
     "start:dev": "rimraf dist && cross-env NODE_ENV=development nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "cross-env NODE_ENV=production node dist-prod/main",
+    "start:prod": "cross-env NODE_ENV=production node dist-prod/src/main.js",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\"",
     "test": "node --test --require ts-node/register \"test/**/*.test.ts\""
   },
@@ -26,9 +26,11 @@
     "@nestjs/jwt": "11.0.2",
     "@nestjs/mongoose": "11.0.4",
     "@nestjs/platform-express": "11.1.16",
+    "@nestjs/platform-socket.io": "^11.1.19",
     "@nestjs/schedule": "6.1.1",
     "@nestjs/swagger": "11.2.6",
     "@nestjs/throttler": "^6.5.0",
+    "@nestjs/websockets": "^11.1.19",
     "cookie-parser": "1.4.7",
     "date-fns": "4.1.0",
     "dotenv": "17.3.1",
@@ -45,6 +47,7 @@
     "reflect-metadata": "0.2.2",
     "rimraf": "6.1.3",
     "rxjs": "7.8.2",
+    "socket.io": "^4.8.3",
     "swagger-ui-express": "5.0.1",
     "uuid": "^11.1.0",
     "winston": "3.19.0"
@@ -57,7 +60,7 @@
     "@types/ejs": "3.1.5",
     "@types/express": "5.0.6",
     "@types/mjml": "4.7.4",
-    "@types/node": "20.19.37",
+    "@types/node": "^24.12.2",
     "@types/nodemailer": "7.0.11",
     "@types/pug": "2.0.10",
     "@typescript-eslint/eslint-plugin": "8.56.1",
@@ -91,6 +94,6 @@
     "printWidth": 120
   },
   "engines": {
-    "node": ">=20 <21"
+    "node": ">=24 <25"
   }
 }

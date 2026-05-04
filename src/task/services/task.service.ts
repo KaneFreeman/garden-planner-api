@@ -33,6 +33,7 @@ import {
   getTransplantedDate
 } from '../../plant-instance/util/history.util';
 import { PlantProjection } from '../../plant/interfaces/plant.projection';
+import { RealtimePublisher } from '../../realtime/realtime.publisher';
 import { UserService } from '../../users/user.service';
 import { isValidDate } from '../../util/date.util';
 import { hasFrostDates } from '../../util/growingZone.util';
@@ -53,7 +54,8 @@ export class TaskService {
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
     @Inject(forwardRef(() => ContainerService)) private containerService: ContainerService,
     @Inject(forwardRef(() => PlantInstanceService)) private plantInstanceService: PlantInstanceService,
-    @Inject(forwardRef(() => UserService)) private userService: UserService
+    @Inject(forwardRef(() => UserService)) private userService: UserService,
+    private readonly realtimePublisher: RealtimePublisher
   ) {}
 
   async addTask(createTaskDTO: CreateTaskDTO, userId: string, gardenId: string): Promise<TaskProjection> {
@@ -78,7 +80,9 @@ export class TaskService {
         : null,
       gardenId: new Types.ObjectId(gardenId)
     });
-    return newTask.save();
+    const savedTask = await newTask.save();
+    await this.publishTaskSync(userId, gardenId, 'task.added');
+    return savedTask;
   }
 
   async findTasks(userId: string, gardenId: string, extraPipeline: PipelineStage[] = []): Promise<TaskProjection[]> {
@@ -302,6 +306,10 @@ export class TaskService {
       }
     }
 
+    if (task) {
+      await this.publishTaskSync(userId, gardenId, 'task.updated');
+    }
+
     return task;
   }
 
@@ -355,6 +363,10 @@ export class TaskService {
       tasksUpdated++;
     }
 
+    if (tasksUpdated > 0) {
+      await this.publishTaskSync(userId, gardenId, 'task.bulk-completed');
+    }
+
     return tasksUpdated;
   }
 
@@ -392,7 +404,12 @@ export class TaskService {
       return null;
     }
 
-    return await this.taskModel.findByIdAndDelete(taskId);
+    const deletedTask = await this.taskModel.findByIdAndDelete(taskId);
+    if (deletedTask) {
+      await this.publishTaskSync(userId, gardenId, 'task.deleted');
+    }
+
+    return deletedTask;
   }
 
   async deleteOpenTasksByPlantInstance(plantInstanceId: string, userId: string, gardenId: string): Promise<void> {
@@ -447,6 +464,11 @@ export class TaskService {
     for (const task of tasks) {
       await this.taskModel.findByIdAndDelete(task._id);
     }
+  }
+
+  private async publishTaskSync(userId: string, gardenId: string, reason: string) {
+    const tasks = await this.findTasks(userId, gardenId);
+    this.realtimePublisher.publishGardenSync(userId, gardenId, reason, { gardenId, tasks });
   }
 
   getTaskStartDate(season: Season, growingZoneData: Required<GrowingZoneData>): Date {

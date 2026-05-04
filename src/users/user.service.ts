@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { growingZoneDataByZone, growingZonesByZipCode } from '../data/growingZoneData';
 import { GrowingZoneData } from '../interface';
+import { RealtimePublisher } from '../realtime/realtime.publisher';
+import { StaticService } from '../static/static.service';
 import { isEmpty } from '../util/string.util';
 import { UserDTO, sanitizeUserDTO } from './dto/user.dto';
 import { UserDocument } from './interfaces/user.document';
@@ -16,7 +18,9 @@ export class UserService {
   constructor(
     private logger: Logger,
     @InjectModel('User') private userModel: Model<UserDocument>,
-    @Inject(forwardRef(() => GardenService)) private gardenService: GardenService
+    @Inject(forwardRef(() => GardenService)) private gardenService: GardenService,
+    @Inject(forwardRef(() => StaticService)) private staticService: StaticService,
+    private readonly realtimePublisher: RealtimePublisher
   ) {
     this.whitelist = (process.env.USER_WHITELIST ?? '').split(',').map((email) => email.trim());
   }
@@ -82,7 +86,13 @@ export class UserService {
       zipCode: sanitizedUserDTO.zipCode
     };
 
-    return this.userModel.findByIdAndUpdate(userId, changes, { new: true });
+    const updatedUser = await this.userModel.findByIdAndUpdate(userId, changes, { new: true });
+
+    if (updatedUser) {
+      await this.publishUserSync(userId, 'user.updated');
+    }
+
+    return updatedUser;
   }
 
   private assertNoPasswordField(userDTO: UserDTO) {
@@ -126,5 +136,17 @@ export class UserService {
     for (const user of users) {
       await this.gardenService.createUpdatePlantTasksForAllGardens(user._id);
     }
+  }
+
+  private async publishUserSync(userId: string, reason: string) {
+    const [userDetails, plantData] = await Promise.all([
+      this.getUser(userId),
+      this.staticService.getPlantData(userId).catch(() => undefined)
+    ]);
+
+    this.realtimePublisher.publishUserSync(userId, reason, {
+      plantData,
+      userDetails
+    });
   }
 }
