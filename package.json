@@ -39,7 +39,7 @@
     "handlebars": "4.7.9",
     "liquidjs": "10.25.7",
     "mjml": "5.2.0",
-    "mongoose": "9.6.1",
+    "mongoose": "9.6.2",
     "nest-winston": "1.10.2",
     "nodemailer": "8.0.7",
     "preview-email": "3.1.3",
