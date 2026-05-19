@@ -38,7 +38,7 @@
     "express": "5.2.1",
     "handlebars": "4.7.9",
     "liquidjs": "10.27.0",
-    "mjml": "5.2.1",
+    "mjml": "5.2.2",
     "mongoose": "9.6.2",
     "nest-winston": "1.10.2",
     "nodemailer": "8.0.7",
