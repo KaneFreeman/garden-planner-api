@@ -32,7 +32,7 @@
     "@nestjs/throttler": "6.5.0",
     "@nestjs/websockets": "11.1.23",
     "cookie-parser": "1.4.7",
-    "date-fns": "4.2.1",
+    "date-fns": "4.3.0",
     "dotenv": "17.4.2",
     "ejs": "5.0.2",
     "express": "5.2.1",
