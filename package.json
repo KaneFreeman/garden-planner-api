@@ -37,7 +37,7 @@
     "ejs": "5.0.2",
     "express": "5.2.1",
     "handlebars": "4.7.9",
-    "liquidjs": "10.28.0",
+    "liquidjs": "10.29.0",
     "mjml": "5.4.0",
     "mongoose": "9.9.2",
     "nest-winston": "1.10.2",
